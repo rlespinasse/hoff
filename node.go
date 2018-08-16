@@ -1,5 +1,6 @@
 package flowengine
 
 type FlowNode interface {
-	Run(c *FlowContext)
+	Run(c *FlowContext) RunState
+	AvailableBranches() []NodeBranch
 }

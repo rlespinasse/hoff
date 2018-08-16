@@ -1,14 +1,25 @@
 package flowengine
 
 type ActionNode struct {
-	actionFunc func(*FlowContext)
+	actionFunc func(*FlowContext) (bool, error)
 }
 
-func (n *ActionNode) Run(c *FlowContext) {
-	n.actionFunc(c)
+func (n *ActionNode) Run(c *FlowContext) RunState {
+	pass, err := n.actionFunc(c)
+	if err != nil {
+		return RunStateFail(err)
+	}
+	if pass {
+		return RunStatePass()
+	}
+	return RunStateStop()
 }
 
-func NewActionNode(actionFunc func(*FlowContext)) *ActionNode {
+func (n *ActionNode) AvailableBranches() []NodeBranch {
+	return AvailablesBranches()
+}
+
+func NewActionNode(actionFunc func(*FlowContext) (bool, error)) *ActionNode {
 	return &ActionNode{
 		actionFunc: actionFunc,
 	}

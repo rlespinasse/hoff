@@ -1,53 +1,51 @@
 package flowengine
 
 import (
-	"fmt"
+	"errors"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
-func Test_ActionNode(t *testing.T) {
+func Test_ActionNode_Run(t *testing.T) {
 	tc := []FlowNodeTestCase{
 		{
-			"No action",
+			"Pass",
 			contextData{},
-			NewActionNode(func(c *FlowContext) {}),
+			NewActionNode(func(*FlowContext) (bool, error) {
+				return true, nil
+			}),
+			RunStatePass(),
 			contextData{},
 		},
 		{
-			"Store in context",
+			"Stop",
 			contextData{},
-			NewActionNode(func(c *FlowContext) {
-				c.Store("key", "value")
+			NewActionNode(func(*FlowContext) (bool, error) {
+				return false, nil
 			}),
-			contextData{
-				"key": "value",
-			},
+			RunStateStop(),
+			contextData{},
 		},
 		{
-			"Read in context",
-			contextData{
-				"key": "value",
-			},
-			NewActionNode(func(c *FlowContext) {
-				value, _ := c.Read("key")
-				c.Store("stored_key", value)
-			}),
-			contextData{
-				"key":        "value",
-				"stored_key": "value",
-			},
-		},
-		{
-			"Error on Read in context",
+			"Fail",
 			contextData{},
-			NewActionNode(func(c *FlowContext) {
-				_, err := c.Read("key")
-				c.Store("read_error", err)
+			NewActionNode(func(*FlowContext) (bool, error) {
+				return false, errors.New("error")
 			}),
-			contextData{
-				"read_error": fmt.Errorf("unknown key: key"),
-			},
+			RunStateFail(errors.New("error")),
+			contextData{},
 		},
 	}
 	RunTestOnFlowNode(t, tc)
+}
+
+func Test_ActionNode_AvailableBranches(t *testing.T) {
+	node := NewActionNode(nil)
+	branches := node.AvailableBranches()
+	expectedNodeBranches := AvailablesBranches()
+
+	if !cmp.Equal(branches, expectedNodeBranches) {
+		t.Errorf("got: %#v, want: %#v", branches, expectedNodeBranches)
+	}
 }
