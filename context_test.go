@@ -1,16 +1,17 @@
 package flowengine
 
 import (
-	"fmt"
-	"reflect"
+	"errors"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func Test_NewFlowContext(t *testing.T) {
 	c := NewFlowContext()
 	emptyData := contextData{}
 
-	if !reflect.DeepEqual(c.data, emptyData) {
+	if !cmp.Equal(c.data, emptyData) {
 		t.Errorf("context data - got: %#v, want: %#v", c.data, emptyData)
 	}
 }
@@ -37,7 +38,7 @@ func Test_FlowContext_Read(t *testing.T) {
 			contextData{},
 			"key",
 			nil,
-			fmt.Errorf("unknown key: key"),
+			errors.New("unknown key: key"),
 		},
 	}
 	for _, testCase := range testCases {
