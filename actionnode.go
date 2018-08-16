@@ -1,15 +1,15 @@
 package flowengine
 
 type ActionNode struct {
-	action func(*FlowContext)
+	actionFunc func(*FlowContext)
 }
 
 func (n *ActionNode) Run(c *FlowContext) {
-	n.action(c)
+	n.actionFunc(c)
 }
 
-func NewActionNode(action func(*FlowContext)) *ActionNode {
+func NewActionNode(actionFunc func(*FlowContext)) *ActionNode {
 	return &ActionNode{
-		action: action,
+		actionFunc: actionFunc,
 	}
 }
