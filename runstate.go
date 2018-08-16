@@ -1,4 +1,4 @@
-package flowengine
+package flow
 
 const (
 	pass State = iota + 1

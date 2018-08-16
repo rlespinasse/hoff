@@ -1,4 +1,4 @@
-package flowengine
+package flow
 
 import (
 	"testing"

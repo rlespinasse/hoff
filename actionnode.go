@@ -1,4 +1,4 @@
-package flowengine
+package flow
 
 type ActionNode struct {
 	actionFunc func(*FlowContext) (bool, error)

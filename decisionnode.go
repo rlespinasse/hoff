@@ -1,4 +1,4 @@
-package flowengine
+package flow
 
 type DecisionNode struct {
 	decisionFunc func(*FlowContext) (bool, error)
