@@ -7,8 +7,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func Test_NewFlowContext(t *testing.T) {
-	c := NewFlowContext()
+func Test_NewContext(t *testing.T) {
+	c := NewContext()
 	emptyData := contextData{}
 
 	if !cmp.Equal(c.data, emptyData) {
@@ -16,7 +16,7 @@ func Test_NewFlowContext(t *testing.T) {
 	}
 }
 
-func Test_FlowContext_Read(t *testing.T) {
+func Test_Context_Read(t *testing.T) {
 	testCases := []struct {
 		name             string
 		givenContextData contextData
@@ -43,7 +43,7 @@ func Test_FlowContext_Read(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			c := setupFlowContext(testCase.givenContextData)
+			c := setupContext(testCase.givenContextData)
 			value, err := c.Read(testCase.givenKey)
 
 			if value != testCase.expectedValue {

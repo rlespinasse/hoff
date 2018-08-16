@@ -2,18 +2,18 @@ package flow
 
 import "fmt"
 
-type FlowContext struct {
+type Context struct {
 	data contextData
 }
 
 type contextData map[string]interface{}
 type DataValue interface{}
 
-func (c *FlowContext) Store(key string, value interface{}) {
+func (c *Context) Store(key string, value interface{}) {
 	c.data[key] = value
 }
 
-func (c *FlowContext) Read(key string) (interface{}, error) {
+func (c *Context) Read(key string) (interface{}, error) {
 	value, ok := c.data[key]
 	if ok {
 		return value, nil
@@ -21,12 +21,12 @@ func (c *FlowContext) Read(key string) (interface{}, error) {
 	return nil, fmt.Errorf("unknown key: %s", key)
 }
 
-func NewFlowContext() *FlowContext {
-	return setupFlowContext(make(contextData))
+func NewContext() *Context {
+	return setupContext(make(contextData))
 }
 
-func setupFlowContext(data contextData) *FlowContext {
-	return &FlowContext{
+func setupContext(data contextData) *Context {
+	return &Context{
 		data: data,
 	}
 }

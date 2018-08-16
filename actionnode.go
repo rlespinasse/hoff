@@ -1,10 +1,10 @@
 package flow
 
 type ActionNode struct {
-	actionFunc func(*FlowContext) (bool, error)
+	actionFunc func(*Context) (bool, error)
 }
 
-func (n *ActionNode) Run(c *FlowContext) RunState {
+func (n *ActionNode) Run(c *Context) RunState {
 	pass, err := n.actionFunc(c)
 	if err != nil {
 		return RunStateFail(err)
@@ -19,7 +19,7 @@ func (n *ActionNode) AvailableBranches() []NodeBranch {
 	return AvailablesBranches()
 }
 
-func NewActionNode(actionFunc func(*FlowContext) (bool, error)) *ActionNode {
+func NewActionNode(actionFunc func(*Context) (bool, error)) *ActionNode {
 	return &ActionNode{
 		actionFunc: actionFunc,
 	}

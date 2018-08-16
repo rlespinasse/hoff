@@ -6,7 +6,7 @@ import (
 
 type SomeNode struct{}
 
-func (n *SomeNode) Run(c *FlowContext) RunState {
+func (n *SomeNode) Run(c *Context) RunState {
 	c.Store("message", "SomeNode is passing")
 	return RunStatePass()
 }
@@ -15,7 +15,7 @@ func (n *SomeNode) AvailableBranches() []NodeBranch {
 }
 
 func Test_SomeNode(t *testing.T) {
-	tc := []FlowNodeTestCase{
+	tc := []NodeTestCase{
 		{
 			"SomeNode is passing",
 			contextData{},
@@ -26,5 +26,5 @@ func Test_SomeNode(t *testing.T) {
 			},
 		},
 	}
-	RunTestOnFlowNode(t, tc)
+	RunTestOnNode(t, tc)
 }

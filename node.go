@@ -1,6 +1,6 @@
 package flow
 
-type FlowNode interface {
-	Run(c *FlowContext) RunState
+type Node interface {
+	Run(c *Context) RunState
 	AvailableBranches() []NodeBranch
 }

@@ -1,10 +1,10 @@
 package flow
 
 type DecisionNode struct {
-	decisionFunc func(*FlowContext) (bool, error)
+	decisionFunc func(*Context) (bool, error)
 }
 
-func (n *DecisionNode) Run(c *FlowContext) RunState {
+func (n *DecisionNode) Run(c *Context) RunState {
 	decision, err := n.decisionFunc(c)
 	if err != nil {
 		return RunStateFail(err)
@@ -19,7 +19,7 @@ func (n *DecisionNode) AvailableBranches() []NodeBranch {
 	return AvailablesBranches("true", "false")
 }
 
-func NewDecisionNode(decisionFunc func(*FlowContext) (bool, error)) *DecisionNode {
+func NewDecisionNode(decisionFunc func(*Context) (bool, error)) *DecisionNode {
 	return &DecisionNode{
 		decisionFunc: decisionFunc,
 	}

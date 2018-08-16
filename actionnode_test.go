@@ -8,11 +8,11 @@ import (
 )
 
 func Test_ActionNode_Run(t *testing.T) {
-	tc := []FlowNodeTestCase{
+	tc := []NodeTestCase{
 		{
 			"Pass",
 			contextData{},
-			NewActionNode(func(*FlowContext) (bool, error) {
+			NewActionNode(func(*Context) (bool, error) {
 				return true, nil
 			}),
 			RunStatePass(),
@@ -21,7 +21,7 @@ func Test_ActionNode_Run(t *testing.T) {
 		{
 			"Stop",
 			contextData{},
-			NewActionNode(func(*FlowContext) (bool, error) {
+			NewActionNode(func(*Context) (bool, error) {
 				return false, nil
 			}),
 			RunStateStop(),
@@ -30,14 +30,14 @@ func Test_ActionNode_Run(t *testing.T) {
 		{
 			"Fail",
 			contextData{},
-			NewActionNode(func(*FlowContext) (bool, error) {
+			NewActionNode(func(*Context) (bool, error) {
 				return false, errors.New("error")
 			}),
 			RunStateFail(errors.New("error")),
 			contextData{},
 		},
 	}
-	RunTestOnFlowNode(t, tc)
+	RunTestOnNode(t, tc)
 }
 
 func Test_ActionNode_AvailableBranches(t *testing.T) {

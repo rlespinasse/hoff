@@ -8,13 +8,13 @@ import (
 )
 
 func Test_DecisionNode_Run(t *testing.T) {
-	tc := []FlowNodeTestCase{
+	tc := []NodeTestCase{
 		{
 			"Pass True",
 			contextData{
 				"key": "value",
 			},
-			NewDecisionNode(func(*FlowContext) (bool, error) {
+			NewDecisionNode(func(*Context) (bool, error) {
 				return true, nil
 			}),
 			RunStateBranchPass("true"),
@@ -25,7 +25,7 @@ func Test_DecisionNode_Run(t *testing.T) {
 		{
 			"Pass False",
 			contextData{},
-			NewDecisionNode(func(*FlowContext) (bool, error) {
+			NewDecisionNode(func(*Context) (bool, error) {
 				return false, nil
 			}),
 			RunStateBranchPass("false"),
@@ -34,14 +34,14 @@ func Test_DecisionNode_Run(t *testing.T) {
 		{
 			"Fail",
 			contextData{},
-			NewDecisionNode(func(*FlowContext) (bool, error) {
+			NewDecisionNode(func(*Context) (bool, error) {
 				return false, errors.New("error")
 			}),
 			RunStateFail(errors.New("error")),
 			contextData{},
 		},
 	}
-	RunTestOnFlowNode(t, tc)
+	RunTestOnNode(t, tc)
 }
 
 func Test_DecisionNode_AvailableBranches(t *testing.T) {

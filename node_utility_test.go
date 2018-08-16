@@ -6,18 +6,18 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-type FlowNodeTestCase struct {
+type NodeTestCase struct {
 	name                string
 	givenContextData    contextData
-	givenNode           FlowNode
+	givenNode           Node
 	expectedRunState    RunState
 	expectedContextData contextData
 }
 
-func RunTestOnFlowNode(t *testing.T, testCases []FlowNodeTestCase) {
+func RunTestOnNode(t *testing.T, testCases []NodeTestCase) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			testContext := setupFlowContext(testCase.givenContextData)
+			testContext := setupContext(testCase.givenContextData)
 			testState := testCase.givenNode.Run(testContext)
 
 			if !cmp.Equal(testState, testCase.expectedRunState, runStateEqualOpts) {
