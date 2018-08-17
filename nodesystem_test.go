@@ -290,6 +290,70 @@ func Test_NodeSystem(t *testing.T) {
 				fmt.Errorf("can't add branch link, node system is freeze due to successful validation"),
 			},
 		},
+		{
+			"Link to undeclared node",
+			[]Node{
+				someActionNode,
+			},
+			[]NodeBranchLink{
+				NodeBranchLink{
+					From: someActionNode,
+					To:   anotherActionNode,
+				},
+			},
+			[]Node{},
+			[]NodeBranchLink{},
+			&NodeSystem{
+				validity: false,
+				nodes: []Node{
+					someActionNode,
+				},
+				links: []NodeBranchLink{
+					NodeBranchLink{
+						From: someActionNode,
+						To:   anotherActionNode,
+					},
+				},
+			},
+			[]error{
+				fmt.Errorf("undeclared node '%+v' as 'To' in branch link %+v", anotherActionNode, NodeBranchLink{
+					From: someActionNode,
+					To:   anotherActionNode,
+				}),
+			},
+		},
+		{
+			"Link from undeclared node",
+			[]Node{
+				anotherActionNode,
+			},
+			[]NodeBranchLink{
+				NodeBranchLink{
+					From: someActionNode,
+					To:   anotherActionNode,
+				},
+			},
+			[]Node{},
+			[]NodeBranchLink{},
+			&NodeSystem{
+				validity: false,
+				nodes: []Node{
+					anotherActionNode,
+				},
+				links: []NodeBranchLink{
+					NodeBranchLink{
+						From: someActionNode,
+						To:   anotherActionNode,
+					},
+				},
+			},
+			[]error{
+				fmt.Errorf("undeclared node '%+v' as 'From' in branch link %+v", someActionNode, NodeBranchLink{
+					From: someActionNode,
+					To:   anotherActionNode,
+				}),
+			},
+		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {

@@ -51,6 +51,7 @@ func (s *NodeSystem) Validate() (bool, []error) {
 	errors := make([]error, 0)
 	errors = append(errors, checkForOrphanDecisionNode(s)...)
 	errors = append(errors, validateNodeBranchLink(s)...)
+	errors = append(errors, checkForUndeclaredNodeInNodeBranchLink(s)...)
 
 	s.validity = len(errors) < 1
 	if s.IsValidated() {
@@ -61,6 +62,15 @@ func (s *NodeSystem) Validate() (bool, []error) {
 
 func (s *NodeSystem) IsValidated() bool {
 	return s.validity
+}
+
+func (s *NodeSystem) haveNode(n Node) bool {
+	for _, node := range s.nodes {
+		if node == n {
+			return true
+		}
+	}
+	return false
 }
 
 func checkForOrphanDecisionNode(s *NodeSystem) []error {
@@ -108,6 +118,19 @@ func validateNodeBranchLink(s *NodeSystem) []error {
 		}
 		if link.To == nil {
 			errors = append(errors, fmt.Errorf("missing 'To' attribute: %+v", link))
+		}
+	}
+	return errors
+}
+
+func checkForUndeclaredNodeInNodeBranchLink(s *NodeSystem) []error {
+	errors := make([]error, 0)
+	for _, link := range s.links {
+		if link.From != nil && !s.haveNode(link.From) {
+			errors = append(errors, fmt.Errorf("undeclared node '%+v' as 'From' in branch link %+v", link.From, link))
+		}
+		if link.To != nil && !s.haveNode(link.To) {
+			errors = append(errors, fmt.Errorf("undeclared node '%+v' as 'To' in branch link %+v", link.To, link))
 		}
 	}
 	return errors
