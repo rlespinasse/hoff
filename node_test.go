@@ -11,7 +11,7 @@ func (n *SomeNode) Run(c *Context) RunState {
 	return RunStatePass()
 }
 func (n *SomeNode) AvailableBranches() []NodeBranch {
-	return AvailablesBranches()
+	return nil
 }
 
 func Test_SomeNode(t *testing.T) {

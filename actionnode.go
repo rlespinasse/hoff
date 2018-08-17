@@ -16,7 +16,7 @@ func (n *ActionNode) Run(c *Context) RunState {
 }
 
 func (n *ActionNode) AvailableBranches() []NodeBranch {
-	return AvailablesBranches()
+	return nil
 }
 
 func NewActionNode(actionFunc func(*Context) (bool, error)) *ActionNode {
