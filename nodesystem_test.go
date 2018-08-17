@@ -43,6 +43,24 @@ func Test_NodeSystem(t *testing.T) {
 			},
 		},
 		{
+			name: "Can't have the same node more than one time",
+			givenNodes: []Node{
+				someActionNode,
+				someActionNode,
+			},
+			expectedNodeSystem: &NodeSystem{
+				validity: false,
+				nodes: []Node{
+					someActionNode,
+					someActionNode,
+				},
+				links: []NodeBranchLink{},
+			},
+			expectedErrors: []error{
+				fmt.Errorf("can't have multiple instances (2) of the same node: %+v", someActionNode),
+			},
+		},
+		{
 			name: "Can't have decision node without link to another node",
 			givenNodes: []Node{
 				alwaysTrueDecisionNode,
@@ -55,7 +73,7 @@ func Test_NodeSystem(t *testing.T) {
 				links: []NodeBranchLink{},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("orphan decision node: %+v", alwaysTrueDecisionNode),
+				fmt.Errorf("can't have orphan decision node: %+v", alwaysTrueDecisionNode),
 			},
 		},
 		{
@@ -125,8 +143,8 @@ func Test_NodeSystem(t *testing.T) {
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("missing 'From' attribute: %+v", NodeBranchLink{}),
-				fmt.Errorf("missing 'To' attribute: %+v", NodeBranchLink{}),
+				fmt.Errorf("can't have missing 'From' attribute: %+v", NodeBranchLink{}),
+				fmt.Errorf("can't have missing 'To' attribute: %+v", NodeBranchLink{}),
 			},
 		},
 		{
@@ -157,7 +175,7 @@ func Test_NodeSystem(t *testing.T) {
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("unknown branch: 'some_branch', from %+v, available branches %+v", alwaysTrueDecisionNode, alwaysTrueDecisionNode.AvailableBranches()),
+				fmt.Errorf("can't have unknown branch: 'some_branch', from %+v, available branches %+v", alwaysTrueDecisionNode, alwaysTrueDecisionNode.AvailableBranches()),
 			},
 		},
 		{
@@ -188,7 +206,7 @@ func Test_NodeSystem(t *testing.T) {
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("not needed branch: 'not_needed_branch', from %+v", someActionNode),
+				fmt.Errorf("can't have not needed branch: 'not_needed_branch', from %+v", someActionNode),
 			},
 		},
 		{
@@ -217,7 +235,7 @@ func Test_NodeSystem(t *testing.T) {
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("missing branch from %+v, available branches %+v", alwaysTrueDecisionNode, alwaysTrueDecisionNode.AvailableBranches()),
+				fmt.Errorf("can't have missing branch from %+v, available branches %+v", alwaysTrueDecisionNode, alwaysTrueDecisionNode.AvailableBranches()),
 			},
 		},
 		{
@@ -282,7 +300,7 @@ func Test_NodeSystem(t *testing.T) {
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("undeclared node '%+v' as 'To' in branch link %+v", anotherActionNode, NodeBranchLink{
+				fmt.Errorf("can't have undeclared node '%+v' as 'To' in branch link %+v", anotherActionNode, NodeBranchLink{
 					From: someActionNode,
 					To:   anotherActionNode,
 				}),
@@ -312,7 +330,7 @@ func Test_NodeSystem(t *testing.T) {
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("undeclared node '%+v' as 'From' in branch link %+v", someActionNode, NodeBranchLink{
+				fmt.Errorf("can't have undeclared node '%+v' as 'From' in branch link %+v", someActionNode, NodeBranchLink{
 					From: someActionNode,
 					To:   anotherActionNode,
 				}),
@@ -346,7 +364,7 @@ func Test_NodeSystem(t *testing.T) {
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("orphan decision node: %+v", alwaysTrueDecisionNode),
+				fmt.Errorf("can't have orphan decision node: %+v", alwaysTrueDecisionNode),
 			},
 		},
 		{
@@ -377,7 +395,7 @@ func Test_NodeSystem(t *testing.T) {
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("undeclared node '%+v' as 'To' in branch link %+v", anotherActionNode, NodeBranchLink{
+				fmt.Errorf("can't have undeclared node '%+v' as 'To' in branch link %+v", anotherActionNode, NodeBranchLink{
 					From: someActionNode,
 					To:   anotherActionNode,
 				}),

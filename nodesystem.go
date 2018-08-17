@@ -56,6 +56,7 @@ func (s *NodeSystem) Validate() (bool, []error) {
 	errors = append(errors, checkForNotNeededBranchInNodeBranchLink(s)...)
 	errors = append(errors, checkForUnknownBranchInNodeBranchLink(s)...)
 	errors = append(errors, checkForUndeclaredNodeInNodeBranchLink(s)...)
+	errors = append(errors, checkForMultipleInstanceOfSameNode(s)...)
 
 	s.validity = len(errors) < 1
 	if s.IsValidated() {
@@ -89,7 +90,7 @@ func checkForOrphanDecisionNode(s *NodeSystem) []error {
 				}
 			}
 			if noLink {
-				errors = append(errors, fmt.Errorf("orphan decision node: %+v", node))
+				errors = append(errors, fmt.Errorf("can't have orphan decision node: %+v", node))
 			}
 		}
 	}
@@ -100,7 +101,7 @@ func checkForMissingFromInNodeBranchLink(s *NodeSystem) []error {
 	errors := make([]error, 0)
 	for _, link := range s.links {
 		if link.From == nil {
-			errors = append(errors, fmt.Errorf("missing 'From' attribute: %+v", link))
+			errors = append(errors, fmt.Errorf("can't have missing 'From' attribute: %+v", link))
 		}
 	}
 	return errors
@@ -110,7 +111,7 @@ func checkForMissingToInNodeBranchLink(s *NodeSystem) []error {
 	errors := make([]error, 0)
 	for _, link := range s.links {
 		if link.To == nil {
-			errors = append(errors, fmt.Errorf("missing 'To' attribute: %+v", link))
+			errors = append(errors, fmt.Errorf("can't have missing 'To' attribute: %+v", link))
 		}
 	}
 	return errors
@@ -120,7 +121,7 @@ func checkForMissingBranchInNodeBranchLink(s *NodeSystem) []error {
 	errors := make([]error, 0)
 	for _, link := range s.links {
 		if link.From != nil && link.Branch == nil && len(link.From.AvailableBranches()) > 0 {
-			errors = append(errors, fmt.Errorf("missing branch from %+v, available branches %+v", link.From, link.From.AvailableBranches()))
+			errors = append(errors, fmt.Errorf("can't have missing branch from %+v, available branches %+v", link.From, link.From.AvailableBranches()))
 		}
 	}
 	return errors
@@ -137,7 +138,7 @@ func checkForUnknownBranchInNodeBranchLink(s *NodeSystem) []error {
 				}
 			}
 			if unknonwBranch {
-				errors = append(errors, fmt.Errorf("unknown branch: '%v', from %+v, available branches %+v", *link.Branch, link.From, link.From.AvailableBranches()))
+				errors = append(errors, fmt.Errorf("can't have unknown branch: '%v', from %+v, available branches %+v", *link.Branch, link.From, link.From.AvailableBranches()))
 			}
 		}
 	}
@@ -148,7 +149,7 @@ func checkForNotNeededBranchInNodeBranchLink(s *NodeSystem) []error {
 	errors := make([]error, 0)
 	for _, link := range s.links {
 		if link.From != nil && link.Branch != nil && link.From.AvailableBranches() == nil {
-			errors = append(errors, fmt.Errorf("not needed branch: '%v', from %+v", *link.Branch, link.From))
+			errors = append(errors, fmt.Errorf("can't have not needed branch: '%v', from %+v", *link.Branch, link.From))
 		}
 	}
 	return errors
@@ -158,10 +159,28 @@ func checkForUndeclaredNodeInNodeBranchLink(s *NodeSystem) []error {
 	errors := make([]error, 0)
 	for _, link := range s.links {
 		if link.From != nil && !s.haveNode(link.From) {
-			errors = append(errors, fmt.Errorf("undeclared node '%+v' as 'From' in branch link %+v", link.From, link))
+			errors = append(errors, fmt.Errorf("can't have undeclared node '%+v' as 'From' in branch link %+v", link.From, link))
 		}
 		if link.To != nil && !s.haveNode(link.To) {
-			errors = append(errors, fmt.Errorf("undeclared node '%+v' as 'To' in branch link %+v", link.To, link))
+			errors = append(errors, fmt.Errorf("can't have undeclared node '%+v' as 'To' in branch link %+v", link.To, link))
+		}
+	}
+	return errors
+}
+
+func checkForMultipleInstanceOfSameNode(s *NodeSystem) []error {
+	errors := make([]error, 0)
+	count := make(map[Node]int)
+	for i := 0; i < len(s.nodes); i++ {
+		for j := 0; j < len(s.nodes); j++ {
+			if i != j && s.nodes[i] == s.nodes[j] {
+				count[s.nodes[i]]++
+			}
+		}
+	}
+	for n, c := range count {
+		if c > 1 {
+			errors = append(errors, fmt.Errorf("can't have multiple instances (%v) of the same node: %+v", c, n))
 		}
 	}
 	return errors
