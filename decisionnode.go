@@ -1,5 +1,7 @@
 package flow
 
+import "reflect"
+
 type DecisionNode struct {
 	decisionFunc func(*Context) (bool, error)
 }
@@ -23,4 +25,8 @@ func NewDecisionNode(decisionFunc func(*Context) (bool, error)) *DecisionNode {
 	return &DecisionNode{
 		decisionFunc: decisionFunc,
 	}
+}
+
+func isDecisionNode(n Node) bool {
+	return "*flow.DecisionNode" == reflect.TypeOf(n).String()
 }
