@@ -43,6 +43,6 @@ func Test_ActionNode_AvailableBranches(t *testing.T) {
 	branches := node.AvailableBranches()
 
 	if branches != nil {
-		t.Errorf("got: %#v, want: nil", branches)
+		t.Errorf("got: %+v, want: nil", branches)
 	}
 }

@@ -21,11 +21,11 @@ func RunTestOnNode(t *testing.T, testCases []NodeTestCase) {
 			testState := testCase.givenNode.Run(testContext)
 
 			if !cmp.Equal(testState, testCase.expectedRunState, runStateEqualOpts) {
-				t.Errorf("context data - got: %#v, want: %#v", testState, testCase.expectedRunState)
+				t.Errorf("context data - got: %+v, want: %+v", testState, testCase.expectedRunState)
 			}
 
 			if !cmp.Equal(testContext.data, testCase.expectedContextData) {
-				t.Errorf("context data - got: %#v, want: %#v", testContext.data, testCase.expectedContextData)
+				t.Errorf("context data - got: %+v, want: %+v", testContext.data, testCase.expectedContextData)
 			}
 		})
 	}

@@ -12,7 +12,7 @@ func Test_NewContext(t *testing.T) {
 	emptyData := contextData{}
 
 	if !cmp.Equal(c.data, emptyData) {
-		t.Errorf("context data - got: %#v, want: %#v", c.data, emptyData)
+		t.Errorf("context data - got: %+v, want: %+v", c.data, emptyData)
 	}
 }
 
@@ -47,14 +47,14 @@ func Test_Context_Read(t *testing.T) {
 			value, err := c.Read(testCase.givenKey)
 
 			if value != testCase.expectedValue {
-				t.Errorf("value - got: %#v, want: %#v", value, testCase.expectedValue)
+				t.Errorf("value - got: %+v, want: %+v", value, testCase.expectedValue)
 			}
 			if err != nil && testCase.expectedError != nil {
 				if err.Error() != testCase.expectedError.Error() {
-					t.Errorf("error - got: %#v, want: %#v", err, testCase.expectedError)
+					t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 				}
 			} else if err != nil || testCase.expectedError != nil {
-				t.Errorf("error - got: %#v, want: %#v", err, testCase.expectedError)
+				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 			}
 		})
 	}

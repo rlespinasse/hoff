@@ -131,21 +131,21 @@ func Test_RunState_Call(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			runState := testCase.givenRunStateCall()
 			if runState.value != testCase.expectedState {
-				t.Errorf("state - got: %#v, want: %#v", runState.value, testCase.expectedState)
+				t.Errorf("state - got: %+v, want: %+v", runState.value, testCase.expectedState)
 			}
 			if runState.branch != nil && testCase.expectedNodeBranch != nil {
 				if *runState.branch != *testCase.expectedNodeBranch {
-					t.Errorf("branch - got: %#v, want: %#v", runState.branch, testCase.expectedNodeBranch)
+					t.Errorf("branch - got: %+v, want: %+v", runState.branch, testCase.expectedNodeBranch)
 				}
 			} else if runState.branch != nil || testCase.expectedNodeBranch != nil {
-				t.Errorf("branch - got: %#v, want: %#v", runState.branch, testCase.expectedNodeBranch)
+				t.Errorf("branch - got: %+v, want: %+v", runState.branch, testCase.expectedNodeBranch)
 			}
 			if runState.err != nil && testCase.expectedError != nil {
 				if runState.err.Error() != testCase.expectedError.Error() {
-					t.Errorf("err - got: %#v, want: %#v", runState.err, testCase.expectedError)
+					t.Errorf("err - got: %+v, want: %+v", runState.err, testCase.expectedError)
 				}
 			} else if runState.err != nil || testCase.expectedError != nil {
-				t.Errorf("err - got: %#v, want: %#v", runState.err, testCase.expectedError)
+				t.Errorf("err - got: %+v, want: %+v", runState.err, testCase.expectedError)
 			}
 		})
 	}
