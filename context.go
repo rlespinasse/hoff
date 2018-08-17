@@ -7,7 +7,6 @@ type Context struct {
 }
 
 type contextData map[string]interface{}
-type DataValue interface{}
 
 func (c *Context) Store(key string, value interface{}) {
 	c.data[key] = value
