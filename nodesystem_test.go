@@ -318,6 +318,71 @@ func Test_NodeSystem(t *testing.T) {
 				}),
 			},
 		},
+		{
+			name: "Can add a branch link after a failed validation",
+			givenNodes: []Node{
+				alwaysTrueDecisionNode,
+				someActionNode,
+			},
+			givenBranchLinksAfterValidation: []NodeBranchLink{
+				NodeBranchLink{
+					From:   alwaysTrueDecisionNode,
+					To:     someActionNode,
+					Branch: ptrOfString("true"),
+				},
+			},
+			expectedNodeSystem: &NodeSystem{
+				validity: true,
+				nodes: []Node{
+					alwaysTrueDecisionNode,
+					someActionNode,
+				},
+				links: []NodeBranchLink{
+					NodeBranchLink{
+						From:   alwaysTrueDecisionNode,
+						To:     someActionNode,
+						Branch: ptrOfString("true"),
+					},
+				},
+			},
+			expectedErrors: []error{
+				fmt.Errorf("orphan decision node: %+v", alwaysTrueDecisionNode),
+			},
+		},
+		{
+			name: "Can add a node after a failed validation",
+			givenNodes: []Node{
+				someActionNode,
+			},
+			givenBranchLinks: []NodeBranchLink{
+				NodeBranchLink{
+					From: someActionNode,
+					To:   anotherActionNode,
+				},
+			},
+			givenNodesAfterValidation: []Node{
+				anotherActionNode,
+			},
+			expectedNodeSystem: &NodeSystem{
+				validity: true,
+				nodes: []Node{
+					someActionNode,
+					anotherActionNode,
+				},
+				links: []NodeBranchLink{
+					NodeBranchLink{
+						From: someActionNode,
+						To:   anotherActionNode,
+					},
+				},
+			},
+			expectedErrors: []error{
+				fmt.Errorf("undeclared node '%+v' as 'To' in branch link %+v", anotherActionNode, NodeBranchLink{
+					From: someActionNode,
+					To:   anotherActionNode,
+				}),
+			},
+		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
