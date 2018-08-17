@@ -10,7 +10,7 @@ func (n *SomeNode) Run(c *Context) RunState {
 	c.Store("message", "SomeNode is passing")
 	return RunStatePass()
 }
-func (n *SomeNode) AvailableBranches() []NodeBranch {
+func (n *SomeNode) AvailableBranches() []string {
 	return nil
 }
 

@@ -3,8 +3,6 @@ package flow
 import (
 	"errors"
 	"testing"
-
-	"github.com/google/go-cmp/cmp"
 )
 
 func Test_State_String(t *testing.T) {
@@ -44,41 +42,12 @@ func Test_State_String(t *testing.T) {
 	}
 }
 
-func Test_AvailableBranches(t *testing.T) {
-	testCases := []struct {
-		name                 string
-		givenBranches        []string
-		expectedNodeBranches []NodeBranch
-	}{
-		{
-			"With branches",
-			[]string{"branch"},
-			[]NodeBranch{
-				newNodeBranch("branch"),
-			},
-		},
-		{
-			"Without branches",
-			[]string{},
-			[]NodeBranch{},
-		},
-	}
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			branches := AvailablesBranches(testCase.givenBranches...)
-			if !cmp.Equal(branches, testCase.expectedNodeBranches) {
-				t.Errorf("got: %#v, want: %#v", branches, testCase.expectedNodeBranches)
-			}
-		})
-	}
-}
-
 func Test_RunState_Call(t *testing.T) {
 	testCases := []struct {
 		name               string
 		givenRunStateCall  func() RunState
 		expectedState      State
-		expectedNodeBranch NodeBranch
+		expectedNodeBranch *string
 		expectedError      error
 	}{
 		{
@@ -96,7 +65,7 @@ func Test_RunState_Call(t *testing.T) {
 				return RunStateBranchPass("branch")
 			},
 			pass,
-			newNodeBranch("branch"),
+			ptrOfString("branch"),
 			nil,
 		},
 		{
@@ -114,7 +83,7 @@ func Test_RunState_Call(t *testing.T) {
 				return RunStateBranchStop("branch")
 			},
 			stop,
-			newNodeBranch("branch"),
+			ptrOfString("branch"),
 			nil,
 		},
 		{

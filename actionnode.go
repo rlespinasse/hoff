@@ -15,7 +15,7 @@ func (n *ActionNode) Run(c *Context) RunState {
 	return RunStateStop()
 }
 
-func (n *ActionNode) AvailableBranches() []NodeBranch {
+func (n *ActionNode) AvailableBranches() []string {
 	return nil
 }
 

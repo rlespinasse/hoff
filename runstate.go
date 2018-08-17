@@ -20,23 +20,9 @@ func (state State) String() string {
 	return names[state-1]
 }
 
-type NodeBranch *string
-
-func newNodeBranch(branch string) NodeBranch {
-	return &branch
-}
-
-func AvailablesBranches(values ...string) []NodeBranch {
-	branches := []NodeBranch{}
-	for _, value := range values {
-		branches = append(branches, &value)
-	}
-	return branches
-}
-
 type RunState struct {
 	value  State
-	branch NodeBranch
+	branch *string
 	err    error
 }
 

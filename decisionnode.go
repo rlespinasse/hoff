@@ -17,8 +17,8 @@ func (n *DecisionNode) Run(c *Context) RunState {
 	return RunStateBranchPass("false")
 }
 
-func (n *DecisionNode) AvailableBranches() []NodeBranch {
-	return AvailablesBranches("true", "false")
+func (n *DecisionNode) AvailableBranches() []string {
+	return []string{"true", "false"}
 }
 
 func NewDecisionNode(decisionFunc func(*Context) (bool, error)) *DecisionNode {

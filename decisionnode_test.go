@@ -47,7 +47,7 @@ func Test_DecisionNode_Run(t *testing.T) {
 func Test_DecisionNode_AvailableBranches(t *testing.T) {
 	node := NewDecisionNode(nil)
 	branches := node.AvailableBranches()
-	expectedBranches := AvailablesBranches("true", "false")
+	expectedBranches := []string{"true", "false"}
 
 	if !cmp.Equal(branches, expectedBranches) {
 		t.Errorf("got: %+v, want: %+v", branches, expectedBranches)
