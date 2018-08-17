@@ -1,6 +1,7 @@
 package flow
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/google/go-cmp/cmp"
@@ -30,12 +31,20 @@ func (x *NodeSystem) Equal(y *NodeSystem) bool {
 	return x.validity == y.validity && cmp.Equal(x.nodes, y.nodes, nodeEqualOpts) && cmp.Equal(x.links, y.links, nodeEqualOpts)
 }
 
-func (s *NodeSystem) AddNode(n Node) {
+func (s *NodeSystem) AddNode(n Node) (bool, error) {
+	if s.validity {
+		return false, errors.New("can't add node, node system is freeze due to successful validation")
+	}
 	s.nodes = append(s.nodes, n)
+	return true, nil
 }
 
-func (s *NodeSystem) AddBranchLink(n NodeBranchLink) {
+func (s *NodeSystem) AddBranchLink(n NodeBranchLink) (bool, error) {
+	if s.validity {
+		return false, errors.New("can't add branch link, node system is freeze due to successful validation")
+	}
 	s.links = append(s.links, n)
+	return true, nil
 }
 
 func (s *NodeSystem) Validate() (bool, []error) {
