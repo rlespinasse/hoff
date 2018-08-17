@@ -32,7 +32,7 @@ func (x *NodeSystem) Equal(y *NodeSystem) bool {
 }
 
 func (s *NodeSystem) AddNode(n Node) (bool, error) {
-	if s.validity {
+	if s.IsValidated() {
 		return false, errors.New("can't add node, node system is freeze due to successful validation")
 	}
 	s.nodes = append(s.nodes, n)
@@ -40,7 +40,7 @@ func (s *NodeSystem) AddNode(n Node) (bool, error) {
 }
 
 func (s *NodeSystem) AddBranchLink(n NodeBranchLink) (bool, error) {
-	if s.validity {
+	if s.IsValidated() {
 		return false, errors.New("can't add branch link, node system is freeze due to successful validation")
 	}
 	s.links = append(s.links, n)
@@ -53,10 +53,14 @@ func (s *NodeSystem) Validate() (bool, []error) {
 	errors = append(errors, validateNodeBranchLink(s)...)
 
 	s.validity = len(errors) < 1
-	if s.validity {
+	if s.IsValidated() {
 		return true, nil
 	}
 	return false, errors
+}
+
+func (s *NodeSystem) IsValidated() bool {
+	return s.validity
 }
 
 func checkForOrphanDecisionNode(s *NodeSystem) []error {
