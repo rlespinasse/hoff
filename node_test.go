@@ -6,9 +6,9 @@ import (
 
 type SomeNode struct{}
 
-func (n *SomeNode) Run(c *Context) RunState {
+func (n *SomeNode) Compute(c *Context) ComputeState {
 	c.Store("message", "SomeNode is passing")
-	return RunStatePass()
+	return ComputeStatePass()
 }
 func (n *SomeNode) AvailableBranches() []string {
 	return nil
@@ -20,11 +20,11 @@ func Test_SomeNode(t *testing.T) {
 			"SomeNode is passing",
 			contextData{},
 			&SomeNode{},
-			RunStatePass(),
+			ComputeStatePass(),
 			contextData{
 				"message": "SomeNode is passing",
 			},
 		},
 	}
-	RunTestOnNode(t, tc)
+	ComputeTestOnNode(t, tc)
 }

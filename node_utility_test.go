@@ -7,21 +7,21 @@ import (
 )
 
 type NodeTestCase struct {
-	name                string
-	givenContextData    contextData
-	givenNode           Node
-	expectedRunState    RunState
-	expectedContextData contextData
+	name                 string
+	givenContextData     contextData
+	givenNode            Node
+	expectedComputeState ComputeState
+	expectedContextData  contextData
 }
 
-func RunTestOnNode(t *testing.T, testCases []NodeTestCase) {
+func ComputeTestOnNode(t *testing.T, testCases []NodeTestCase) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			testContext := setupContext(testCase.givenContextData)
-			testState := testCase.givenNode.Run(testContext)
+			testState := testCase.givenNode.Compute(testContext)
 
-			if !cmp.Equal(testState, testCase.expectedRunState, runStateEqualOpts) {
-				t.Errorf("context data - got: %+v, want: %+v", testState, testCase.expectedRunState)
+			if !cmp.Equal(testState, testCase.expectedComputeState, ComputeStateEqualOpts) {
+				t.Errorf("context data - got: %+v, want: %+v", testState, testCase.expectedComputeState)
 			}
 
 			if !cmp.Equal(testContext.data, testCase.expectedContextData) {

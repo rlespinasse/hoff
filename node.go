@@ -3,7 +3,7 @@ package flow
 import "github.com/google/go-cmp/cmp"
 
 type Node interface {
-	Run(c *Context) RunState
+	Compute(c *Context) ComputeState
 	AvailableBranches() []string
 }
 

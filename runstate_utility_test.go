@@ -8,7 +8,7 @@ func ptrOfString(value string) *string {
 	return &value
 }
 
-var runStateEqualOpts = cmp.Comparer(func(x, y RunState) bool {
+var ComputeStateEqualOpts = cmp.Comparer(func(x, y ComputeState) bool {
 	if x.value != y.value {
 		return false
 	}

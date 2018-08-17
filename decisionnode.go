@@ -6,15 +6,15 @@ type DecisionNode struct {
 	decisionFunc func(*Context) (bool, error)
 }
 
-func (n *DecisionNode) Run(c *Context) RunState {
+func (n *DecisionNode) Compute(c *Context) ComputeState {
 	decision, err := n.decisionFunc(c)
 	if err != nil {
-		return RunStateFail(err)
+		return ComputeStateFail(err)
 	}
 	if decision {
-		return RunStateBranchPass("true")
+		return ComputeStateBranchPass("true")
 	}
-	return RunStateBranchPass("false")
+	return ComputeStateBranchPass("false")
 }
 
 func (n *DecisionNode) AvailableBranches() []string {

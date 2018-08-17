@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func Test_DecisionNode_Run(t *testing.T) {
+func Test_DecisionNode_Compute(t *testing.T) {
 	tc := []NodeTestCase{
 		{
 			"Pass True",
@@ -17,7 +17,7 @@ func Test_DecisionNode_Run(t *testing.T) {
 			NewDecisionNode(func(*Context) (bool, error) {
 				return true, nil
 			}),
-			RunStateBranchPass("true"),
+			ComputeStateBranchPass("true"),
 			contextData{
 				"key": "value",
 			},
@@ -28,7 +28,7 @@ func Test_DecisionNode_Run(t *testing.T) {
 			NewDecisionNode(func(*Context) (bool, error) {
 				return false, nil
 			}),
-			RunStateBranchPass("false"),
+			ComputeStateBranchPass("false"),
 			contextData{},
 		},
 		{
@@ -37,11 +37,11 @@ func Test_DecisionNode_Run(t *testing.T) {
 			NewDecisionNode(func(*Context) (bool, error) {
 				return false, errors.New("error")
 			}),
-			RunStateFail(errors.New("error")),
+			ComputeStateFail(errors.New("error")),
 			contextData{},
 		},
 	}
-	RunTestOnNode(t, tc)
+	ComputeTestOnNode(t, tc)
 }
 
 func Test_DecisionNode_AvailableBranches(t *testing.T) {

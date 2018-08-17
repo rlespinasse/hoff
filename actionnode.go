@@ -4,15 +4,15 @@ type ActionNode struct {
 	actionFunc func(*Context) (bool, error)
 }
 
-func (n *ActionNode) Run(c *Context) RunState {
+func (n *ActionNode) Compute(c *Context) ComputeState {
 	pass, err := n.actionFunc(c)
 	if err != nil {
-		return RunStateFail(err)
+		return ComputeStateFail(err)
 	}
 	if pass {
-		return RunStatePass()
+		return ComputeStatePass()
 	}
-	return RunStateStop()
+	return ComputeStateStop()
 }
 
 func (n *ActionNode) AvailableBranches() []string {

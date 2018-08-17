@@ -42,18 +42,18 @@ func Test_State_String(t *testing.T) {
 	}
 }
 
-func Test_RunState_Call(t *testing.T) {
+func Test_ComputeState_Call(t *testing.T) {
 	testCases := []struct {
-		name               string
-		givenRunStateCall  func() RunState
-		expectedState      State
-		expectedNodeBranch *string
-		expectedError      error
+		name                  string
+		givenComputeStateCall func() ComputeState
+		expectedState         State
+		expectedNodeBranch    *string
+		expectedError         error
 	}{
 		{
 			"Pass",
-			func() RunState {
-				return RunStatePass()
+			func() ComputeState {
+				return ComputeStatePass()
 			},
 			pass,
 			nil,
@@ -61,8 +61,8 @@ func Test_RunState_Call(t *testing.T) {
 		},
 		{
 			"BranchPass",
-			func() RunState {
-				return RunStateBranchPass("branch")
+			func() ComputeState {
+				return ComputeStateBranchPass("branch")
 			},
 			pass,
 			ptrOfString("branch"),
@@ -70,8 +70,8 @@ func Test_RunState_Call(t *testing.T) {
 		},
 		{
 			"Stop",
-			func() RunState {
-				return RunStateStop()
+			func() ComputeState {
+				return ComputeStateStop()
 			},
 			stop,
 			nil,
@@ -79,8 +79,8 @@ func Test_RunState_Call(t *testing.T) {
 		},
 		{
 			"BranchStop",
-			func() RunState {
-				return RunStateBranchStop("branch")
+			func() ComputeState {
+				return ComputeStateBranchStop("branch")
 			},
 			stop,
 			ptrOfString("branch"),
@@ -88,8 +88,8 @@ func Test_RunState_Call(t *testing.T) {
 		},
 		{
 			"Fail",
-			func() RunState {
-				return RunStateFail(errors.New("error"))
+			func() ComputeState {
+				return ComputeStateFail(errors.New("error"))
 			},
 			fail,
 			nil,
@@ -98,23 +98,23 @@ func Test_RunState_Call(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			runState := testCase.givenRunStateCall()
-			if runState.value != testCase.expectedState {
-				t.Errorf("state - got: %+v, want: %+v", runState.value, testCase.expectedState)
+			ComputeState := testCase.givenComputeStateCall()
+			if ComputeState.value != testCase.expectedState {
+				t.Errorf("state - got: %+v, want: %+v", ComputeState.value, testCase.expectedState)
 			}
-			if runState.branch != nil && testCase.expectedNodeBranch != nil {
-				if *runState.branch != *testCase.expectedNodeBranch {
-					t.Errorf("branch - got: %+v, want: %+v", runState.branch, testCase.expectedNodeBranch)
+			if ComputeState.branch != nil && testCase.expectedNodeBranch != nil {
+				if *ComputeState.branch != *testCase.expectedNodeBranch {
+					t.Errorf("branch - got: %+v, want: %+v", ComputeState.branch, testCase.expectedNodeBranch)
 				}
-			} else if runState.branch != nil || testCase.expectedNodeBranch != nil {
-				t.Errorf("branch - got: %+v, want: %+v", runState.branch, testCase.expectedNodeBranch)
+			} else if ComputeState.branch != nil || testCase.expectedNodeBranch != nil {
+				t.Errorf("branch - got: %+v, want: %+v", ComputeState.branch, testCase.expectedNodeBranch)
 			}
-			if runState.err != nil && testCase.expectedError != nil {
-				if runState.err.Error() != testCase.expectedError.Error() {
-					t.Errorf("err - got: %+v, want: %+v", runState.err, testCase.expectedError)
+			if ComputeState.err != nil && testCase.expectedError != nil {
+				if ComputeState.err.Error() != testCase.expectedError.Error() {
+					t.Errorf("err - got: %+v, want: %+v", ComputeState.err, testCase.expectedError)
 				}
-			} else if runState.err != nil || testCase.expectedError != nil {
-				t.Errorf("err - got: %+v, want: %+v", runState.err, testCase.expectedError)
+			} else if ComputeState.err != nil || testCase.expectedError != nil {
+				t.Errorf("err - got: %+v, want: %+v", ComputeState.err, testCase.expectedError)
 			}
 		})
 	}

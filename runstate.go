@@ -20,40 +20,40 @@ func (state State) String() string {
 	return names[state-1]
 }
 
-type RunState struct {
+type ComputeState struct {
 	value  State
 	branch *string
 	err    error
 }
 
-func RunStatePass() RunState {
-	return RunState{
+func ComputeStatePass() ComputeState {
+	return ComputeState{
 		value: pass,
 	}
 }
 
-func RunStateBranchPass(branch string) RunState {
-	return RunState{
+func ComputeStateBranchPass(branch string) ComputeState {
+	return ComputeState{
 		value:  pass,
 		branch: &branch,
 	}
 }
 
-func RunStateStop() RunState {
-	return RunState{
+func ComputeStateStop() ComputeState {
+	return ComputeState{
 		value: stop,
 	}
 }
 
-func RunStateBranchStop(branch string) RunState {
-	return RunState{
+func ComputeStateBranchStop(branch string) ComputeState {
+	return ComputeState{
 		value:  stop,
 		branch: &branch,
 	}
 }
 
-func RunStateFail(err error) RunState {
-	return RunState{
+func ComputeStateFail(err error) ComputeState {
+	return ComputeState{
 		value: fail,
 		err:   err,
 	}

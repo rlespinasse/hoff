@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Test_ActionNode_Run(t *testing.T) {
+func Test_ActionNode_Compute(t *testing.T) {
 	tc := []NodeTestCase{
 		{
 			"Pass",
@@ -13,7 +13,7 @@ func Test_ActionNode_Run(t *testing.T) {
 			NewActionNode(func(*Context) (bool, error) {
 				return true, nil
 			}),
-			RunStatePass(),
+			ComputeStatePass(),
 			contextData{},
 		},
 		{
@@ -22,7 +22,7 @@ func Test_ActionNode_Run(t *testing.T) {
 			NewActionNode(func(*Context) (bool, error) {
 				return false, nil
 			}),
-			RunStateStop(),
+			ComputeStateStop(),
 			contextData{},
 		},
 		{
@@ -31,11 +31,11 @@ func Test_ActionNode_Run(t *testing.T) {
 			NewActionNode(func(*Context) (bool, error) {
 				return false, errors.New("error")
 			}),
-			RunStateFail(errors.New("error")),
+			ComputeStateFail(errors.New("error")),
 			contextData{},
 		},
 	}
-	RunTestOnNode(t, tc)
+	ComputeTestOnNode(t, tc)
 }
 
 func Test_ActionNode_AvailableBranches(t *testing.T) {
