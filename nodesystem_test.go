@@ -22,26 +22,18 @@ func Test_NodeSystem(t *testing.T) {
 		expectedErrors                  []error
 	}{
 		{
-			name:                            "No nodes",
-			givenNodes:                      []Node{},
-			givenBranchLinks:                []NodeBranchLink{},
-			givenNodesAfterValidation:       []Node{},
-			givenBranchLinksAfterValidation: []NodeBranchLink{},
+			name: "Can have no nodes",
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
 				nodes:    []Node{},
 				links:    []NodeBranchLink{},
 			},
-			expectedErrors: nil,
 		},
 		{
-			name: "One action node",
+			name: "Can have one action node",
 			givenNodes: []Node{
 				someActionNode,
 			},
-			givenBranchLinks:                []NodeBranchLink{},
-			givenNodesAfterValidation:       []Node{},
-			givenBranchLinksAfterValidation: []NodeBranchLink{},
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
 				nodes: []Node{
@@ -49,16 +41,12 @@ func Test_NodeSystem(t *testing.T) {
 				},
 				links: []NodeBranchLink{},
 			},
-			expectedErrors: nil,
 		},
 		{
-			name: "One decision node",
+			name: "Can't have decision node without link to another node",
 			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 			},
-			givenBranchLinks:                []NodeBranchLink{},
-			givenNodesAfterValidation:       []Node{},
-			givenBranchLinksAfterValidation: []NodeBranchLink{},
 			expectedNodeSystem: &NodeSystem{
 				validity: false,
 				nodes: []Node{
@@ -71,7 +59,7 @@ func Test_NodeSystem(t *testing.T) {
 			},
 		},
 		{
-			name: "Decision node and action node",
+			name: "Can have a link between decision node and action node",
 			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
@@ -83,8 +71,6 @@ func Test_NodeSystem(t *testing.T) {
 					Branch: ptrOfString("true"),
 				},
 			},
-			givenNodesAfterValidation:       []Node{},
-			givenBranchLinksAfterValidation: []NodeBranchLink{},
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
 				nodes: []Node{
@@ -99,10 +85,9 @@ func Test_NodeSystem(t *testing.T) {
 					},
 				},
 			},
-			expectedErrors: nil,
 		},
 		{
-			name: "Two action nodes link together",
+			name: "Can have 2 action nodes link together",
 			givenNodes: []Node{
 				someActionNode,
 				anotherActionNode,
@@ -113,8 +98,6 @@ func Test_NodeSystem(t *testing.T) {
 					To:   anotherActionNode,
 				},
 			},
-			givenNodesAfterValidation:       []Node{},
-			givenBranchLinksAfterValidation: []NodeBranchLink{},
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
 				nodes: []Node{
@@ -128,16 +111,12 @@ func Test_NodeSystem(t *testing.T) {
 					},
 				},
 			},
-			expectedErrors: nil,
 		},
 		{
-			name:       "Can't declare empty link",
-			givenNodes: []Node{},
+			name: "Can't add empty link",
 			givenBranchLinks: []NodeBranchLink{
 				NodeBranchLink{},
 			},
-			givenNodesAfterValidation:       []Node{},
-			givenBranchLinksAfterValidation: []NodeBranchLink{},
 			expectedNodeSystem: &NodeSystem{
 				validity: false,
 				nodes:    []Node{},
@@ -151,7 +130,7 @@ func Test_NodeSystem(t *testing.T) {
 			},
 		},
 		{
-			name: "Link with unknown branch",
+			name: "Can't have a link with unknown branch",
 			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
@@ -163,8 +142,6 @@ func Test_NodeSystem(t *testing.T) {
 					Branch: ptrOfString("some_branch"),
 				},
 			},
-			givenNodesAfterValidation:       []Node{},
-			givenBranchLinksAfterValidation: []NodeBranchLink{},
 			expectedNodeSystem: &NodeSystem{
 				validity: false,
 				nodes: []Node{
@@ -184,7 +161,7 @@ func Test_NodeSystem(t *testing.T) {
 			},
 		},
 		{
-			name: "Link with branch who is not needed",
+			name: "Can't hava a link with branch who is not needed",
 			givenNodes: []Node{
 				someActionNode,
 				anotherActionNode,
@@ -196,8 +173,6 @@ func Test_NodeSystem(t *testing.T) {
 					Branch: ptrOfString("not_needed_branch"),
 				},
 			},
-			givenNodesAfterValidation:       []Node{},
-			givenBranchLinksAfterValidation: []NodeBranchLink{},
 			expectedNodeSystem: &NodeSystem{
 				validity: false,
 				nodes: []Node{
@@ -217,7 +192,7 @@ func Test_NodeSystem(t *testing.T) {
 			},
 		},
 		{
-			name: "Link with missing branch",
+			name: "Can't have a link with a missing branch",
 			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
@@ -228,8 +203,6 @@ func Test_NodeSystem(t *testing.T) {
 					To:   someActionNode,
 				},
 			},
-			givenNodesAfterValidation:       []Node{},
-			givenBranchLinksAfterValidation: []NodeBranchLink{},
 			expectedNodeSystem: &NodeSystem{
 				validity: false,
 				nodes: []Node{
@@ -248,13 +221,10 @@ func Test_NodeSystem(t *testing.T) {
 			},
 		},
 		{
-			name:             "Must not add node after validation",
-			givenNodes:       []Node{},
-			givenBranchLinks: []NodeBranchLink{},
+			name: "Can't add any node after successful validation",
 			givenNodesAfterValidation: []Node{
 				someActionNode,
 			},
-			givenBranchLinksAfterValidation: []NodeBranchLink{},
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
 				nodes:    []Node{},
@@ -265,13 +235,11 @@ func Test_NodeSystem(t *testing.T) {
 			},
 		},
 		{
-			name: "Must not add branch link after validation",
+			name: "Can't add any branch link after successful validation",
 			givenNodes: []Node{
 				someActionNode,
 				anotherActionNode,
 			},
-			givenBranchLinks:          []NodeBranchLink{},
-			givenNodesAfterValidation: []Node{},
 			givenBranchLinksAfterValidation: []NodeBranchLink{
 				NodeBranchLink{
 					From: someActionNode,
@@ -291,7 +259,7 @@ func Test_NodeSystem(t *testing.T) {
 			},
 		},
 		{
-			name: "Link to undeclared node",
+			name: "Can't have a link with an undeclared node as 'To'",
 			givenNodes: []Node{
 				someActionNode,
 			},
@@ -301,8 +269,6 @@ func Test_NodeSystem(t *testing.T) {
 					To:   anotherActionNode,
 				},
 			},
-			givenNodesAfterValidation:       []Node{},
-			givenBranchLinksAfterValidation: []NodeBranchLink{},
 			expectedNodeSystem: &NodeSystem{
 				validity: false,
 				nodes: []Node{
@@ -323,7 +289,7 @@ func Test_NodeSystem(t *testing.T) {
 			},
 		},
 		{
-			name: "Link from undeclared node",
+			name: "Can't have a link with an undeclared node as 'From'",
 			givenNodes: []Node{
 				anotherActionNode,
 			},
@@ -333,8 +299,6 @@ func Test_NodeSystem(t *testing.T) {
 					To:   anotherActionNode,
 				},
 			},
-			givenNodesAfterValidation:       []Node{},
-			givenBranchLinksAfterValidation: []NodeBranchLink{},
 			expectedNodeSystem: &NodeSystem{
 				validity: false,
 				nodes: []Node{
@@ -385,6 +349,10 @@ func Test_NodeSystem(t *testing.T) {
 				if err != nil {
 					errs = append(errs, err)
 				}
+			}
+			if testCase.givenNodesAfterValidation != nil || testCase.givenBranchLinksAfterValidation != nil {
+				validity, validityErrs = system.Validate()
+				errs = append(errs, validityErrs...)
 			}
 
 			if validity != testCase.expectedNodeSystem.validity {

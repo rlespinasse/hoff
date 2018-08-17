@@ -14,17 +14,17 @@ type NodeTestCase struct {
 	expectedContextData  contextData
 }
 
-func ComputeTestOnNode(t *testing.T, testCases []NodeTestCase) {
+func RunTestOnNode(t *testing.T, testCases []NodeTestCase) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			testContext := setupContext(testCase.givenContextData)
 			testState := testCase.givenNode.Compute(testContext)
 
 			if !cmp.Equal(testState, testCase.expectedComputeState, ComputeStateEqualOpts) {
-				t.Errorf("context data - got: %+v, want: %+v", testState, testCase.expectedComputeState)
+				t.Errorf("context state - got: %+v, want: %+v", testState, testCase.expectedComputeState)
 			}
 
-			if !cmp.Equal(testContext.data, testCase.expectedContextData) {
+			if testCase.expectedContextData != nil && !cmp.Equal(testContext.data, testCase.expectedContextData) {
 				t.Errorf("context data - got: %+v, want: %+v", testContext.data, testCase.expectedContextData)
 			}
 		})

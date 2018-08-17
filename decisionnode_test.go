@@ -10,28 +10,24 @@ import (
 func Test_DecisionNode_Compute(t *testing.T) {
 	tc := []NodeTestCase{
 		{
-			name:                 "Pass True",
+			name:                 "Should Pass on Branch 'true'",
 			givenContextData:     contextData{"key": "value"},
 			givenNode:            NewDecisionNode(func(*Context) (bool, error) { return true, nil }),
 			expectedComputeState: ComputeStateBranchPass("true"),
 			expectedContextData:  contextData{"key": "value"},
 		},
 		{
-			name:                 "Pass False",
-			givenContextData:     contextData{},
+			name:                 "Should Pass on Branch 'false'",
 			givenNode:            NewDecisionNode(func(*Context) (bool, error) { return false, nil }),
 			expectedComputeState: ComputeStateBranchPass("false"),
-			expectedContextData:  contextData{},
 		},
 		{
-			name:                 "Fail",
-			givenContextData:     contextData{},
+			name:                 "Should Fail",
 			givenNode:            NewDecisionNode(func(*Context) (bool, error) { return false, errors.New("error") }),
 			expectedComputeState: ComputeStateFail(errors.New("error")),
-			expectedContextData:  contextData{},
 		},
 	}
-	ComputeTestOnNode(t, tc)
+	RunTestOnNode(t, tc)
 }
 
 func Test_DecisionNode_AvailableBranches(t *testing.T) {

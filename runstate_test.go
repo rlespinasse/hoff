@@ -3,6 +3,8 @@ package flow
 import (
 	"errors"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func Test_State_String(t *testing.T) {
@@ -12,22 +14,22 @@ func Test_State_String(t *testing.T) {
 		expectedString  string
 	}{
 		{
-			name:            "Print pass",
+			name:            "Should print 'pass'",
 			givenStateValue: pass,
 			expectedString:  "pass",
 		},
 		{
-			name:            "Print stop",
+			name:            "Should print 'stop'",
 			givenStateValue: stop,
 			expectedString:  "stop",
 		},
 		{
-			name:            "Print Fail",
+			name:            "Should print 'fail'",
 			givenStateValue: fail,
 			expectedString:  "fail",
 		},
 		{
-			name:            "Print Unknowned state",
+			name:            "Should print 'unknown'",
 			givenStateValue: 0,
 			expectedString:  "unknown",
 		},
@@ -51,70 +53,45 @@ func Test_ComputeState_Call(t *testing.T) {
 		expectedError         error
 	}{
 		{
-			"Pass",
-			func() ComputeState {
-				return ComputeStatePass()
-			},
-			pass,
-			nil,
-			nil,
+			name: "Should generate a passing state",
+			givenComputeStateCall: func() ComputeState { return ComputeStatePass() },
+			expectedState:         pass,
 		},
 		{
-			"BranchPass",
-			func() ComputeState {
-				return ComputeStateBranchPass("branch")
-			},
-			pass,
-			ptrOfString("branch"),
-			nil,
+			name: "Should generate a passing state on branch 'branch'",
+			givenComputeStateCall: func() ComputeState { return ComputeStateBranchPass("branch") },
+			expectedState:         pass,
+			expectedNodeBranch:    ptrOfString("branch"),
 		},
 		{
-			"Stop",
-			func() ComputeState {
-				return ComputeStateStop()
-			},
-			stop,
-			nil,
-			nil,
+			name: "Should generate a stopped state",
+			givenComputeStateCall: func() ComputeState { return ComputeStateStop() },
+			expectedState:         stop,
 		},
 		{
-			"BranchStop",
-			func() ComputeState {
-				return ComputeStateBranchStop("branch")
-			},
-			stop,
-			ptrOfString("branch"),
-			nil,
+			name: "Should generate a stopped state on branch 'branch'",
+			givenComputeStateCall: func() ComputeState { return ComputeStateBranchStop("branch") },
+			expectedState:         stop,
+			expectedNodeBranch:    ptrOfString("branch"),
 		},
 		{
-			"Fail",
-			func() ComputeState {
-				return ComputeStateFail(errors.New("error"))
-			},
-			fail,
-			nil,
-			errors.New("error"),
+			name: "Should generate a fail state",
+			givenComputeStateCall: func() ComputeState { return ComputeStateFail(errors.New("error")) },
+			expectedState:         fail,
+			expectedError:         errors.New("error"),
 		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			ComputeState := testCase.givenComputeStateCall()
-			if ComputeState.value != testCase.expectedState {
-				t.Errorf("state - got: %+v, want: %+v", ComputeState.value, testCase.expectedState)
+			computeState := testCase.givenComputeStateCall()
+			if computeState.value != testCase.expectedState {
+				t.Errorf("state - got: %+v, want: %+v", computeState.value, testCase.expectedState)
 			}
-			if ComputeState.branch != nil && testCase.expectedNodeBranch != nil {
-				if *ComputeState.branch != *testCase.expectedNodeBranch {
-					t.Errorf("branch - got: %+v, want: %+v", ComputeState.branch, testCase.expectedNodeBranch)
-				}
-			} else if ComputeState.branch != nil || testCase.expectedNodeBranch != nil {
-				t.Errorf("branch - got: %+v, want: %+v", ComputeState.branch, testCase.expectedNodeBranch)
+			if !cmp.Equal(computeState.branch, testCase.expectedNodeBranch) {
+				t.Errorf("branch - got: %+v, want: %+v", computeState.branch, testCase.expectedNodeBranch)
 			}
-			if ComputeState.err != nil && testCase.expectedError != nil {
-				if ComputeState.err.Error() != testCase.expectedError.Error() {
-					t.Errorf("err - got: %+v, want: %+v", ComputeState.err, testCase.expectedError)
-				}
-			} else if ComputeState.err != nil || testCase.expectedError != nil {
-				t.Errorf("err - got: %+v, want: %+v", ComputeState.err, testCase.expectedError)
+			if !cmp.Equal(computeState.err, testCase.expectedError, errorEqualOpts) {
+				t.Errorf("error - got: %+v, want: %+v", computeState.err, testCase.expectedError)
 			}
 		})
 	}

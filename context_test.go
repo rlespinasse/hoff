@@ -29,14 +29,11 @@ func Test_Context_Read(t *testing.T) {
 			givenContextData: contextData{"key": "value"},
 			givenKey:         "key",
 			expectedValue:    "value",
-			expectedError:    nil,
 		},
 		{
-			name:             "error",
-			givenContextData: contextData{},
-			givenKey:         "key",
-			expectedValue:    nil,
-			expectedError:    errors.New("unknown key: key"),
+			name:          "error",
+			givenKey:      "key",
+			expectedError: errors.New("unknown key: key"),
 		},
 	}
 	for _, testCase := range testCases {
@@ -47,11 +44,7 @@ func Test_Context_Read(t *testing.T) {
 			if value != testCase.expectedValue {
 				t.Errorf("value - got: %+v, want: %+v", value, testCase.expectedValue)
 			}
-			if err != nil && testCase.expectedError != nil {
-				if err.Error() != testCase.expectedError.Error() {
-					t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
-				}
-			} else if err != nil || testCase.expectedError != nil {
+			if !cmp.Equal(err, testCase.expectedError, errorEqualOpts) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 			}
 		})

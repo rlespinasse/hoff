@@ -17,12 +17,11 @@ func (n *SomeNode) AvailableBranches() []string {
 func Test_SomeNode(t *testing.T) {
 	tc := []NodeTestCase{
 		{
-			name:                 "SomeNode is passing",
-			givenContextData:     contextData{},
+			name:                 "Should SomeNode Pass and Store a message",
 			givenNode:            &SomeNode{},
 			expectedComputeState: ComputeStatePass(),
 			expectedContextData:  contextData{"message": "SomeNode is passing"},
 		},
 	}
-	ComputeTestOnNode(t, tc)
+	RunTestOnNode(t, tc)
 }

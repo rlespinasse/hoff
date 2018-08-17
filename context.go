@@ -26,6 +26,9 @@ func NewContext() *Context {
 }
 
 func setupContext(data contextData) *Context {
+	if data == nil {
+		return NewContext()
+	}
 	return &Context{
 		data: data,
 	}
