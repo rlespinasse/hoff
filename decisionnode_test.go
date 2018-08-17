@@ -10,35 +10,25 @@ import (
 func Test_DecisionNode_Compute(t *testing.T) {
 	tc := []NodeTestCase{
 		{
-			"Pass True",
-			contextData{
-				"key": "value",
-			},
-			NewDecisionNode(func(*Context) (bool, error) {
-				return true, nil
-			}),
-			ComputeStateBranchPass("true"),
-			contextData{
-				"key": "value",
-			},
+			name:                 "Pass True",
+			givenContextData:     contextData{"key": "value"},
+			givenNode:            NewDecisionNode(func(*Context) (bool, error) { return true, nil }),
+			expectedComputeState: ComputeStateBranchPass("true"),
+			expectedContextData:  contextData{"key": "value"},
 		},
 		{
-			"Pass False",
-			contextData{},
-			NewDecisionNode(func(*Context) (bool, error) {
-				return false, nil
-			}),
-			ComputeStateBranchPass("false"),
-			contextData{},
+			name:                 "Pass False",
+			givenContextData:     contextData{},
+			givenNode:            NewDecisionNode(func(*Context) (bool, error) { return false, nil }),
+			expectedComputeState: ComputeStateBranchPass("false"),
+			expectedContextData:  contextData{},
 		},
 		{
-			"Fail",
-			contextData{},
-			NewDecisionNode(func(*Context) (bool, error) {
-				return false, errors.New("error")
-			}),
-			ComputeStateFail(errors.New("error")),
-			contextData{},
+			name:                 "Fail",
+			givenContextData:     contextData{},
+			givenNode:            NewDecisionNode(func(*Context) (bool, error) { return false, errors.New("error") }),
+			expectedComputeState: ComputeStateFail(errors.New("error")),
+			expectedContextData:  contextData{},
 		},
 	}
 	ComputeTestOnNode(t, tc)

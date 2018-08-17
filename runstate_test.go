@@ -12,24 +12,24 @@ func Test_State_String(t *testing.T) {
 		expectedString  string
 	}{
 		{
-			"Print pass",
-			pass,
-			"pass",
+			name:            "Print pass",
+			givenStateValue: pass,
+			expectedString:  "pass",
 		},
 		{
-			"Print stop",
-			stop,
-			"stop",
+			name:            "Print stop",
+			givenStateValue: stop,
+			expectedString:  "stop",
 		},
 		{
-			"Print Fail",
-			fail,
-			"fail",
+			name:            "Print Fail",
+			givenStateValue: fail,
+			expectedString:  "fail",
 		},
 		{
-			"Print Unknowned state",
-			0,
-			"unknown",
+			name:            "Print Unknowned state",
+			givenStateValue: 0,
+			expectedString:  "unknown",
 		},
 	}
 	for _, testCase := range testCases {

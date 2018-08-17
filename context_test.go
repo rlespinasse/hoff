@@ -25,20 +25,18 @@ func Test_Context_Read(t *testing.T) {
 		expectedError    error
 	}{
 		{
-			"value",
-			contextData{
-				"key": "value",
-			},
-			"key",
-			"value",
-			nil,
+			name:             "value",
+			givenContextData: contextData{"key": "value"},
+			givenKey:         "key",
+			expectedValue:    "value",
+			expectedError:    nil,
 		},
 		{
-			"error",
-			contextData{},
-			"key",
-			nil,
-			errors.New("unknown key: key"),
+			name:             "error",
+			givenContextData: contextData{},
+			givenKey:         "key",
+			expectedValue:    nil,
+			expectedError:    errors.New("unknown key: key"),
 		},
 	}
 	for _, testCase := range testCases {

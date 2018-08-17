@@ -8,31 +8,25 @@ import (
 func Test_ActionNode_Compute(t *testing.T) {
 	tc := []NodeTestCase{
 		{
-			"Pass",
-			contextData{},
-			NewActionNode(func(*Context) (bool, error) {
-				return true, nil
-			}),
-			ComputeStatePass(),
-			contextData{},
+			name:                 "Pass",
+			givenContextData:     contextData{},
+			givenNode:            NewActionNode(func(*Context) (bool, error) { return true, nil }),
+			expectedComputeState: ComputeStatePass(),
+			expectedContextData:  contextData{},
 		},
 		{
-			"Stop",
-			contextData{},
-			NewActionNode(func(*Context) (bool, error) {
-				return false, nil
-			}),
-			ComputeStateStop(),
-			contextData{},
+			name:                 "Stop",
+			givenContextData:     contextData{},
+			givenNode:            NewActionNode(func(*Context) (bool, error) { return false, nil }),
+			expectedComputeState: ComputeStateStop(),
+			expectedContextData:  contextData{},
 		},
 		{
-			"Fail",
-			contextData{},
-			NewActionNode(func(*Context) (bool, error) {
-				return false, errors.New("error")
-			}),
-			ComputeStateFail(errors.New("error")),
-			contextData{},
+			name:                 "Fail",
+			givenContextData:     contextData{},
+			givenNode:            NewActionNode(func(*Context) (bool, error) { return false, errors.New("error") }),
+			expectedComputeState: ComputeStateFail(errors.New("error")),
+			expectedContextData:  contextData{},
 		},
 	}
 	ComputeTestOnNode(t, tc)
