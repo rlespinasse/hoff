@@ -57,7 +57,7 @@ func (s *NodeSystem) AddBranchLink(n NodeBranchLink) (bool, error) {
 
 func (s *NodeSystem) Validate() (bool, []error) {
 	errors := make([]error, 0)
-	errors = append(errors, checkForOrphanDecisionNode(s)...)
+	errors = append(errors, checkForOrphanMultiBranchesNode(s)...)
 	errors = append(errors, checkForMissingFromInNodeBranchLink(s)...)
 	errors = append(errors, checkForMissingToInNodeBranchLink(s)...)
 	errors = append(errors, checkForMissingBranchInNodeBranchLink(s)...)
@@ -154,10 +154,10 @@ func (s *NodeSystem) haveNode(n Node) bool {
 	return false
 }
 
-func checkForOrphanDecisionNode(s *NodeSystem) []error {
+func checkForOrphanMultiBranchesNode(s *NodeSystem) []error {
 	errors := make([]error, 0)
 	for _, node := range s.nodes {
-		if isDecisionNode(node) {
+		if len(node.AvailableBranches()) > 0 {
 			noLink := true
 			for _, link := range s.links {
 				if link.From == node {
@@ -166,7 +166,7 @@ func checkForOrphanDecisionNode(s *NodeSystem) []error {
 				}
 			}
 			if noLink {
-				errors = append(errors, fmt.Errorf("can't have orphan decision node: %+v", node))
+				errors = append(errors, fmt.Errorf("can't have orphan multi-branches node: %+v", node))
 			}
 		}
 	}

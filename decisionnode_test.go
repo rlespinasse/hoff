@@ -70,19 +70,3 @@ func Test_DecisionNode_AvailableBranches(t *testing.T) {
 		t.Errorf("got: %+v, want: %+v", branches, expectedBranches)
 	}
 }
-
-func Test_isDecisionNode_true(t *testing.T) {
-	node, _ := NewDecisionNode(nil)
-
-	if !isDecisionNode(node) {
-		t.Error("got: false, want: true")
-	}
-}
-
-func Test_isDecisionNode_false(t *testing.T) {
-	node := &SomeNode{}
-
-	if isDecisionNode(node) {
-		t.Error("got: true, want: false")
-	}
-}

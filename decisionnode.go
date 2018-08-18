@@ -2,7 +2,6 @@ package flow
 
 import (
 	"errors"
-	"reflect"
 )
 
 type DecisionNode struct {
@@ -29,8 +28,4 @@ func NewDecisionNode(decisionFunc func(*Context) (bool, error)) (*DecisionNode, 
 		return nil, errors.New("can't create decision node without function")
 	}
 	return &DecisionNode{decisionFunc: decisionFunc}, nil
-}
-
-func isDecisionNode(n Node) bool {
-	return "*flow.DecisionNode" == reflect.TypeOf(n).String()
 }

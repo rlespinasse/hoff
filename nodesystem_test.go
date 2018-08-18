@@ -74,7 +74,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				links: []NodeBranchLink{},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("can't have orphan decision node: %+v", alwaysTrueDecisionNode),
+				fmt.Errorf("can't have orphan multi-branches node: %+v", alwaysTrueDecisionNode),
 			},
 		},
 		{
@@ -365,7 +365,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("can't have orphan decision node: %+v", alwaysTrueDecisionNode),
+				fmt.Errorf("can't have orphan multi-branches node: %+v", alwaysTrueDecisionNode),
 			},
 		},
 		{
