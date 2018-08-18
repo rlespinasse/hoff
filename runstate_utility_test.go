@@ -4,10 +4,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func ptrOfString(value string) *string {
-	return &value
-}
-
 var ComputeStateEqualOpts = cmp.Comparer(func(x, y ComputeState) bool {
 	if x.value != y.value {
 		return false
