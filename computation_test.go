@@ -401,7 +401,7 @@ func Test_Computation_Compute(t *testing.T) {
 			expectedReport: map[Node]ComputeState{
 				writeAction:             ComputeStatePass(),
 				writeActionKeyIsPresent: ComputeStateBranchPass("true"),
-				errorAction:             ComputeStateFail(errors.New("action error")),
+				errorAction:             ComputeStateStopOnError(errors.New("action error")),
 			},
 		},
 		{
@@ -434,7 +434,7 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			expectedReport: map[Node]ComputeState{
 				writeAction:   ComputeStatePass(),
-				errorDecision: ComputeStateFail(errors.New("decision error")),
+				errorDecision: ComputeStateStopOnError(errors.New("decision error")),
 			},
 		},
 	}

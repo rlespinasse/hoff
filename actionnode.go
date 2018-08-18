@@ -11,7 +11,7 @@ type ActionNode struct {
 func (n *ActionNode) Compute(c *Context) ComputeState {
 	pass, err := n.actionFunc(c)
 	if err != nil {
-		return ComputeStateFail(err)
+		return ComputeStateStopOnError(err)
 	}
 	if pass {
 		return ComputeStatePass()

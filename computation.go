@@ -56,8 +56,10 @@ func (cp *computation) computeNode(node Node) error {
 			return nil
 		}
 		return cp.computeNode(nextNode)
-	case fail:
-		return state.err
+	case stop:
+		if state.err != nil {
+			return state.err
+		}
 	}
 	return nil
 }

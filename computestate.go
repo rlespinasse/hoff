@@ -7,7 +7,6 @@ import (
 const (
 	pass State = "pass"
 	stop       = "stop"
-	fail       = "fail"
 )
 
 type State string
@@ -48,9 +47,9 @@ func ComputeStateBranchStop(branch string) ComputeState {
 	}
 }
 
-func ComputeStateFail(err error) ComputeState {
+func ComputeStateStopOnError(err error) ComputeState {
 	return ComputeState{
-		value: fail,
+		value: stop,
 		err:   err,
 	}
 }

@@ -55,7 +55,7 @@ func Test_DecisionNode_Compute(t *testing.T) {
 		{
 			name:                 "Should Fail",
 			givenNode:            failingNode,
-			expectedComputeState: ComputeStateFail(errors.New("error")),
+			expectedComputeState: ComputeStateStopOnError(errors.New("error")),
 		},
 	}
 	RunTestOnNode(t, tc)

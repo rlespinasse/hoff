@@ -12,7 +12,7 @@ type DecisionNode struct {
 func (n *DecisionNode) Compute(c *Context) ComputeState {
 	decision, err := n.decisionFunc(c)
 	if err != nil {
-		return ComputeStateFail(err)
+		return ComputeStateStopOnError(err)
 	}
 	if decision {
 		return ComputeStateBranchPass("true")

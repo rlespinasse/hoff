@@ -39,8 +39,8 @@ func Test_ComputeState_Call(t *testing.T) {
 		},
 		{
 			name: "Should generate a fail state",
-			givenComputeStateCall: func() ComputeState { return ComputeStateFail(errors.New("error")) },
-			expectedState:         fail,
+			givenComputeStateCall: func() ComputeState { return ComputeStateStopOnError(errors.New("error")) },
+			expectedState:         stop,
 			expectedError:         errors.New("error"),
 		},
 	}
