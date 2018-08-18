@@ -60,7 +60,3 @@ func Test_NewComputation(t *testing.T) {
 		})
 	}
 }
-
-var computationEqualOpts = cmp.Comparer(func(x, y *computation) bool {
-	return (x == nil && y == nil) || (x != nil && y != nil && *x == *y)
-})
