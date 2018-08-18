@@ -82,6 +82,10 @@ func (s *NodeSystem) AddLink(n NodeLink) (bool, error) {
 		return false, fmt.Errorf("can't have missing 'To' attribute")
 	}
 
+	if n.From == n.To {
+		return false, fmt.Errorf("can't have link on from and to the same node")
+	}
+
 	s.links = append(s.links, n)
 	return true, nil
 }

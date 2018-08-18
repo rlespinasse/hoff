@@ -160,6 +160,23 @@ func Test_NodeSystem_Validate(t *testing.T) {
 			},
 		},
 		{
+			name: "Can't add link with the node on 'From' and 'To'",
+			givenLinks: []NodeLink{
+				NodeLink{
+					From: someActionNode,
+					To:   someActionNode,
+				},
+			},
+			expectedNodeSystem: &NodeSystem{
+				validity: true,
+				nodes:    []Node{},
+				links:    []NodeLink{},
+			},
+			expectedErrors: []error{
+				fmt.Errorf("can't have link on from and to the same node"),
+			},
+		},
+		{
 			name: "Can't have a link with unknown branch",
 			givenNodes: []Node{
 				alwaysTrueDecisionNode,
