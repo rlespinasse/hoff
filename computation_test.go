@@ -65,24 +65,24 @@ func Test_NewComputation(t *testing.T) {
 }
 
 func Test_Computation_Compute(t *testing.T) {
-	stopAction := NewActionNode(func(c *Context) (bool, error) {
+	stopAction, _ := NewActionNode(func(c *Context) (bool, error) {
 		return false, nil
 	})
-	errorAction := NewActionNode(func(c *Context) (bool, error) {
+	errorAction, _ := NewActionNode(func(c *Context) (bool, error) {
 		return false, errors.New("action error")
 	})
 	errorDecision := NewDecisionNode(func(c *Context) (bool, error) {
 		return false, errors.New("decision error")
 	})
-	writeAction := NewActionNode(func(c *Context) (bool, error) {
+	writeAction, _ := NewActionNode(func(c *Context) (bool, error) {
 		c.Store("write_action", "done")
 		return true, nil
 	})
-	writeAnotherAction := NewActionNode(func(c *Context) (bool, error) {
+	writeAnotherAction, _ := NewActionNode(func(c *Context) (bool, error) {
 		c.Store("write_another_action", "done")
 		return true, nil
 	})
-	readAction := NewActionNode(func(c *Context) (bool, error) {
+	readAction, _ := NewActionNode(func(c *Context) (bool, error) {
 		v, err := c.Read("write_action")
 		if err != nil {
 			return false, err
@@ -90,7 +90,7 @@ func Test_Computation_Compute(t *testing.T) {
 		c.Store("read_action", fmt.Sprintf("the content of write_action is %v", v))
 		return true, nil
 	})
-	deleteAnotherAction := NewActionNode(func(c *Context) (bool, error) {
+	deleteAnotherAction, _ := NewActionNode(func(c *Context) (bool, error) {
 		c.Delete("write_another_action")
 		return true, nil
 	})
