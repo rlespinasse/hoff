@@ -8,6 +8,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+var someActionNode = NewActionNode(func(*Context) (bool, error) { return true, nil })
+var anotherActionNode = NewActionNode(func(*Context) (bool, error) { return true, nil })
+var alwaysTrueDecisionNode = NewDecisionNode(func(*Context) (bool, error) { return true, nil })
+
 func Test_NodeSystem_Validate(t *testing.T) {
 	testCases := []struct {
 		name                            string
@@ -438,7 +442,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 			if validity != testCase.expectedNodeSystem.validity {
 				t.Errorf("validity - got: %+v, want: %+v", validity, testCase.expectedNodeSystem.validity)
 			}
-			if !cmp.Equal(errs, testCase.expectedErrors, errorEqualOpts) {
+			if !cmp.Equal(errs, testCase.expectedErrors, equalOptionForError) {
 				t.Errorf("errors - got: %+v, want: %+v", errs, testCase.expectedErrors)
 			}
 			if !cmp.Equal(system, testCase.expectedNodeSystem) {
@@ -544,13 +548,13 @@ func Test_NodeSystem_activate(t *testing.T) {
 			if system.active != testCase.expectedActivatation {
 				t.Errorf("activation - got: %+v, want: %+v", system.active, testCase.expectedActivatation)
 			}
-			if !cmp.Equal(err, testCase.expectedError, errorEqualOpts) {
+			if !cmp.Equal(err, testCase.expectedError, equalOptionForError) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 			}
-			if !cmp.Equal(system.InitialNodes(), testCase.expectedInitialNodes, nodeEqualOpts) {
+			if !cmp.Equal(system.InitialNodes(), testCase.expectedInitialNodes, equalOptionForNode) {
 				t.Errorf("initial nodes - got: %+v, want: %+v", system.InitialNodes(), testCase.expectedInitialNodes)
 			}
-			if !cmp.Equal(system.nodesTree, testCase.expectedNodeTree, nodeEqualOpts) {
+			if !cmp.Equal(system.nodesTree, testCase.expectedNodeTree, equalOptionForNode) {
 				t.Errorf("node tree - got: %#v, want: %#v", system.nodesTree, testCase.expectedNodeTree)
 			}
 		})
@@ -697,10 +701,10 @@ func Test_NodeSystem_follow(t *testing.T) {
 			system.activate()
 			node, err := system.follow(testCase.givenFollowNode, testCase.givenFollowBranch)
 
-			if !cmp.Equal(err, testCase.expectedError, errorEqualOpts) {
+			if !cmp.Equal(err, testCase.expectedError, equalOptionForError) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 			}
-			if !cmp.Equal(node, testCase.expectedFollowingNode, nodeEqualOpts) {
+			if !cmp.Equal(node, testCase.expectedFollowingNode, equalOptionForNode) {
 				t.Errorf("initial nodes - got: %+v, want: %+v", node, testCase.expectedFollowingNode)
 			}
 		})

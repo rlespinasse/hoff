@@ -7,6 +7,6 @@ type Node interface {
 	AvailableBranches() []string
 }
 
-var nodeEqualOpts = cmp.Comparer(func(x, y Node) bool {
+var equalOptionForNode = cmp.Comparer(func(x, y Node) bool {
 	return x == y
 })

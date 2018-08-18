@@ -12,6 +12,8 @@ func Test_NewComputation(t *testing.T) {
 	var validatedSystem = NewNodeSystem()
 	validatedSystem.validity = true
 
+	var emptyContext = NewContext()
+
 	testCases := []struct {
 		name                string
 		givenSystem         *NodeSystem
@@ -28,7 +30,7 @@ func Test_NewComputation(t *testing.T) {
 		},
 		{
 			name:                "Can't have a computation without validated system",
-			givenSystem:         emptySystem,
+			givenSystem:         NewNodeSystem(),
 			givenContext:        emptyContext,
 			expectedComputation: nil,
 			expectedError:       errors.New("must have a validated node system to work properly"),
@@ -52,10 +54,10 @@ func Test_NewComputation(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			c, err := NewComputation(testCase.givenSystem, testCase.givenContext)
 
-			if !cmp.Equal(c, testCase.expectedComputation, pointerOfComputationEqualOpts) {
+			if !cmp.Equal(c, testCase.expectedComputation) {
 				t.Errorf("computation - got: %+v, want: %+v", c, testCase.expectedComputation)
 			}
-			if !cmp.Equal(err, testCase.expectedError, errorEqualOpts) {
+			if !cmp.Equal(err, testCase.expectedError, equalOptionForError) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 			}
 		})

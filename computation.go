@@ -2,6 +2,8 @@ package flow
 
 import (
 	"errors"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 type computation struct {
@@ -9,6 +11,10 @@ type computation struct {
 	system      *NodeSystem
 	context     *Context
 	report      map[Node]ComputeState
+}
+
+func (x computation) Equal(y computation) bool {
+	return cmp.Equal(x.computation, y.computation) && cmp.Equal(x.context, y.context) && cmp.Equal(x.system, y.system) && cmp.Equal(x.report, y.report)
 }
 
 func NewComputation(system *NodeSystem, context *Context) (*computation, error) {

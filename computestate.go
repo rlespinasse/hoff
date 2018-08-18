@@ -19,7 +19,7 @@ type ComputeState struct {
 }
 
 func (x ComputeState) Equal(y ComputeState) bool {
-	return x.value == y.value && cmp.Equal(x.branch, y.branch) && cmp.Equal(x.err, y.err, errorEqualOpts)
+	return cmp.Equal(x.value, y.value) && cmp.Equal(x.branch, y.branch) && cmp.Equal(x.err, y.err, equalOptionForError)
 }
 
 func ComputeStatePass() ComputeState {

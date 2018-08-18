@@ -1,9 +1,17 @@
 package flow
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/google/go-cmp/cmp"
+)
 
 type Context struct {
 	data contextData
+}
+
+func (x Context) Equal(y Context) bool {
+	return cmp.Equal(x.data, y.data)
 }
 
 type contextData map[string]interface{}

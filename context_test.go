@@ -83,7 +83,7 @@ func Test_Context_Read(t *testing.T) {
 			if value != testCase.expectedValue {
 				t.Errorf("value - got: %+v, want: %+v", value, testCase.expectedValue)
 			}
-			if !cmp.Equal(err, testCase.expectedError, errorEqualOpts) {
+			if !cmp.Equal(err, testCase.expectedError, equalOptionForError) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 			}
 		})

@@ -53,7 +53,7 @@ func Test_ComputeState_Call(t *testing.T) {
 			if !cmp.Equal(computeState.branch, testCase.expectedNodeBranch) {
 				t.Errorf("branch - got: %+v, want: %+v", computeState.branch, testCase.expectedNodeBranch)
 			}
-			if !cmp.Equal(computeState.err, testCase.expectedError, errorEqualOpts) {
+			if !cmp.Equal(computeState.err, testCase.expectedError, equalOptionForError) {
 				t.Errorf("error - got: %+v, want: %+v", computeState.err, testCase.expectedError)
 			}
 		})

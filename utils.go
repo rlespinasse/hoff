@@ -6,6 +6,6 @@ func ptrOfString(value string) *string {
 	return &value
 }
 
-var errorEqualOpts = cmp.Comparer(func(x, y error) bool {
+var equalOptionForError = cmp.Comparer(func(x, y error) bool {
 	return ((x == nil || y == nil) && x == nil && y == nil) || x.Error() == y.Error()
 })

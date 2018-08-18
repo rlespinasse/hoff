@@ -36,7 +36,7 @@ func NewNodeSystem() *NodeSystem {
 }
 
 func (x *NodeSystem) Equal(y *NodeSystem) bool {
-	return x.validity == y.validity && cmp.Equal(x.nodes, y.nodes, nodeEqualOpts) && cmp.Equal(x.links, y.links, nodeEqualOpts)
+	return cmp.Equal(x.validity, y.validity) && cmp.Equal(x.nodes, y.nodes, equalOptionForNode) && cmp.Equal(x.links, y.links, equalOptionForNode)
 }
 
 func (s *NodeSystem) AddNode(n Node) (bool, error) {
