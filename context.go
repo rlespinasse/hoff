@@ -24,6 +24,11 @@ func (c *Context) Read(key string) (interface{}, error) {
 	return nil, fmt.Errorf("unknown key: %s", key)
 }
 
+func (c *Context) HaveKey(key string) bool {
+	_, ok := c.data[key]
+	return ok
+}
+
 func NewContext() *Context {
 	return setupContext(make(contextData))
 }

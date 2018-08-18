@@ -137,3 +137,34 @@ func Test_Context_Delete(t *testing.T) {
 	}
 }
 
+func Test_Context_Have(t *testing.T) {
+	testCases := []struct {
+		name             string
+		givenContextData contextData
+		givenKey         string
+		expectedResult   bool
+	}{
+		{
+			name:             "Can check if context have present key",
+			givenContextData: contextData{"key": "value"},
+			givenKey:         "key",
+			expectedResult:   true,
+		},
+		{
+			name:             "Can check if context have missing key",
+			givenContextData: contextData{"key": "value"},
+			givenKey:         "missing_key",
+			expectedResult:   false,
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			c := setupContext(testCase.givenContextData)
+			result := c.HaveKey(testCase.givenKey)
+
+			if result != testCase.expectedResult {
+				t.Errorf("got: %+v, want: %+v", result, testCase.expectedResult)
+			}
+		})
+	}
+}
