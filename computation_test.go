@@ -100,7 +100,7 @@ func Test_Computation_Compute(t *testing.T) {
 	testCases := []struct {
 		name                string
 		givenNodes          []Node
-		givenBranchLinks    []NodeBranchLink
+		givenLinks          []NodeLink
 		givenContextData    contextData
 		expectedIsDone      bool
 		expectedContextData contextData
@@ -147,8 +147,8 @@ func Test_Computation_Compute(t *testing.T) {
 				writeAction,
 				readAction,
 			},
-			givenBranchLinks: []NodeBranchLink{
-				NodeBranchLink{
+			givenLinks: []NodeLink{
+				NodeLink{
 					From: writeAction,
 					To:   readAction,
 				},
@@ -169,8 +169,8 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				writeAction,
 			},
-			givenBranchLinks: []NodeBranchLink{
-				NodeBranchLink{
+			givenLinks: []NodeLink{
+				NodeLink{
 					From: writeAction,
 					To:   readAction,
 				},
@@ -193,17 +193,17 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenBranchLinks: []NodeBranchLink{
-				NodeBranchLink{
+			givenLinks: []NodeLink{
+				NodeLink{
 					From: writeAction,
 					To:   writeActionKeyIsPresent,
 				},
-				NodeBranchLink{
+				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     readAction,
 					Branch: ptrOfString("true"),
 				},
-				NodeBranchLink{
+				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     deleteAnotherAction,
 					Branch: ptrOfString("false"),
@@ -228,17 +228,17 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenBranchLinks: []NodeBranchLink{
-				NodeBranchLink{
+			givenLinks: []NodeLink{
+				NodeLink{
 					From: writeAnotherAction,
 					To:   writeActionKeyIsPresent,
 				},
-				NodeBranchLink{
+				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     readAction,
 					Branch: ptrOfString("true"),
 				},
-				NodeBranchLink{
+				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     deleteAnotherAction,
 					Branch: ptrOfString("false"),
@@ -260,17 +260,17 @@ func Test_Computation_Compute(t *testing.T) {
 				writeActionKeyIsPresent,
 				writeAction,
 			},
-			givenBranchLinks: []NodeBranchLink{
-				NodeBranchLink{
+			givenLinks: []NodeLink{
+				NodeLink{
 					From: writeAction,
 					To:   writeActionKeyIsPresent,
 				},
-				NodeBranchLink{
+				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     readAction,
 					Branch: ptrOfString("true"),
 				},
-				NodeBranchLink{
+				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     deleteAnotherAction,
 					Branch: ptrOfString("false"),
@@ -295,17 +295,17 @@ func Test_Computation_Compute(t *testing.T) {
 				writeActionKeyIsPresent,
 				writeAnotherAction,
 			},
-			givenBranchLinks: []NodeBranchLink{
-				NodeBranchLink{
+			givenLinks: []NodeLink{
+				NodeLink{
 					From: writeAnotherAction,
 					To:   writeActionKeyIsPresent,
 				},
-				NodeBranchLink{
+				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     readAction,
 					Branch: ptrOfString("true"),
 				},
-				NodeBranchLink{
+				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     deleteAnotherAction,
 					Branch: ptrOfString("false"),
@@ -335,21 +335,21 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenBranchLinks: []NodeBranchLink{
-				NodeBranchLink{
+			givenLinks: []NodeLink{
+				NodeLink{
 					From: writeAction,
 					To:   writeActionKeyIsPresent,
 				},
-				NodeBranchLink{
+				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     stopAction,
 					Branch: ptrOfString("true"),
 				},
-				NodeBranchLink{
+				NodeLink{
 					From: stopAction,
 					To:   readAction,
 				},
-				NodeBranchLink{
+				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     deleteAnotherAction,
 					Branch: ptrOfString("false"),
@@ -374,21 +374,21 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenBranchLinks: []NodeBranchLink{
-				NodeBranchLink{
+			givenLinks: []NodeLink{
+				NodeLink{
 					From: writeAction,
 					To:   writeActionKeyIsPresent,
 				},
-				NodeBranchLink{
+				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     errorAction,
 					Branch: ptrOfString("true"),
 				},
-				NodeBranchLink{
+				NodeLink{
 					From: errorAction,
 					To:   readAction,
 				},
-				NodeBranchLink{
+				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     deleteAnotherAction,
 					Branch: ptrOfString("false"),
@@ -412,17 +412,17 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenBranchLinks: []NodeBranchLink{
-				NodeBranchLink{
+			givenLinks: []NodeLink{
+				NodeLink{
 					From: writeAction,
 					To:   errorDecision,
 				},
-				NodeBranchLink{
+				NodeLink{
 					From:   errorDecision,
 					To:     readAction,
 					Branch: ptrOfString("true"),
 				},
-				NodeBranchLink{
+				NodeLink{
 					From:   errorDecision,
 					To:     deleteAnotherAction,
 					Branch: ptrOfString("false"),
@@ -444,8 +444,8 @@ func Test_Computation_Compute(t *testing.T) {
 			for _, node := range testCase.givenNodes {
 				system.AddNode(node)
 			}
-			for _, link := range testCase.givenBranchLinks {
-				system.AddBranchLink(link)
+			for _, link := range testCase.givenLinks {
+				system.AddLink(link)
 			}
 			_, errs := system.Validate()
 			if errs != nil {

@@ -11,7 +11,7 @@ const (
 	noBranchKey = "*"
 )
 
-type NodeBranchLink struct {
+type NodeLink struct {
 	From   Node
 	To     Node
 	Branch *string
@@ -21,7 +21,7 @@ type NodeSystem struct {
 	active   bool
 	validity bool
 	nodes    []Node
-	links    []NodeBranchLink
+	links    []NodeLink
 
 	initialNodes []Node
 	nodesTree    map[Node]map[string]Node
@@ -31,7 +31,7 @@ func NewNodeSystem() *NodeSystem {
 	return &NodeSystem{
 		validity: false,
 		nodes:    make([]Node, 0),
-		links:    make([]NodeBranchLink, 0),
+		links:    make([]NodeLink, 0),
 	}
 }
 
@@ -47,7 +47,7 @@ func (s *NodeSystem) AddNode(n Node) (bool, error) {
 	return true, nil
 }
 
-func (s *NodeSystem) AddBranchLink(n NodeBranchLink) (bool, error) {
+func (s *NodeSystem) AddLink(n NodeLink) (bool, error) {
 	if s.IsValidated() {
 		return false, errors.New("can't add branch link, node system is freeze due to successful validation")
 	}
@@ -87,7 +87,7 @@ func (s *NodeSystem) AddBranchLink(n NodeBranchLink) (bool, error) {
 func (s *NodeSystem) Validate() (bool, []error) {
 	errors := make([]error, 0)
 	errors = append(errors, checkForOrphanMultiBranchesNode(s)...)
-	errors = append(errors, checkForUndeclaredNodeInNodeBranchLink(s)...)
+	errors = append(errors, checkForUndeclaredNodeInNodeLink(s)...)
 	errors = append(errors, checkForMultipleInstanceOfSameNode(s)...)
 
 	s.validity = len(errors) < 1
@@ -197,7 +197,7 @@ func checkForOrphanMultiBranchesNode(s *NodeSystem) []error {
 	return errors
 }
 
-func checkForUndeclaredNodeInNodeBranchLink(s *NodeSystem) []error {
+func checkForUndeclaredNodeInNodeLink(s *NodeSystem) []error {
 	errors := make([]error, 0)
 	for _, link := range s.links {
 		if link.From != nil && !s.haveNode(link.From) {
