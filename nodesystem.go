@@ -56,28 +56,30 @@ func (s *NodeSystem) AddLink(n NodeLink) (bool, error) {
 		return false, fmt.Errorf("can't have missing 'From' attribute")
 	}
 
-	if n.To == nil {
-		return false, fmt.Errorf("can't have missing 'To' attribute")
-	}
+	if n.Branch == nil {
+		if len(n.From.AvailableBranches()) > 0 {
+			return false, fmt.Errorf("can't have missing branch")
+		}
+	} else {
+		if n.From.AvailableBranches() == nil {
+			return false, fmt.Errorf("can't have not needed branch")
+		}
 
-	if n.From != nil && n.Branch == nil && len(n.From.AvailableBranches()) > 0 {
-		return false, fmt.Errorf("can't have missing branch")
-	}
-
-	if n.From != nil && n.Branch != nil && len(n.From.AvailableBranches()) > 0 {
-		unknonwBranch := true
-		for _, branch := range n.From.AvailableBranches() {
-			if branch == *n.Branch {
-				unknonwBranch = false
+		if len(n.From.AvailableBranches()) > 0 {
+			unknonwBranch := true
+			for _, branch := range n.From.AvailableBranches() {
+				if branch == *n.Branch {
+					unknonwBranch = false
+				}
+			}
+			if unknonwBranch {
+				return false, fmt.Errorf("can't have unknown branch")
 			}
 		}
-		if unknonwBranch {
-			return false, fmt.Errorf("can't have unknown branch")
-		}
 	}
 
-	if n.From != nil && n.Branch != nil && n.From.AvailableBranches() == nil {
-		return false, fmt.Errorf("can't have not needed branch")
+	if n.To == nil {
+		return false, fmt.Errorf("can't have missing 'To' attribute")
 	}
 
 	s.links = append(s.links, n)
