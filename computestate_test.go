@@ -7,43 +7,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func Test_State_String(t *testing.T) {
-	testCases := []struct {
-		name            string
-		givenStateValue State
-		expectedString  string
-	}{
-		{
-			name:            "Should print 'pass'",
-			givenStateValue: pass,
-			expectedString:  "pass",
-		},
-		{
-			name:            "Should print 'stop'",
-			givenStateValue: stop,
-			expectedString:  "stop",
-		},
-		{
-			name:            "Should print 'fail'",
-			givenStateValue: fail,
-			expectedString:  "fail",
-		},
-		{
-			name:            "Should print 'unknown'",
-			givenStateValue: 0,
-			expectedString:  "unknown",
-		},
-	}
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			resultString := testCase.givenStateValue.String()
-			if resultString != testCase.expectedString {
-				t.Errorf("got: %v, want: %v", resultString, testCase.expectedString)
-			}
-		})
-	}
-}
-
 func Test_ComputeState_Call(t *testing.T) {
 	testCases := []struct {
 		name                  string

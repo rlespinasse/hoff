@@ -1,24 +1,12 @@
 package flow
 
 const (
-	pass State = iota + 1
-	stop
-	fail
+	pass State = "pass"
+	stop       = "stop"
+	fail       = "fail"
 )
 
-type State int
-
-func (state State) String() string {
-	names := [...]string{
-		"pass",
-		"stop",
-		"fail",
-	}
-	if state < pass || state > fail {
-		return "unknown"
-	}
-	return names[state-1]
-}
+type State string
 
 type ComputeState struct {
 	value  State
