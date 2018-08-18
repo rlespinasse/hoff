@@ -51,6 +51,35 @@ func (s *NodeSystem) AddBranchLink(n NodeBranchLink) (bool, error) {
 	if s.IsValidated() {
 		return false, errors.New("can't add branch link, node system is freeze due to successful validation")
 	}
+
+	if n.From == nil {
+		return false, fmt.Errorf("can't have missing 'From' attribute")
+	}
+
+	if n.To == nil {
+		return false, fmt.Errorf("can't have missing 'To' attribute")
+	}
+
+	if n.From != nil && n.Branch == nil && len(n.From.AvailableBranches()) > 0 {
+		return false, fmt.Errorf("can't have missing branch")
+	}
+
+	if n.From != nil && n.Branch != nil && len(n.From.AvailableBranches()) > 0 {
+		unknonwBranch := true
+		for _, branch := range n.From.AvailableBranches() {
+			if branch == *n.Branch {
+				unknonwBranch = false
+			}
+		}
+		if unknonwBranch {
+			return false, fmt.Errorf("can't have unknown branch")
+		}
+	}
+
+	if n.From != nil && n.Branch != nil && n.From.AvailableBranches() == nil {
+		return false, fmt.Errorf("can't have not needed branch")
+	}
+
 	s.links = append(s.links, n)
 	return true, nil
 }
@@ -58,11 +87,6 @@ func (s *NodeSystem) AddBranchLink(n NodeBranchLink) (bool, error) {
 func (s *NodeSystem) Validate() (bool, []error) {
 	errors := make([]error, 0)
 	errors = append(errors, checkForOrphanMultiBranchesNode(s)...)
-	errors = append(errors, checkForMissingFromInNodeBranchLink(s)...)
-	errors = append(errors, checkForMissingToInNodeBranchLink(s)...)
-	errors = append(errors, checkForMissingBranchInNodeBranchLink(s)...)
-	errors = append(errors, checkForNotNeededBranchInNodeBranchLink(s)...)
-	errors = append(errors, checkForUnknownBranchInNodeBranchLink(s)...)
 	errors = append(errors, checkForUndeclaredNodeInNodeBranchLink(s)...)
 	errors = append(errors, checkForMultipleInstanceOfSameNode(s)...)
 
@@ -168,64 +192,6 @@ func checkForOrphanMultiBranchesNode(s *NodeSystem) []error {
 			if noLink {
 				errors = append(errors, fmt.Errorf("can't have orphan multi-branches node: %+v", node))
 			}
-		}
-	}
-	return errors
-}
-
-func checkForMissingFromInNodeBranchLink(s *NodeSystem) []error {
-	errors := make([]error, 0)
-	for _, link := range s.links {
-		if link.From == nil {
-			errors = append(errors, fmt.Errorf("can't have missing 'From' attribute: %+v", link))
-		}
-	}
-	return errors
-}
-
-func checkForMissingToInNodeBranchLink(s *NodeSystem) []error {
-	errors := make([]error, 0)
-	for _, link := range s.links {
-		if link.To == nil {
-			errors = append(errors, fmt.Errorf("can't have missing 'To' attribute: %+v", link))
-		}
-	}
-	return errors
-}
-
-func checkForMissingBranchInNodeBranchLink(s *NodeSystem) []error {
-	errors := make([]error, 0)
-	for _, link := range s.links {
-		if link.From != nil && link.Branch == nil && len(link.From.AvailableBranches()) > 0 {
-			errors = append(errors, fmt.Errorf("can't have missing branch from %+v, available branches %+v", link.From, link.From.AvailableBranches()))
-		}
-	}
-	return errors
-}
-
-func checkForUnknownBranchInNodeBranchLink(s *NodeSystem) []error {
-	errors := make([]error, 0)
-	for _, link := range s.links {
-		if link.From != nil && link.Branch != nil && len(link.From.AvailableBranches()) > 0 {
-			unknonwBranch := true
-			for _, branch := range link.From.AvailableBranches() {
-				if branch == *link.Branch {
-					unknonwBranch = false
-				}
-			}
-			if unknonwBranch {
-				errors = append(errors, fmt.Errorf("can't have unknown branch: '%v', from %+v, available branches %+v", *link.Branch, link.From, link.From.AvailableBranches()))
-			}
-		}
-	}
-	return errors
-}
-
-func checkForNotNeededBranchInNodeBranchLink(s *NodeSystem) []error {
-	errors := make([]error, 0)
-	for _, link := range s.links {
-		if link.From != nil && link.Branch != nil && link.From.AvailableBranches() == nil {
-			errors = append(errors, fmt.Errorf("can't have not needed branch: '%v', from %+v", *link.Branch, link.From))
 		}
 	}
 	return errors

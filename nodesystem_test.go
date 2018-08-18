@@ -132,20 +132,31 @@ func Test_NodeSystem_Validate(t *testing.T) {
 			},
 		},
 		{
-			name: "Can't add empty link",
+			name: "Can't add empty 'From' on branch link",
 			givenBranchLinks: []NodeBranchLink{
-				NodeBranchLink{},
+				NodeBranchLink{To: someActionNode},
 			},
 			expectedNodeSystem: &NodeSystem{
-				validity: false,
+				validity: true,
 				nodes:    []Node{},
-				links: []NodeBranchLink{
-					NodeBranchLink{},
-				},
+				links:    []NodeBranchLink{},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("can't have missing 'From' attribute: %+v", NodeBranchLink{}),
-				fmt.Errorf("can't have missing 'To' attribute: %+v", NodeBranchLink{}),
+				fmt.Errorf("can't have missing 'From' attribute"),
+			},
+		},
+		{
+			name: "Can't add empty 'To' on branch link",
+			givenBranchLinks: []NodeBranchLink{
+				NodeBranchLink{From: someActionNode},
+			},
+			expectedNodeSystem: &NodeSystem{
+				validity: true,
+				nodes:    []Node{},
+				links:    []NodeBranchLink{},
+			},
+			expectedErrors: []error{
+				fmt.Errorf("can't have missing 'To' attribute"),
 			},
 		},
 		{
@@ -167,16 +178,11 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					alwaysTrueDecisionNode,
 					someActionNode,
 				},
-				links: []NodeBranchLink{
-					NodeBranchLink{
-						From:   alwaysTrueDecisionNode,
-						To:     someActionNode,
-						Branch: ptrOfString("some_branch"),
-					},
-				},
+				links: []NodeBranchLink{},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("can't have unknown branch: 'some_branch', from %+v, available branches %+v", alwaysTrueDecisionNode, alwaysTrueDecisionNode.AvailableBranches()),
+				fmt.Errorf("can't have unknown branch"),
+				fmt.Errorf("can't have orphan multi-branches node: %+v", alwaysTrueDecisionNode),
 			},
 		},
 		{
@@ -193,21 +199,15 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				},
 			},
 			expectedNodeSystem: &NodeSystem{
-				validity: false,
+				validity: true,
 				nodes: []Node{
 					someActionNode,
 					anotherActionNode,
 				},
-				links: []NodeBranchLink{
-					NodeBranchLink{
-						From:   someActionNode,
-						To:     anotherActionNode,
-						Branch: ptrOfString("not_needed_branch"),
-					},
-				},
+				links: []NodeBranchLink{},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("can't have not needed branch: 'not_needed_branch', from %+v", someActionNode),
+				fmt.Errorf("can't have not needed branch"),
 			},
 		},
 		{
@@ -228,15 +228,11 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					alwaysTrueDecisionNode,
 					someActionNode,
 				},
-				links: []NodeBranchLink{
-					NodeBranchLink{
-						From: alwaysTrueDecisionNode,
-						To:   someActionNode,
-					},
-				},
+				links: []NodeBranchLink{},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("can't have missing branch from %+v, available branches %+v", alwaysTrueDecisionNode, alwaysTrueDecisionNode.AvailableBranches()),
+				fmt.Errorf("can't have missing branch"),
+				fmt.Errorf("can't have orphan multi-branches node: %+v", alwaysTrueDecisionNode),
 			},
 		},
 		{
