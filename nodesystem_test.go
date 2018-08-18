@@ -10,6 +10,7 @@ import (
 
 var someActionNode, _ = NewActionNode(func(*Context) (bool, error) { return true, nil })
 var anotherActionNode, _ = NewActionNode(func(*Context) (bool, error) { return true, nil })
+var alwaysTrueDecisionNode, _ = NewDecisionNode(func(*Context) (bool, error) { return true, nil })
 
 func Test_NodeSystem_Validate(t *testing.T) {
 	testCases := []struct {
