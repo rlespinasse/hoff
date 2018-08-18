@@ -16,40 +16,40 @@ func Test_NewContext(t *testing.T) {
 	}
 }
 
-func Test_Context_Read(t *testing.T) {
+func Test_Context_Store(t *testing.T) {
 	testCases := []struct {
-		name             string
-		givenContextData contextData
-		givenKey         string
-		expectedValue    interface{}
-		expectedError    error
+		name                string
+		givenKey            string
+		givenValue          interface{}
+		expectedContextData contextData
+		expectedError       error
 	}{
 		{
-			name:             "value",
-			givenContextData: contextData{"key": "value"},
-			givenKey:         "key",
-			expectedValue:    "value",
+			name:                "Can store key:value",
+			givenKey:            "key",
+			givenValue:          "value",
+			expectedContextData: contextData{"key": "value"},
 		},
 		{
-			name:          "error",
-			givenKey:      "key",
-			expectedError: errors.New("unknown key: key"),
+			name:                "Can store key:nil",
+			givenKey:            "key",
+			givenValue:          nil,
+			expectedContextData: contextData{"key": nil},
+		},
+		{
+			name:                "Can store key:interface",
+			givenKey:            "key",
+			givenValue:          map[string]string{"map_key": "value"},
+			expectedContextData: contextData{"key": map[string]string{"map_key": "value"}},
 		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			c := setupContext(testCase.givenContextData)
-			value, err := c.Read(testCase.givenKey)
+			c := NewContext()
+			c.Store(testCase.givenKey, testCase.givenValue)
 
-			if value != testCase.expectedValue {
-				t.Errorf("value - got: %+v, want: %+v", value, testCase.expectedValue)
-			}
-			if !cmp.Equal(err, testCase.expectedError, errorEqualOpts) {
-				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
-			}
-		})
-	}
-}
+			if !cmp.Equal(c.data, testCase.expectedContextData) {
+				t.Errorf("got: %+v, want: %+v", c.data, testCase.expectedContextData)
 			}
 		})
 	}
