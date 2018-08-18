@@ -20,7 +20,7 @@ func RunTestOnNode(t *testing.T, testCases []NodeTestCase) {
 			testContext := setupContext(testCase.givenContextData)
 			testState := testCase.givenNode.Compute(testContext)
 
-			if !cmp.Equal(testState, testCase.expectedComputeState, ComputeStateEqualOpts) {
+			if !cmp.Equal(testState, testCase.expectedComputeState, computeStateEqualOpts) {
 				t.Errorf("context state - got: %+v, want: %+v", testState, testCase.expectedComputeState)
 			}
 
