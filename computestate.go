@@ -1,5 +1,9 @@
 package flow
 
+import (
+	"github.com/google/go-cmp/cmp"
+)
+
 const (
 	pass State = "pass"
 	stop       = "stop"
@@ -12,6 +16,10 @@ type ComputeState struct {
 	value  State
 	branch *string
 	err    error
+}
+
+func (x ComputeState) Equal(y ComputeState) bool {
+	return x.value == y.value && cmp.Equal(x.branch, y.branch) && cmp.Equal(x.err, y.err, errorEqualOpts)
 }
 
 func ComputeStatePass() ComputeState {
