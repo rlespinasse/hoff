@@ -1,13 +1,14 @@
 package flow
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 )
 
-func Test_NodeSystem(t *testing.T) {
+func Test_NodeSystem_Validate(t *testing.T) {
 	testCases := []struct {
 		name                            string
 		givenNodes                      []Node
@@ -442,6 +443,265 @@ func Test_NodeSystem(t *testing.T) {
 			}
 			if !cmp.Equal(system, testCase.expectedNodeSystem) {
 				t.Errorf("system - got: %+v, want: %+v", system, testCase.expectedNodeSystem)
+			}
+		})
+	}
+}
+
+func Test_NodeSystem_activate(t *testing.T) {
+	testCases := []struct {
+		name                 string
+		givenNodes           []Node
+		givenBranchLinks     []NodeBranchLink
+		expectedActivatation bool
+		expectedInitialNodes []Node
+		expectedNodeTree     map[Node]map[string]Node
+		expectedError        error
+	}{
+		{
+			name:                 "Can activate an empty validated system",
+			expectedActivatation: true,
+			expectedInitialNodes: []Node{},
+			expectedNodeTree:     map[Node]map[string]Node{},
+		},
+		{
+			name: "Can't activate an unvalidated system",
+			givenBranchLinks: []NodeBranchLink{
+				NodeBranchLink{
+					From: someActionNode,
+					To:   anotherActionNode,
+				},
+			},
+			expectedActivatation: false,
+			expectedError:        errors.New("can't activate a unvalidated node system"),
+		},
+		{
+			name:                 "Can activate an one node validated system",
+			givenNodes:           []Node{someActionNode},
+			expectedActivatation: true,
+			expectedInitialNodes: []Node{someActionNode},
+			expectedNodeTree:     map[Node]map[string]Node{},
+		},
+		{
+			name: "Can activate an no needed branch node link validated system",
+			givenNodes: []Node{
+				someActionNode,
+				anotherActionNode,
+			},
+			givenBranchLinks: []NodeBranchLink{
+				NodeBranchLink{
+					From: someActionNode,
+					To:   anotherActionNode,
+				},
+			},
+			expectedActivatation: true,
+			expectedInitialNodes: []Node{
+				someActionNode,
+			},
+			expectedNodeTree: map[Node]map[string]Node{
+				someActionNode: map[string]Node{
+					"*": anotherActionNode,
+				},
+			},
+		},
+		{
+			name: "Can activate an orphan action node validated system",
+			givenNodes: []Node{
+				someActionNode,
+				anotherActionNode,
+				alwaysTrueDecisionNode,
+			},
+			givenBranchLinks: []NodeBranchLink{
+				NodeBranchLink{
+					From:   alwaysTrueDecisionNode,
+					To:     anotherActionNode,
+					Branch: ptrOfString("true"),
+				},
+			},
+			expectedActivatation: true,
+			expectedInitialNodes: []Node{
+				someActionNode,
+				alwaysTrueDecisionNode,
+			},
+			expectedNodeTree: map[Node]map[string]Node{
+				alwaysTrueDecisionNode: map[string]Node{
+					"true": anotherActionNode,
+				},
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			system := NewNodeSystem()
+			for _, node := range testCase.givenNodes {
+				system.AddNode(node)
+			}
+			for _, link := range testCase.givenBranchLinks {
+				system.AddBranchLink(link)
+			}
+			system.Validate()
+			err := system.activate()
+			if system.active != testCase.expectedActivatation {
+				t.Errorf("activation - got: %+v, want: %+v", system.active, testCase.expectedActivatation)
+			}
+			if !cmp.Equal(err, testCase.expectedError, errorEqualOpts) {
+				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
+			}
+			if !cmp.Equal(system.InitialNodes(), testCase.expectedInitialNodes, nodeEqualOpts) {
+				t.Errorf("initial nodes - got: %+v, want: %+v", system.InitialNodes(), testCase.expectedInitialNodes)
+			}
+			if !cmp.Equal(system.nodesTree, testCase.expectedNodeTree, nodeEqualOpts) {
+				t.Errorf("node tree - got: %#v, want: %#v", system.nodesTree, testCase.expectedNodeTree)
+			}
+		})
+	}
+}
+
+func Test_NodeSystem_multiple_activatation(t *testing.T) {
+	system := NewNodeSystem()
+	system.Validate()
+	system.activate()
+	err := system.activate()
+	if err != nil {
+		t.Errorf("Can be activate multiple times without errors, but got: %+v", err)
+	}
+}
+
+func Test_NodeSystem_follow(t *testing.T) {
+	testCases := []struct {
+		name                  string
+		givenNodes            []Node
+		givenBranchLinks      []NodeBranchLink
+		givenFollowNode       Node
+		givenFollowBranch     *string
+		expectedFollowingNode Node
+		expectedError         error
+	}{
+		{
+			name: "Can't follow on an unactivated system",
+			givenBranchLinks: []NodeBranchLink{
+				NodeBranchLink{
+					From: someActionNode,
+					To:   anotherActionNode,
+				},
+			},
+			expectedError: errors.New("can't follow a node if system is not activated"),
+		},
+		{
+			name: "Can follow 'From' on no branch link",
+			givenNodes: []Node{
+				someActionNode,
+				anotherActionNode,
+			},
+			givenBranchLinks: []NodeBranchLink{
+				NodeBranchLink{
+					From: someActionNode,
+					To:   anotherActionNode,
+				},
+			},
+			givenFollowNode:       someActionNode,
+			expectedFollowingNode: anotherActionNode,
+		},
+		{
+			name: "Can follow 'To' on no branch link",
+			givenNodes: []Node{
+				someActionNode,
+				anotherActionNode,
+			},
+			givenBranchLinks: []NodeBranchLink{
+				NodeBranchLink{
+					From: someActionNode,
+					To:   anotherActionNode,
+				},
+			},
+			givenFollowNode:       anotherActionNode,
+			expectedFollowingNode: nil,
+		},
+		{
+			name: "Can follow 'From' on branch link",
+			givenNodes: []Node{
+				alwaysTrueDecisionNode,
+				someActionNode,
+			},
+			givenBranchLinks: []NodeBranchLink{
+				NodeBranchLink{
+					From:   alwaysTrueDecisionNode,
+					To:     someActionNode,
+					Branch: ptrOfString("true"),
+				},
+			},
+			givenFollowNode:       alwaysTrueDecisionNode,
+			givenFollowBranch:     ptrOfString("true"),
+			expectedFollowingNode: someActionNode,
+		},
+		{
+			name: "Can follow 'To' on branch link",
+			givenNodes: []Node{
+				alwaysTrueDecisionNode,
+				someActionNode,
+			},
+			givenBranchLinks: []NodeBranchLink{
+				NodeBranchLink{
+					From:   alwaysTrueDecisionNode,
+					To:     someActionNode,
+					Branch: ptrOfString("true"),
+				},
+			},
+			givenFollowNode:       someActionNode,
+			expectedFollowingNode: nil,
+		},
+		{
+			name: "Can't follow 'From' on branch link but without passing the branch",
+			givenNodes: []Node{
+				alwaysTrueDecisionNode,
+				someActionNode,
+			},
+			givenBranchLinks: []NodeBranchLink{
+				NodeBranchLink{
+					From:   alwaysTrueDecisionNode,
+					To:     someActionNode,
+					Branch: ptrOfString("true"),
+				},
+			},
+			givenFollowNode:       alwaysTrueDecisionNode,
+			expectedFollowingNode: nil,
+		},
+		{
+			name: "Can't follow 'From' on branch link but without passing the right branch",
+			givenNodes: []Node{
+				alwaysTrueDecisionNode,
+				someActionNode,
+			},
+			givenBranchLinks: []NodeBranchLink{
+				NodeBranchLink{
+					From:   alwaysTrueDecisionNode,
+					To:     someActionNode,
+					Branch: ptrOfString("true"),
+				},
+			},
+			givenFollowNode:       alwaysTrueDecisionNode,
+			givenFollowBranch:     ptrOfString("false"),
+			expectedFollowingNode: nil,
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			system := NewNodeSystem()
+			for _, node := range testCase.givenNodes {
+				system.AddNode(node)
+			}
+			for _, link := range testCase.givenBranchLinks {
+				system.AddBranchLink(link)
+			}
+			system.Validate()
+			system.activate()
+			node, err := system.follow(testCase.givenFollowNode, testCase.givenFollowBranch)
+
+			if !cmp.Equal(err, testCase.expectedError, errorEqualOpts) {
+				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
+			}
+			if !cmp.Equal(node, testCase.expectedFollowingNode, nodeEqualOpts) {
+				t.Errorf("initial nodes - got: %+v, want: %+v", node, testCase.expectedFollowingNode)
 			}
 		})
 	}

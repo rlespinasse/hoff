@@ -7,6 +7,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+const (
+	noBranchKey = "*"
+)
+
 type NodeBranchLink struct {
 	From   Node
 	To     Node
@@ -14,9 +18,13 @@ type NodeBranchLink struct {
 }
 
 type NodeSystem struct {
+	active   bool
 	validity bool
 	nodes    []Node
 	links    []NodeBranchLink
+
+	initialNodes []Node
+	nodesTree    map[Node]map[string]Node
 }
 
 func NewNodeSystem() *NodeSystem {
@@ -63,6 +71,74 @@ func (s *NodeSystem) Validate() (bool, []error) {
 		return true, nil
 	}
 	return false, errors
+}
+
+func (s *NodeSystem) activate() error {
+	if s.active {
+		return nil
+	}
+	if !s.validity {
+		return errors.New("can't activate a unvalidated node system")
+	}
+
+	initialNodes := make([]Node, 0)
+	nodesTree := make(map[Node]map[string]Node)
+
+	toNodes := make([]Node, 0)
+	for _, link := range s.links {
+		branch := noBranchKey
+		if link.Branch != nil {
+			branch = *link.Branch
+		}
+		fromNodeTree, foundFromNode := nodesTree[link.From]
+		if !foundFromNode {
+			nodesTree[link.From] = make(map[string]Node)
+			fromNodeTree, _ = nodesTree[link.From]
+		}
+		fromNodeTree[branch] = link.To
+		toNodes = append(toNodes, link.To)
+	}
+
+	for _, node := range s.nodes {
+		isInitialNode := true
+		for _, toNode := range toNodes {
+			if node == toNode {
+				isInitialNode = false
+				break
+			}
+		}
+		if isInitialNode {
+			initialNodes = append(initialNodes, node)
+		}
+	}
+
+	s.initialNodes = initialNodes
+	s.nodesTree = nodesTree
+
+	s.active = true
+	return nil
+}
+
+func (s *NodeSystem) follow(n Node, b *string) (Node, error) {
+	if !s.active {
+		return nil, errors.New("can't follow a node if system is not activated")
+	}
+	links, foundLinks := s.nodesTree[n]
+	if foundLinks {
+		branch := noBranchKey
+		if b != nil {
+			branch = *b
+		}
+		node, foundNodes := links[branch]
+		if foundNodes {
+			return node, nil
+		}
+	}
+	return nil, nil
+}
+
+func (s *NodeSystem) InitialNodes() []Node {
+	return s.initialNodes
 }
 
 func (s *NodeSystem) IsValidated() bool {
