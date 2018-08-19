@@ -2,7 +2,7 @@ package flow
 
 import "github.com/google/go-cmp/cmp"
 
-func ptrOfString(value string) *string {
+func stringPointer(value string) *string {
 	return &value
 }
 

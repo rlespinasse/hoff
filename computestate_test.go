@@ -24,7 +24,7 @@ func Test_ComputeState_Call(t *testing.T) {
 			name: "Should generate a passing state on branch 'branch'",
 			givenComputeStateCall: func() ComputeState { return ComputeStateBranchPass("branch") },
 			expectedState:         pass,
-			expectedNodeBranch:    ptrOfString("branch"),
+			expectedNodeBranch:    stringPointer("branch"),
 		},
 		{
 			name: "Should generate a stopped state",
@@ -35,7 +35,7 @@ func Test_ComputeState_Call(t *testing.T) {
 			name: "Should generate a stopped state on branch 'branch'",
 			givenComputeStateCall: func() ComputeState { return ComputeStateBranchStop("branch") },
 			expectedState:         stop,
-			expectedNodeBranch:    ptrOfString("branch"),
+			expectedNodeBranch:    stringPointer("branch"),
 		},
 		{
 			name: "Should generate a fail state",

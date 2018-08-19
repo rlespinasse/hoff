@@ -87,7 +87,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				NodeLink{
 					From:   alwaysTrueDecisionNode,
 					To:     someActionNode,
-					Branch: ptrOfString("true"),
+					Branch: stringPointer("true"),
 				},
 			},
 			expectedNodeSystem: &NodeSystem{
@@ -100,7 +100,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					NodeLink{
 						From:   alwaysTrueDecisionNode,
 						To:     someActionNode,
-						Branch: ptrOfString("true"),
+						Branch: stringPointer("true"),
 					},
 				},
 			},
@@ -186,7 +186,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				NodeLink{
 					From:   alwaysTrueDecisionNode,
 					To:     someActionNode,
-					Branch: ptrOfString("some_branch"),
+					Branch: stringPointer("some_branch"),
 				},
 			},
 			expectedNodeSystem: &NodeSystem{
@@ -263,7 +263,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				NodeLink{
 					From:   someActionNode,
 					To:     anotherActionNode,
-					Branch: ptrOfString("not_needed_branch"),
+					Branch: stringPointer("not_needed_branch"),
 				},
 			},
 			expectedNodeSystem: &NodeSystem{
@@ -411,7 +411,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				NodeLink{
 					From:   alwaysTrueDecisionNode,
 					To:     someActionNode,
-					Branch: ptrOfString("true"),
+					Branch: stringPointer("true"),
 				},
 			},
 			expectedNodeSystem: &NodeSystem{
@@ -424,7 +424,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					NodeLink{
 						From:   alwaysTrueDecisionNode,
 						To:     someActionNode,
-						Branch: ptrOfString("true"),
+						Branch: stringPointer("true"),
 					},
 				},
 			},
@@ -583,7 +583,7 @@ func Test_NodeSystem_activate(t *testing.T) {
 				NodeLink{
 					From:   alwaysTrueDecisionNode,
 					To:     anotherActionNode,
-					Branch: ptrOfString("true"),
+					Branch: stringPointer("true"),
 				},
 			},
 			expectedActivatation: true,
@@ -695,11 +695,11 @@ func Test_NodeSystem_follow(t *testing.T) {
 				NodeLink{
 					From:   alwaysTrueDecisionNode,
 					To:     someActionNode,
-					Branch: ptrOfString("true"),
+					Branch: stringPointer("true"),
 				},
 			},
 			givenFollowNode:       alwaysTrueDecisionNode,
-			givenFollowBranch:     ptrOfString("true"),
+			givenFollowBranch:     stringPointer("true"),
 			expectedFollowingNode: someActionNode,
 		},
 		{
@@ -712,7 +712,7 @@ func Test_NodeSystem_follow(t *testing.T) {
 				NodeLink{
 					From:   alwaysTrueDecisionNode,
 					To:     someActionNode,
-					Branch: ptrOfString("true"),
+					Branch: stringPointer("true"),
 				},
 			},
 			givenFollowNode:       someActionNode,
@@ -728,7 +728,7 @@ func Test_NodeSystem_follow(t *testing.T) {
 				NodeLink{
 					From:   alwaysTrueDecisionNode,
 					To:     someActionNode,
-					Branch: ptrOfString("true"),
+					Branch: stringPointer("true"),
 				},
 			},
 			givenFollowNode:       alwaysTrueDecisionNode,
@@ -744,11 +744,11 @@ func Test_NodeSystem_follow(t *testing.T) {
 				NodeLink{
 					From:   alwaysTrueDecisionNode,
 					To:     someActionNode,
-					Branch: ptrOfString("true"),
+					Branch: stringPointer("true"),
 				},
 			},
 			givenFollowNode:       alwaysTrueDecisionNode,
-			givenFollowBranch:     ptrOfString("false"),
+			givenFollowBranch:     stringPointer("false"),
 			expectedFollowingNode: nil,
 		},
 	}

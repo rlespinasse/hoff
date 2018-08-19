@@ -201,12 +201,12 @@ func Test_Computation_Compute(t *testing.T) {
 				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     readAction,
-					Branch: ptrOfString("true"),
+					Branch: stringPointer("true"),
 				},
 				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     deleteAnotherAction,
-					Branch: ptrOfString("false"),
+					Branch: stringPointer("false"),
 				},
 			},
 			expectedIsDone: true,
@@ -236,12 +236,12 @@ func Test_Computation_Compute(t *testing.T) {
 				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     readAction,
-					Branch: ptrOfString("true"),
+					Branch: stringPointer("true"),
 				},
 				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     deleteAnotherAction,
-					Branch: ptrOfString("false"),
+					Branch: stringPointer("false"),
 				},
 			},
 			expectedIsDone:      true,
@@ -268,12 +268,12 @@ func Test_Computation_Compute(t *testing.T) {
 				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     readAction,
-					Branch: ptrOfString("true"),
+					Branch: stringPointer("true"),
 				},
 				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     deleteAnotherAction,
-					Branch: ptrOfString("false"),
+					Branch: stringPointer("false"),
 				},
 			},
 			expectedIsDone: true,
@@ -303,12 +303,12 @@ func Test_Computation_Compute(t *testing.T) {
 				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     readAction,
-					Branch: ptrOfString("true"),
+					Branch: stringPointer("true"),
 				},
 				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     deleteAnotherAction,
-					Branch: ptrOfString("false"),
+					Branch: stringPointer("false"),
 				},
 			},
 			expectedIsDone:      true,
@@ -343,7 +343,7 @@ func Test_Computation_Compute(t *testing.T) {
 				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     stopAction,
-					Branch: ptrOfString("true"),
+					Branch: stringPointer("true"),
 				},
 				NodeLink{
 					From: stopAction,
@@ -352,7 +352,7 @@ func Test_Computation_Compute(t *testing.T) {
 				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     deleteAnotherAction,
-					Branch: ptrOfString("false"),
+					Branch: stringPointer("false"),
 				},
 			},
 			expectedIsDone: true,
@@ -382,7 +382,7 @@ func Test_Computation_Compute(t *testing.T) {
 				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     errorAction,
-					Branch: ptrOfString("true"),
+					Branch: stringPointer("true"),
 				},
 				NodeLink{
 					From: errorAction,
@@ -391,7 +391,7 @@ func Test_Computation_Compute(t *testing.T) {
 				NodeLink{
 					From:   writeActionKeyIsPresent,
 					To:     deleteAnotherAction,
-					Branch: ptrOfString("false"),
+					Branch: stringPointer("false"),
 				},
 			},
 			expectedIsDone: false,
@@ -420,12 +420,12 @@ func Test_Computation_Compute(t *testing.T) {
 				NodeLink{
 					From:   errorDecision,
 					To:     readAction,
-					Branch: ptrOfString("true"),
+					Branch: stringPointer("true"),
 				},
 				NodeLink{
 					From:   errorDecision,
 					To:     deleteAnotherAction,
-					Branch: ptrOfString("false"),
+					Branch: stringPointer("false"),
 				},
 			},
 			expectedIsDone: false,
