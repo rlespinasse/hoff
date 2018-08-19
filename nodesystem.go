@@ -17,6 +17,14 @@ type NodeLink struct {
 	Branch *string
 }
 
+func (n NodeLink) String() string {
+	branch := ""
+	if n.Branch != nil {
+		branch = fmt.Sprintf(", Branch: %v", *n.Branch)
+	}
+	return fmt.Sprintf("{From: %v, To: %v%v}", n.From, n.To, branch)
+}
+
 type NodeSystem struct {
 	active   bool
 	validity bool
@@ -93,6 +101,7 @@ func (s *NodeSystem) AddLink(n NodeLink) (bool, error) {
 func (s *NodeSystem) Validate() (bool, []error) {
 	errors := make([]error, 0)
 	errors = append(errors, checkForOrphanMultiBranchesNode(s)...)
+	errors = append(errors, checkForMultipleLinksWithSameTo(s)...)
 	errors = append(errors, checkForUndeclaredNodeInNodeLink(s)...)
 	errors = append(errors, checkForMultipleInstanceOfSameNode(s)...)
 
@@ -198,6 +207,24 @@ func checkForOrphanMultiBranchesNode(s *NodeSystem) []error {
 			if noLink {
 				errors = append(errors, fmt.Errorf("can't have orphan multi-branches node: %+v", node))
 			}
+		}
+	}
+	return errors
+}
+
+func checkForMultipleLinksWithSameTo(s *NodeSystem) []error {
+	errors := make([]error, 0)
+	sameToNodes := make(map[Node][]NodeLink)
+	for i := 0; i < len(s.links); i++ {
+		for j := 0; j < len(s.links); j++ {
+			if i != j && s.links[i].To == s.links[j].To {
+				sameToNodes[s.links[i].To] = append(sameToNodes[s.links[i].To], s.links[i])
+			}
+		}
+	}
+	for _, links := range sameToNodes {
+		if len(links) > 1 {
+			errors = append(errors, fmt.Errorf("Can't have multiple links with the same 'To': %+v", links))
 		}
 	}
 	return errors

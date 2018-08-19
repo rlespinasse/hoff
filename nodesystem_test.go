@@ -203,6 +203,57 @@ func Test_NodeSystem_Validate(t *testing.T) {
 			},
 		},
 		{
+			name: "Can't have multiple links with the same 'To'",
+			givenNodes: []Node{
+				alwaysTrueDecisionNode,
+				someActionNode,
+				anotherActionNode,
+			},
+			givenLinks: []NodeLink{
+				NodeLink{
+					From:   alwaysTrueDecisionNode,
+					To:     anotherActionNode,
+					Branch: stringPointer("true"),
+				},
+				NodeLink{
+					From: someActionNode,
+					To:   anotherActionNode,
+				},
+			},
+			expectedNodeSystem: &NodeSystem{
+				validity: false,
+				nodes: []Node{
+					alwaysTrueDecisionNode,
+					someActionNode,
+					anotherActionNode,
+				},
+				links: []NodeLink{
+					NodeLink{
+						From:   alwaysTrueDecisionNode,
+						To:     anotherActionNode,
+						Branch: stringPointer("true"),
+					},
+					NodeLink{
+						From: someActionNode,
+						To:   anotherActionNode,
+					},
+				},
+			},
+			expectedErrors: []error{
+				fmt.Errorf("Can't have multiple links with the same 'To': %+v", []NodeLink{
+					NodeLink{
+						From:   alwaysTrueDecisionNode,
+						To:     anotherActionNode,
+						Branch: stringPointer("true"),
+					},
+					NodeLink{
+						From: someActionNode,
+						To:   anotherActionNode,
+					},
+				}),
+			},
+		},
+		{
 			name: "Can't hava a link with branch who is not needed",
 			givenNodes: []Node{
 				someActionNode,
