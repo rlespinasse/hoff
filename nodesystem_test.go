@@ -466,6 +466,113 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				}),
 			},
 		},
+		{
+			name: "Can't have cycle between some links",
+			givenNodes: []Node{
+				someActionNode,
+				anotherActionNode,
+			},
+			givenLinks: []NodeLink{
+				NodeLink{
+					From: someActionNode,
+					To:   anotherActionNode,
+				},
+				NodeLink{
+					From: anotherActionNode,
+					To:   someActionNode,
+				},
+			},
+			expectedNodeSystem: &NodeSystem{
+				validity: false,
+				nodes: []Node{
+					someActionNode,
+					anotherActionNode,
+				},
+				links: []NodeLink{
+					NodeLink{
+						From: someActionNode,
+						To:   anotherActionNode,
+					},
+					NodeLink{
+						From: anotherActionNode,
+						To:   someActionNode,
+					},
+				},
+			},
+			expectedErrors: []error{
+				fmt.Errorf("Can't have cycle between links: %+v", []NodeLink{
+					NodeLink{
+						From: someActionNode,
+						To:   anotherActionNode,
+					},
+					NodeLink{
+						From: anotherActionNode,
+						To:   someActionNode,
+					},
+				}),
+			},
+		},
+		{
+			name: "Can't have cycle between some links with branch",
+			givenNodes: []Node{
+				alwaysTrueDecisionNode,
+				someActionNode,
+				anotherActionNode,
+			},
+			givenLinks: []NodeLink{
+				NodeLink{
+					From:   alwaysTrueDecisionNode,
+					To:     someActionNode,
+					Branch: stringPointer("true"),
+				},
+				NodeLink{
+					From:   alwaysTrueDecisionNode,
+					To:     anotherActionNode,
+					Branch: stringPointer("true"),
+				},
+				NodeLink{
+					From: anotherActionNode,
+					To:   alwaysTrueDecisionNode,
+				},
+			},
+			expectedNodeSystem: &NodeSystem{
+				validity: false,
+				nodes: []Node{
+					alwaysTrueDecisionNode,
+					someActionNode,
+					anotherActionNode,
+				},
+				links: []NodeLink{
+					NodeLink{
+						From:   alwaysTrueDecisionNode,
+						To:     someActionNode,
+						Branch: stringPointer("true"),
+					},
+					NodeLink{
+						From:   alwaysTrueDecisionNode,
+						To:     anotherActionNode,
+						Branch: stringPointer("true"),
+					},
+					NodeLink{
+						From: anotherActionNode,
+						To:   alwaysTrueDecisionNode,
+					},
+				},
+			},
+			expectedErrors: []error{
+				fmt.Errorf("Can't have cycle between links: %+v", []NodeLink{
+					NodeLink{
+						From:   alwaysTrueDecisionNode,
+						To:     anotherActionNode,
+						Branch: stringPointer("true"),
+					},
+					NodeLink{
+						From: anotherActionNode,
+						To:   alwaysTrueDecisionNode,
+					},
+				}),
+			},
+		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {

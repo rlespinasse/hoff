@@ -102,6 +102,7 @@ func (s *NodeSystem) Validate() (bool, []error) {
 	errors := make([]error, 0)
 	errors = append(errors, checkForOrphanMultiBranchesNode(s)...)
 	errors = append(errors, checkForMultipleLinksWithSameTo(s)...)
+	errors = append(errors, checkForCyclicRedundancyInNodeLinks(s)...)
 	errors = append(errors, checkForUndeclaredNodeInNodeLink(s)...)
 	errors = append(errors, checkForMultipleInstanceOfSameNode(s)...)
 
@@ -228,6 +229,47 @@ func checkForMultipleLinksWithSameTo(s *NodeSystem) []error {
 		}
 	}
 	return errors
+}
+
+func checkForCyclicRedundancyInNodeLinks(s *NodeSystem) []error {
+	errors := make([]error, 0)
+	nodesInCycle := make([]Node, 0)
+	for i := 0; i < len(s.links); i++ {
+		l := s.links[i]
+		notInCycle := true
+		for _, node := range nodesInCycle {
+			if node == l.From {
+				notInCycle = false
+				break
+			}
+		}
+		if notInCycle {
+			cycleNodeLinks := walkNodeLink(l, l, s.links, []NodeLink{})
+			if cycleNodeLinks != nil {
+				for _, link := range cycleNodeLinks {
+					nodesInCycle = append(nodesInCycle, link.From)
+				}
+				errors = append(errors, fmt.Errorf("Can't have cycle between links: %+v", cycleNodeLinks))
+			}
+		}
+	}
+	return errors
+}
+
+func walkNodeLink(startingLink NodeLink, link NodeLink, links []NodeLink, walkedNodeLinks []NodeLink) []NodeLink {
+	nodeLinks := append(walkedNodeLinks, link)
+	if link.To == startingLink.From {
+		return nodeLinks
+	}
+	for i := 0; i < len(links); i++ {
+		if links[i] == link || links[i] == startingLink {
+			continue
+		}
+		if link.To == links[i].From {
+			return walkNodeLink(startingLink, links[i], links, nodeLinks)
+		}
+	}
+	return nil
 }
 
 func checkForUndeclaredNodeInNodeLink(s *NodeSystem) []error {
