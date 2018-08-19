@@ -1,4 +1,4 @@
-package flow
+package flows
 
 import (
 	"fmt"

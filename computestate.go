@@ -1,4 +1,4 @@
-package flow
+package flows
 
 import (
 	"github.com/google/go-cmp/cmp"
