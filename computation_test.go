@@ -145,10 +145,7 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: writeAction,
-					To:   readAction,
-				},
+				NewLink(writeAction, readAction),
 			},
 			expectedIsDone: true,
 			expectedContextData: contextData{
@@ -167,10 +164,7 @@ func Test_Computation_Compute(t *testing.T) {
 				writeAction,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: writeAction,
-					To:   readAction,
-				},
+				NewLink(writeAction, readAction),
 			},
 			expectedIsDone: true,
 			expectedContextData: contextData{
@@ -191,20 +185,9 @@ func Test_Computation_Compute(t *testing.T) {
 				deleteAnotherAction,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: writeAction,
-					To:   writeActionKeyIsPresent,
-				},
-				NodeLink{
-					From:   writeActionKeyIsPresent,
-					To:     readAction,
-					Branch: stringPointer("true"),
-				},
-				NodeLink{
-					From:   writeActionKeyIsPresent,
-					To:     deleteAnotherAction,
-					Branch: stringPointer("false"),
-				},
+				NewLink(writeAction, writeActionKeyIsPresent),
+				NewBranchLink(writeActionKeyIsPresent, readAction, "true"),
+				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, "false"),
 			},
 			expectedIsDone: true,
 			expectedContextData: contextData{
@@ -226,20 +209,9 @@ func Test_Computation_Compute(t *testing.T) {
 				deleteAnotherAction,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: writeAnotherAction,
-					To:   writeActionKeyIsPresent,
-				},
-				NodeLink{
-					From:   writeActionKeyIsPresent,
-					To:     readAction,
-					Branch: stringPointer("true"),
-				},
-				NodeLink{
-					From:   writeActionKeyIsPresent,
-					To:     deleteAnotherAction,
-					Branch: stringPointer("false"),
-				},
+				NewLink(writeAnotherAction, writeActionKeyIsPresent),
+				NewBranchLink(writeActionKeyIsPresent, readAction, "true"),
+				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, "false"),
 			},
 			expectedIsDone:      true,
 			expectedContextData: contextData{},
@@ -258,20 +230,9 @@ func Test_Computation_Compute(t *testing.T) {
 				writeAction,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: writeAction,
-					To:   writeActionKeyIsPresent,
-				},
-				NodeLink{
-					From:   writeActionKeyIsPresent,
-					To:     readAction,
-					Branch: stringPointer("true"),
-				},
-				NodeLink{
-					From:   writeActionKeyIsPresent,
-					To:     deleteAnotherAction,
-					Branch: stringPointer("false"),
-				},
+				NewLink(writeAction, writeActionKeyIsPresent),
+				NewBranchLink(writeActionKeyIsPresent, readAction, "true"),
+				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, "false"),
 			},
 			expectedIsDone: true,
 			expectedContextData: contextData{
@@ -293,20 +254,9 @@ func Test_Computation_Compute(t *testing.T) {
 				writeAnotherAction,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: writeAnotherAction,
-					To:   writeActionKeyIsPresent,
-				},
-				NodeLink{
-					From:   writeActionKeyIsPresent,
-					To:     readAction,
-					Branch: stringPointer("true"),
-				},
-				NodeLink{
-					From:   writeActionKeyIsPresent,
-					To:     deleteAnotherAction,
-					Branch: stringPointer("false"),
-				},
+				NewLink(writeAnotherAction, writeActionKeyIsPresent),
+				NewBranchLink(writeActionKeyIsPresent, readAction, "true"),
+				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, "false"),
 			},
 			expectedIsDone:      true,
 			expectedContextData: contextData{},
@@ -326,24 +276,10 @@ func Test_Computation_Compute(t *testing.T) {
 				deleteAnotherAction,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: writeAction,
-					To:   writeActionKeyIsPresent,
-				},
-				NodeLink{
-					From:   writeActionKeyIsPresent,
-					To:     errorAction,
-					Branch: stringPointer("true"),
-				},
-				NodeLink{
-					From: errorAction,
-					To:   readAction,
-				},
-				NodeLink{
-					From:   writeActionKeyIsPresent,
-					To:     deleteAnotherAction,
-					Branch: stringPointer("false"),
-				},
+				NewLink(writeAction, writeActionKeyIsPresent),
+				NewBranchLink(writeActionKeyIsPresent, errorAction, "true"),
+				NewLink(errorAction, readAction),
+				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, "false"),
 			},
 			expectedIsDone: false,
 			expectedContextData: contextData{
@@ -364,20 +300,9 @@ func Test_Computation_Compute(t *testing.T) {
 				deleteAnotherAction,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: writeAction,
-					To:   errorDecision,
-				},
-				NodeLink{
-					From:   errorDecision,
-					To:     readAction,
-					Branch: stringPointer("true"),
-				},
-				NodeLink{
-					From:   errorDecision,
-					To:     deleteAnotherAction,
-					Branch: stringPointer("false"),
-				},
+				NewLink(writeAction, errorDecision),
+				NewBranchLink(errorDecision, readAction, "true"),
+				NewBranchLink(errorDecision, deleteAnotherAction, "false"),
 			},
 			expectedIsDone: false,
 			expectedContextData: contextData{

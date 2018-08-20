@@ -84,11 +84,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				someActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From:   alwaysTrueDecisionNode,
-					To:     someActionNode,
-					Branch: stringPointer("true"),
-				},
+				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
@@ -97,11 +93,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					someActionNode,
 				},
 				links: []NodeLink{
-					NodeLink{
-						From:   alwaysTrueDecisionNode,
-						To:     someActionNode,
-						Branch: stringPointer("true"),
-					},
+					NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
 				},
 			},
 		},
@@ -112,10 +104,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				anotherActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: someActionNode,
-					To:   anotherActionNode,
-				},
+				NewLink(someActionNode, anotherActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
@@ -124,17 +113,14 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					anotherActionNode,
 				},
 				links: []NodeLink{
-					NodeLink{
-						From: someActionNode,
-						To:   anotherActionNode,
-					},
+					NewLink(someActionNode, anotherActionNode),
 				},
 			},
 		},
 		{
 			name: "Can't add empty 'From' on branch link",
 			givenLinks: []NodeLink{
-				NodeLink{To: someActionNode},
+				NodeLink{to: someActionNode},
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
@@ -148,7 +134,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 		{
 			name: "Can't add empty 'To' on branch link",
 			givenLinks: []NodeLink{
-				NodeLink{From: someActionNode},
+				NodeLink{from: someActionNode},
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
@@ -162,10 +148,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 		{
 			name: "Can't add link with the node on 'From' and 'To'",
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: someActionNode,
-					To:   someActionNode,
-				},
+				NewLink(someActionNode, someActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
@@ -183,11 +166,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				someActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From:   alwaysTrueDecisionNode,
-					To:     someActionNode,
-					Branch: stringPointer("some_branch"),
-				},
+				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "some_branch"),
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: false,
@@ -210,15 +189,8 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				anotherActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From:   alwaysTrueDecisionNode,
-					To:     anotherActionNode,
-					Branch: stringPointer("true"),
-				},
-				NodeLink{
-					From: someActionNode,
-					To:   anotherActionNode,
-				},
+				NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+				NewLink(someActionNode, anotherActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: false,
@@ -228,28 +200,14 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					anotherActionNode,
 				},
 				links: []NodeLink{
-					NodeLink{
-						From:   alwaysTrueDecisionNode,
-						To:     anotherActionNode,
-						Branch: stringPointer("true"),
-					},
-					NodeLink{
-						From: someActionNode,
-						To:   anotherActionNode,
-					},
+					NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+					NewLink(someActionNode, anotherActionNode),
 				},
 			},
 			expectedErrors: []error{
 				fmt.Errorf("Can't have multiple links with the same 'To': %+v", []NodeLink{
-					NodeLink{
-						From:   alwaysTrueDecisionNode,
-						To:     anotherActionNode,
-						Branch: stringPointer("true"),
-					},
-					NodeLink{
-						From: someActionNode,
-						To:   anotherActionNode,
-					},
+					NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+					NewLink(someActionNode, anotherActionNode),
 				}),
 			},
 		},
@@ -260,11 +218,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				anotherActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From:   someActionNode,
-					To:     anotherActionNode,
-					Branch: stringPointer("not_needed_branch"),
-				},
+				NewBranchLink(someActionNode, anotherActionNode, "not_needed_branch"),
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
@@ -285,10 +239,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				someActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: alwaysTrueDecisionNode,
-					To:   someActionNode,
-				},
+				NewLink(alwaysTrueDecisionNode, someActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: false,
@@ -324,10 +275,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				anotherActionNode,
 			},
 			givenLinksAfterValidation: []NodeLink{
-				NodeLink{
-					From: someActionNode,
-					To:   anotherActionNode,
-				},
+				NewLink(someActionNode, anotherActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
@@ -347,10 +295,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				someActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: someActionNode,
-					To:   anotherActionNode,
-				},
+				NewLink(someActionNode, anotherActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: false,
@@ -358,17 +303,11 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					someActionNode,
 				},
 				links: []NodeLink{
-					NodeLink{
-						From: someActionNode,
-						To:   anotherActionNode,
-					},
+					NewLink(someActionNode, anotherActionNode),
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("can't have undeclared node '%+v' as 'To' in branch link %+v", anotherActionNode, NodeLink{
-					From: someActionNode,
-					To:   anotherActionNode,
-				}),
+				fmt.Errorf("can't have undeclared node '%+v' as 'To' in branch link %+v", anotherActionNode, NewLink(someActionNode, anotherActionNode)),
 			},
 		},
 		{
@@ -377,10 +316,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				anotherActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: someActionNode,
-					To:   anotherActionNode,
-				},
+				NewLink(someActionNode, anotherActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: false,
@@ -388,17 +324,11 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					anotherActionNode,
 				},
 				links: []NodeLink{
-					NodeLink{
-						From: someActionNode,
-						To:   anotherActionNode,
-					},
+					NewLink(someActionNode, anotherActionNode),
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("can't have undeclared node '%+v' as 'From' in branch link %+v", someActionNode, NodeLink{
-					From: someActionNode,
-					To:   anotherActionNode,
-				}),
+				fmt.Errorf("can't have undeclared node '%+v' as 'From' in branch link %+v", someActionNode, NewLink(someActionNode, anotherActionNode)),
 			},
 		},
 		{
@@ -408,11 +338,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				someActionNode,
 			},
 			givenLinksAfterValidation: []NodeLink{
-				NodeLink{
-					From:   alwaysTrueDecisionNode,
-					To:     someActionNode,
-					Branch: stringPointer("true"),
-				},
+				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
@@ -421,11 +347,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					someActionNode,
 				},
 				links: []NodeLink{
-					NodeLink{
-						From:   alwaysTrueDecisionNode,
-						To:     someActionNode,
-						Branch: stringPointer("true"),
-					},
+					NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
 				},
 			},
 			expectedErrors: []error{
@@ -438,10 +360,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				someActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: someActionNode,
-					To:   anotherActionNode,
-				},
+				NewLink(someActionNode, anotherActionNode),
 			},
 			givenNodesAfterValidation: []Node{
 				anotherActionNode,
@@ -453,17 +372,11 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					anotherActionNode,
 				},
 				links: []NodeLink{
-					NodeLink{
-						From: someActionNode,
-						To:   anotherActionNode,
-					},
+					NewLink(someActionNode, anotherActionNode),
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("can't have undeclared node '%+v' as 'To' in branch link %+v", anotherActionNode, NodeLink{
-					From: someActionNode,
-					To:   anotherActionNode,
-				}),
+				fmt.Errorf("can't have undeclared node '%+v' as 'To' in branch link %+v", anotherActionNode, NewLink(someActionNode, anotherActionNode)),
 			},
 		},
 		{
@@ -473,14 +386,8 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				anotherActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: someActionNode,
-					To:   anotherActionNode,
-				},
-				NodeLink{
-					From: anotherActionNode,
-					To:   someActionNode,
-				},
+				NewLink(someActionNode, anotherActionNode),
+				NewLink(anotherActionNode, someActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: false,
@@ -489,26 +396,14 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					anotherActionNode,
 				},
 				links: []NodeLink{
-					NodeLink{
-						From: someActionNode,
-						To:   anotherActionNode,
-					},
-					NodeLink{
-						From: anotherActionNode,
-						To:   someActionNode,
-					},
+					NewLink(someActionNode, anotherActionNode),
+					NewLink(anotherActionNode, someActionNode),
 				},
 			},
 			expectedErrors: []error{
 				fmt.Errorf("Can't have cycle between links: %+v", []NodeLink{
-					NodeLink{
-						From: someActionNode,
-						To:   anotherActionNode,
-					},
-					NodeLink{
-						From: anotherActionNode,
-						To:   someActionNode,
-					},
+					NewLink(someActionNode, anotherActionNode),
+					NewLink(anotherActionNode, someActionNode),
 				}),
 			},
 		},
@@ -520,21 +415,11 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				anotherActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From:   alwaysTrueDecisionNode,
-					To:     someActionNode,
-					Branch: stringPointer("true"),
-				},
-				NodeLink{
-					From:   alwaysTrueDecisionNode,
-					To:     anotherActionNode,
-					Branch: stringPointer("true"),
-				},
-				NodeLink{
-					From: anotherActionNode,
-					To:   alwaysTrueDecisionNode,
-				},
+				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
+				NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, "false"),
+				NewLink(anotherActionNode, alwaysTrueDecisionNode),
 			},
+
 			expectedNodeSystem: &NodeSystem{
 				validity: false,
 				nodes: []Node{
@@ -543,33 +428,15 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					anotherActionNode,
 				},
 				links: []NodeLink{
-					NodeLink{
-						From:   alwaysTrueDecisionNode,
-						To:     someActionNode,
-						Branch: stringPointer("true"),
-					},
-					NodeLink{
-						From:   alwaysTrueDecisionNode,
-						To:     anotherActionNode,
-						Branch: stringPointer("true"),
-					},
-					NodeLink{
-						From: anotherActionNode,
-						To:   alwaysTrueDecisionNode,
-					},
+					NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
+					NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, "false"),
+					NewLink(anotherActionNode, alwaysTrueDecisionNode),
 				},
 			},
 			expectedErrors: []error{
 				fmt.Errorf("Can't have cycle between links: %+v", []NodeLink{
-					NodeLink{
-						From:   alwaysTrueDecisionNode,
-						To:     anotherActionNode,
-						Branch: stringPointer("true"),
-					},
-					NodeLink{
-						From: anotherActionNode,
-						To:   alwaysTrueDecisionNode,
-					},
+					NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, "false"),
+					NewLink(anotherActionNode, alwaysTrueDecisionNode),
 				}),
 			},
 		},
@@ -642,10 +509,7 @@ func Test_NodeSystem_activate(t *testing.T) {
 		{
 			name: "Can't activate an unvalidated system",
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: someActionNode,
-					To:   anotherActionNode,
-				},
+				NewLink(someActionNode, anotherActionNode),
 			},
 			expectedActivatation: false,
 			expectedError:        errors.New("can't activate a unvalidated node system"),
@@ -664,10 +528,7 @@ func Test_NodeSystem_activate(t *testing.T) {
 				anotherActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: someActionNode,
-					To:   anotherActionNode,
-				},
+				NewLink(someActionNode, anotherActionNode),
 			},
 			expectedActivatation: true,
 			expectedInitialNodes: []Node{
@@ -687,11 +548,7 @@ func Test_NodeSystem_activate(t *testing.T) {
 				alwaysTrueDecisionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From:   alwaysTrueDecisionNode,
-					To:     anotherActionNode,
-					Branch: stringPointer("true"),
-				},
+				NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
 			},
 			expectedActivatation: true,
 			expectedInitialNodes: []Node{
@@ -755,10 +612,7 @@ func Test_NodeSystem_follow(t *testing.T) {
 		{
 			name: "Can't follow on an unactivated system",
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: someActionNode,
-					To:   anotherActionNode,
-				},
+				NewLink(someActionNode, anotherActionNode),
 			},
 			expectedError: errors.New("can't follow a node if system is not activated"),
 		},
@@ -769,10 +623,7 @@ func Test_NodeSystem_follow(t *testing.T) {
 				anotherActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: someActionNode,
-					To:   anotherActionNode,
-				},
+				NewLink(someActionNode, anotherActionNode),
 			},
 			givenFollowNode:       someActionNode,
 			expectedFollowingNode: anotherActionNode,
@@ -784,10 +635,7 @@ func Test_NodeSystem_follow(t *testing.T) {
 				anotherActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From: someActionNode,
-					To:   anotherActionNode,
-				},
+				NewLink(someActionNode, anotherActionNode),
 			},
 			givenFollowNode:       anotherActionNode,
 			expectedFollowingNode: nil,
@@ -799,11 +647,7 @@ func Test_NodeSystem_follow(t *testing.T) {
 				someActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From:   alwaysTrueDecisionNode,
-					To:     someActionNode,
-					Branch: stringPointer("true"),
-				},
+				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
 			},
 			givenFollowNode:       alwaysTrueDecisionNode,
 			givenFollowBranch:     stringPointer("true"),
@@ -816,11 +660,7 @@ func Test_NodeSystem_follow(t *testing.T) {
 				someActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From:   alwaysTrueDecisionNode,
-					To:     someActionNode,
-					Branch: stringPointer("true"),
-				},
+				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
 			},
 			givenFollowNode:       someActionNode,
 			expectedFollowingNode: nil,
@@ -832,11 +672,7 @@ func Test_NodeSystem_follow(t *testing.T) {
 				someActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From:   alwaysTrueDecisionNode,
-					To:     someActionNode,
-					Branch: stringPointer("true"),
-				},
+				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
 			},
 			givenFollowNode:       alwaysTrueDecisionNode,
 			expectedFollowingNode: nil,
@@ -848,11 +684,7 @@ func Test_NodeSystem_follow(t *testing.T) {
 				someActionNode,
 			},
 			givenLinks: []NodeLink{
-				NodeLink{
-					From:   alwaysTrueDecisionNode,
-					To:     someActionNode,
-					Branch: stringPointer("true"),
-				},
+				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
 			},
 			givenFollowNode:       alwaysTrueDecisionNode,
 			givenFollowBranch:     stringPointer("false"),

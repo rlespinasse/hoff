@@ -11,20 +11,6 @@ const (
 	noBranchKey = "*"
 )
 
-type NodeLink struct {
-	From   Node
-	To     Node
-	Branch *string
-}
-
-func (n NodeLink) String() string {
-	branch := ""
-	if n.Branch != nil {
-		branch = fmt.Sprintf(", Branch: %v", *n.Branch)
-	}
-	return fmt.Sprintf("{From: %v, To: %v%v}", n.From, n.To, branch)
-}
-
 type NodeSystem struct {
 	active   bool
 	validity bool
@@ -44,7 +30,7 @@ func NewNodeSystem() *NodeSystem {
 }
 
 func (x *NodeSystem) Equal(y *NodeSystem) bool {
-	return cmp.Equal(x.validity, y.validity) && cmp.Equal(x.nodes, y.nodes, equalOptionForNode) && cmp.Equal(x.links, y.links, equalOptionForNode)
+	return cmp.Equal(x.validity, y.validity) && cmp.Equal(x.nodes, y.nodes, equalOptionForNode) && cmp.Equal(x.links, y.links, equalOptionForNodeLink)
 }
 
 func (s *NodeSystem) AddNode(n Node) (bool, error) {
@@ -60,23 +46,23 @@ func (s *NodeSystem) AddLink(n NodeLink) (bool, error) {
 		return false, errors.New("can't add branch link, node system is freeze due to successful validation")
 	}
 
-	if n.From == nil {
+	if n.from == nil {
 		return false, fmt.Errorf("can't have missing 'From' attribute")
 	}
 
-	if n.Branch == nil {
-		if len(n.From.AvailableBranches()) > 0 {
+	if n.branch == nil {
+		if len(n.from.AvailableBranches()) > 0 {
 			return false, fmt.Errorf("can't have missing branch")
 		}
 	} else {
-		if n.From.AvailableBranches() == nil {
+		if n.from.AvailableBranches() == nil {
 			return false, fmt.Errorf("can't have not needed branch")
 		}
 
-		if len(n.From.AvailableBranches()) > 0 {
+		if len(n.from.AvailableBranches()) > 0 {
 			unknonwBranch := true
-			for _, branch := range n.From.AvailableBranches() {
-				if branch == *n.Branch {
+			for _, branch := range n.from.AvailableBranches() {
+				if branch == *n.branch {
 					unknonwBranch = false
 				}
 			}
@@ -86,11 +72,11 @@ func (s *NodeSystem) AddLink(n NodeLink) (bool, error) {
 		}
 	}
 
-	if n.To == nil {
+	if n.to == nil {
 		return false, fmt.Errorf("can't have missing 'To' attribute")
 	}
 
-	if n.From == n.To {
+	if n.from == n.to {
 		return false, fmt.Errorf("can't have link on from and to the same node")
 	}
 
@@ -127,16 +113,16 @@ func (s *NodeSystem) activate() error {
 	toNodes := make([]Node, 0)
 	for _, link := range s.links {
 		branch := noBranchKey
-		if link.Branch != nil {
-			branch = *link.Branch
+		if link.branch != nil {
+			branch = *link.branch
 		}
-		fromNodeTree, foundFromNode := nodesTree[link.From]
+		fromNodeTree, foundFromNode := nodesTree[link.from]
 		if !foundFromNode {
-			nodesTree[link.From] = make(map[string]Node)
-			fromNodeTree, _ = nodesTree[link.From]
+			nodesTree[link.from] = make(map[string]Node)
+			fromNodeTree, _ = nodesTree[link.from]
 		}
-		fromNodeTree[branch] = link.To
-		toNodes = append(toNodes, link.To)
+		fromNodeTree[branch] = link.to
+		toNodes = append(toNodes, link.to)
 	}
 
 	for _, node := range s.nodes {
@@ -200,7 +186,7 @@ func checkForOrphanMultiBranchesNode(s *NodeSystem) []error {
 		if len(node.AvailableBranches()) > 0 {
 			noLink := true
 			for _, link := range s.links {
-				if link.From == node {
+				if link.from == node {
 					noLink = false
 					break
 				}
@@ -218,8 +204,8 @@ func checkForMultipleLinksWithSameTo(s *NodeSystem) []error {
 	sameToNodes := make(map[Node][]NodeLink)
 	for i := 0; i < len(s.links); i++ {
 		for j := 0; j < len(s.links); j++ {
-			if i != j && s.links[i].To == s.links[j].To {
-				sameToNodes[s.links[i].To] = append(sameToNodes[s.links[i].To], s.links[i])
+			if i != j && s.links[i].to == s.links[j].to {
+				sameToNodes[s.links[i].to] = append(sameToNodes[s.links[i].to], s.links[i])
 			}
 		}
 	}
@@ -238,7 +224,7 @@ func checkForCyclicRedundancyInNodeLinks(s *NodeSystem) []error {
 		l := s.links[i]
 		notInCycle := true
 		for _, node := range nodesInCycle {
-			if node == l.From {
+			if node == l.from {
 				notInCycle = false
 				break
 			}
@@ -247,7 +233,7 @@ func checkForCyclicRedundancyInNodeLinks(s *NodeSystem) []error {
 			cycleNodeLinks := walkNodeLink(l, l, s.links, []NodeLink{})
 			if cycleNodeLinks != nil {
 				for _, link := range cycleNodeLinks {
-					nodesInCycle = append(nodesInCycle, link.From)
+					nodesInCycle = append(nodesInCycle, link.from)
 				}
 				errors = append(errors, fmt.Errorf("Can't have cycle between links: %+v", cycleNodeLinks))
 			}
@@ -258,14 +244,14 @@ func checkForCyclicRedundancyInNodeLinks(s *NodeSystem) []error {
 
 func walkNodeLink(startingLink NodeLink, link NodeLink, links []NodeLink, walkedNodeLinks []NodeLink) []NodeLink {
 	nodeLinks := append(walkedNodeLinks, link)
-	if link.To == startingLink.From {
+	if link.to == startingLink.from {
 		return nodeLinks
 	}
 	for i := 0; i < len(links); i++ {
 		if links[i] == link || links[i] == startingLink {
 			continue
 		}
-		if link.To == links[i].From {
+		if link.to == links[i].from {
 			return walkNodeLink(startingLink, links[i], links, nodeLinks)
 		}
 	}
@@ -275,11 +261,11 @@ func walkNodeLink(startingLink NodeLink, link NodeLink, links []NodeLink, walked
 func checkForUndeclaredNodeInNodeLink(s *NodeSystem) []error {
 	errors := make([]error, 0)
 	for _, link := range s.links {
-		if link.From != nil && !s.haveNode(link.From) {
-			errors = append(errors, fmt.Errorf("can't have undeclared node '%+v' as 'From' in branch link %+v", link.From, link))
+		if link.from != nil && !s.haveNode(link.from) {
+			errors = append(errors, fmt.Errorf("can't have undeclared node '%+v' as 'From' in branch link %+v", link.from, link))
 		}
-		if link.To != nil && !s.haveNode(link.To) {
-			errors = append(errors, fmt.Errorf("can't have undeclared node '%+v' as 'To' in branch link %+v", link.To, link))
+		if link.to != nil && !s.haveNode(link.to) {
+			errors = append(errors, fmt.Errorf("can't have undeclared node '%+v' as 'To' in branch link %+v", link.to, link))
 		}
 	}
 	return errors
