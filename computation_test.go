@@ -65,34 +65,31 @@ func Test_NewComputation(t *testing.T) {
 }
 
 func Test_Computation_Compute(t *testing.T) {
-	stopAction, _ := NewActionNode(func(c *Context) (bool, error) {
-		return false, nil
-	})
-	errorAction, _ := NewActionNode(func(c *Context) (bool, error) {
-		return false, errors.New("action error")
+	errorAction, _ := NewActionNode(func(c *Context) error {
+		return errors.New("action error")
 	})
 	errorDecision, _ := NewDecisionNode(func(c *Context) (bool, error) {
 		return false, errors.New("decision error")
 	})
-	writeAction, _ := NewActionNode(func(c *Context) (bool, error) {
+	writeAction, _ := NewActionNode(func(c *Context) error {
 		c.Store("write_action", "done")
-		return true, nil
+		return nil
 	})
-	writeAnotherAction, _ := NewActionNode(func(c *Context) (bool, error) {
+	writeAnotherAction, _ := NewActionNode(func(c *Context) error {
 		c.Store("write_another_action", "done")
-		return true, nil
+		return nil
 	})
-	readAction, _ := NewActionNode(func(c *Context) (bool, error) {
+	readAction, _ := NewActionNode(func(c *Context) error {
 		v, err := c.Read("write_action")
 		if err != nil {
-			return false, err
+			return err
 		}
 		c.Store("read_action", fmt.Sprintf("the content of write_action is %v", v))
-		return true, nil
+		return nil
 	})
-	deleteAnotherAction, _ := NewActionNode(func(c *Context) (bool, error) {
+	deleteAnotherAction, _ := NewActionNode(func(c *Context) error {
 		c.Delete("write_another_action")
-		return true, nil
+		return nil
 	})
 	writeActionKeyIsPresent, _ := NewDecisionNode(func(c *Context) (bool, error) {
 		return c.HaveKey("write_action"), nil
@@ -317,52 +314,6 @@ func Test_Computation_Compute(t *testing.T) {
 				writeAnotherAction:      ComputeStatePass(),
 				writeActionKeyIsPresent: ComputeStateBranchPass("false"),
 				deleteAnotherAction:     ComputeStatePass(),
-			},
-		},
-		{
-			name:                "Can compute one stopping action node system",
-			givenNodes:          []Node{stopAction},
-			expectedIsDone:      true,
-			expectedContextData: contextData{},
-			expectedReport:      map[Node]ComputeState{stopAction: ComputeStateStop()},
-		},
-		{
-			name: "Can compute a node system with one stopping action node",
-			givenNodes: []Node{
-				writeAction,
-				writeActionKeyIsPresent,
-				stopAction,
-				readAction,
-				deleteAnotherAction,
-			},
-			givenLinks: []NodeLink{
-				NodeLink{
-					From: writeAction,
-					To:   writeActionKeyIsPresent,
-				},
-				NodeLink{
-					From:   writeActionKeyIsPresent,
-					To:     stopAction,
-					Branch: stringPointer("true"),
-				},
-				NodeLink{
-					From: stopAction,
-					To:   readAction,
-				},
-				NodeLink{
-					From:   writeActionKeyIsPresent,
-					To:     deleteAnotherAction,
-					Branch: stringPointer("false"),
-				},
-			},
-			expectedIsDone: true,
-			expectedContextData: contextData{
-				"write_action": "done",
-			},
-			expectedReport: map[Node]ComputeState{
-				writeAction:             ComputeStatePass(),
-				writeActionKeyIsPresent: ComputeStateBranchPass("true"),
-				stopAction:              ComputeStateStop(),
 			},
 		},
 		{

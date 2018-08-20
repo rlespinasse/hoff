@@ -49,19 +49,14 @@ func (cp *computation) Compute() error {
 func (cp *computation) computeNode(node Node) error {
 	state := node.Compute(cp.context)
 	cp.report[node] = state
-	switch state.value {
-	case pass:
+	if state.value == pass {
 		nextNode, _ := cp.system.follow(node, state.branch)
 		if nextNode == nil {
 			return nil
 		}
 		return cp.computeNode(nextNode)
-	case stop:
-		if state.err != nil {
-			return state.err
-		}
 	}
-	return nil
+	return state.err
 }
 
 func (cp *computation) isDone() bool {

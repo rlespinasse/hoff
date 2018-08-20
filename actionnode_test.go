@@ -10,7 +10,7 @@ import (
 func Test_NewActionNode(t *testing.T) {
 	testCases := []struct {
 		name          string
-		givenFunc     func(*Context) (bool, error)
+		givenFunc     func(*Context) error
 		expectedError error
 	}{
 		{
@@ -19,7 +19,7 @@ func Test_NewActionNode(t *testing.T) {
 		},
 		{
 			name:          "Can create an action node",
-			givenFunc:     func(*Context) (bool, error) { return true, nil },
+			givenFunc:     func(*Context) error { return nil },
 			expectedError: nil,
 		},
 	}
@@ -38,19 +38,13 @@ func Test_NewActionNode(t *testing.T) {
 }
 
 func Test_ActionNode_Compute(t *testing.T) {
-	passingNode, _ := NewActionNode(func(*Context) (bool, error) { return true, nil })
-	stoppingNode, _ := NewActionNode(func(*Context) (bool, error) { return false, nil })
-	failingNode, _ := NewActionNode(func(*Context) (bool, error) { return false, errors.New("error") })
+	passingNode, _ := NewActionNode(func(*Context) error { return nil })
+	failingNode, _ := NewActionNode(func(*Context) error { return errors.New("error") })
 	tc := []NodeTestCase{
 		{
 			name:                 "Should Pass",
 			givenNode:            passingNode,
 			expectedComputeState: ComputeStatePass(),
-		},
-		{
-			name:                 "Should Stop",
-			givenNode:            stoppingNode,
-			expectedComputeState: ComputeStateStop(),
 		},
 		{
 			name:                 "Should Fail",
