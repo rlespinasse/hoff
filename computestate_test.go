@@ -27,17 +27,6 @@ func Test_ComputeState_Call(t *testing.T) {
 			expectedNodeBranch:    stringPointer("branch"),
 		},
 		{
-			name: "Should generate a stopped state",
-			givenComputeStateCall: func() ComputeState { return ComputeStateStop() },
-			expectedState:         stop,
-		},
-		{
-			name: "Should generate a stopped state on branch 'branch'",
-			givenComputeStateCall: func() ComputeState { return ComputeStateBranchStop("branch") },
-			expectedState:         stop,
-			expectedNodeBranch:    stringPointer("branch"),
-		},
-		{
 			name: "Should generate a fail state",
 			givenComputeStateCall: func() ComputeState { return ComputeStateStopOnError(errors.New("error")) },
 			expectedState:         stop,

@@ -37,7 +37,7 @@ func NewComputation(system *NodeSystem, context *Context) (*computation, error) 
 func (cp *computation) Compute() error {
 	cp.report = make(map[Node]ComputeState)
 	for _, node := range cp.system.InitialNodes() {
-		err := cp.computeNode(node)
+		err := cp.computeNode(node, noLink)
 		if err != nil {
 			return err
 		}
@@ -46,15 +46,34 @@ func (cp *computation) Compute() error {
 	return nil
 }
 
-func (cp *computation) computeNode(node Node) error {
+func (cp *computation) computeNode(node Node, linkKind linkKind) error {
+	if linkKind == joinLink {
+		linkedNodes := cp.system.nodesLinkedTo(node)
+		for _, linkedNode := range linkedNodes {
+			if _, found := cp.report[linkedNode]; !found {
+				return nil
+			}
+		}
+	} else if report, found := cp.report[node]; found {
+		return report.err
+	}
 	state := node.Compute(cp.context)
 	cp.report[node] = state
 	if state.value == pass {
-		nextNode, _ := cp.system.follow(node, state.branch)
-		if nextNode == nil {
-			return nil
+		nextNodes, kind, _ := cp.system.follow(node, state.branch)
+		switch kind {
+		case forkLink:
+			for _, node := range nextNodes {
+				err := cp.computeNode(node, forkLink)
+				if err != nil {
+					return err
+				}
+			}
+		default:
+			if nextNodes != nil {
+				return cp.computeNode(nextNodes[0], kind)
+			}
 		}
-		return cp.computeNode(nextNode)
 	}
 	return state.err
 }

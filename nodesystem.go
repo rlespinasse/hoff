@@ -18,7 +18,9 @@ type NodeSystem struct {
 	links    []NodeLink
 
 	initialNodes []Node
-	nodesTree    map[Node]map[string]Node
+	kindTree     map[Node]map[string]linkKind
+	linkTree     map[Node]map[string][]Node
+	linkedTo     map[Node][]Node
 }
 
 func NewNodeSystem() *NodeSystem {
@@ -47,7 +49,7 @@ func (s *NodeSystem) AddLink(n NodeLink) (bool, error) {
 	}
 
 	if n.from == nil {
-		return false, fmt.Errorf("can't have missing 'From' attribute")
+		return false, fmt.Errorf("can't have missing 'from' attribute")
 	}
 
 	if n.branch == nil {
@@ -73,7 +75,7 @@ func (s *NodeSystem) AddLink(n NodeLink) (bool, error) {
 	}
 
 	if n.to == nil {
-		return false, fmt.Errorf("can't have missing 'To' attribute")
+		return false, fmt.Errorf("can't have missing 'to' attribute")
 	}
 
 	if n.from == n.to {
@@ -87,6 +89,7 @@ func (s *NodeSystem) AddLink(n NodeLink) (bool, error) {
 func (s *NodeSystem) Validate() (bool, []error) {
 	errors := make([]error, 0)
 	errors = append(errors, checkForOrphanMultiBranchesNode(s)...)
+	errors = append(errors, checkForMultipleLinksWithSameFrom(s)...)
 	errors = append(errors, checkForMultipleLinksWithSameTo(s)...)
 	errors = append(errors, checkForCyclicRedundancyInNodeLinks(s)...)
 	errors = append(errors, checkForUndeclaredNodeInNodeLink(s)...)
@@ -108,7 +111,9 @@ func (s *NodeSystem) activate() error {
 	}
 
 	initialNodes := make([]Node, 0)
-	nodesTree := make(map[Node]map[string]Node)
+	linkTree := make(map[Node]map[string][]Node)
+	kindTree := make(map[Node]map[string]linkKind)
+	linkedTo := make(map[Node][]Node)
 
 	toNodes := make([]Node, 0)
 	for _, link := range s.links {
@@ -116,12 +121,17 @@ func (s *NodeSystem) activate() error {
 		if link.branch != nil {
 			branch = *link.branch
 		}
-		fromNodeTree, foundFromNode := nodesTree[link.from]
-		if !foundFromNode {
-			nodesTree[link.from] = make(map[string]Node)
-			fromNodeTree, _ = nodesTree[link.from]
+		linkBranchTree, foundNode := linkTree[link.from]
+		kindBranchTree, _ := kindTree[link.from]
+		if !foundNode {
+			linkTree[link.from] = make(map[string][]Node)
+			kindTree[link.from] = make(map[string]linkKind)
+			linkBranchTree, _ = linkTree[link.from]
+			kindBranchTree, _ = kindTree[link.from]
 		}
-		fromNodeTree[branch] = link.to
+		linkBranchTree[branch] = append(linkBranchTree[branch], link.to)
+		kindBranchTree[branch] = link.kind
+		linkedTo[link.to] = append(linkedTo[link.to], link.from)
 		toNodes = append(toNodes, link.to)
 	}
 
@@ -139,28 +149,36 @@ func (s *NodeSystem) activate() error {
 	}
 
 	s.initialNodes = initialNodes
-	s.nodesTree = nodesTree
+	s.linkTree = linkTree
+	s.kindTree = kindTree
+	s.linkedTo = linkedTo
 
 	s.active = true
 	return nil
 }
 
-func (s *NodeSystem) follow(n Node, b *string) (Node, error) {
+func (s *NodeSystem) follow(n Node, b *string) ([]Node, linkKind, error) {
 	if !s.active {
-		return nil, errors.New("can't follow a node if system is not activated")
+		return nil, noLink, errors.New("can't follow a node if system is not activated")
 	}
-	links, foundLinks := s.nodesTree[n]
+	links, foundLinks := s.linkTree[n]
 	if foundLinks {
+		kinds, _ := s.kindTree[n]
 		branch := noBranchKey
 		if b != nil {
 			branch = *b
 		}
-		node, foundNodes := links[branch]
+		nodes, foundNodes := links[branch]
 		if foundNodes {
-			return node, nil
+			kind, _ := kinds[branch]
+			return nodes, kind, nil
 		}
 	}
-	return nil, nil
+	return nil, noLink, nil
+}
+
+func (s *NodeSystem) nodesLinkedTo(n Node) []Node {
+	return s.linkedTo[n]
 }
 
 func (s *NodeSystem) InitialNodes() []Node {
@@ -199,6 +217,30 @@ func checkForOrphanMultiBranchesNode(s *NodeSystem) []error {
 	return errors
 }
 
+func checkForMultipleLinksWithSameFrom(s *NodeSystem) []error {
+	errors := make([]error, 0)
+	sameFromNodes := make(map[Node][]NodeLink)
+	for i := 0; i < len(s.links); i++ {
+		for j := 0; j < len(s.links); j++ {
+			if i != j && s.links[i].from == s.links[j].from {
+				sameFromNodes[s.links[i].from] = append(sameFromNodes[s.links[i].from], s.links[i])
+			}
+		}
+	}
+	for _, links := range sameFromNodes {
+		if len(links) > 1 {
+			kind := links[0].kind
+			for _, link := range links {
+				if kind != link.kind {
+					errors = append(errors, fmt.Errorf("Can't have mixed kind links with the same 'from': %+v", links))
+					break
+				}
+			}
+		}
+	}
+	return errors
+}
+
 func checkForMultipleLinksWithSameTo(s *NodeSystem) []error {
 	errors := make([]error, 0)
 	sameToNodes := make(map[Node][]NodeLink)
@@ -211,7 +253,13 @@ func checkForMultipleLinksWithSameTo(s *NodeSystem) []error {
 	}
 	for _, links := range sameToNodes {
 		if len(links) > 1 {
-			errors = append(errors, fmt.Errorf("Can't have multiple links with the same 'To': %+v", links))
+			kind := links[0].kind
+			for _, link := range links {
+				if kind != link.kind {
+					errors = append(errors, fmt.Errorf("Can't have mixed kind links with the same 'to': %+v", links))
+					break
+				}
+			}
 		}
 	}
 	return errors
@@ -262,10 +310,10 @@ func checkForUndeclaredNodeInNodeLink(s *NodeSystem) []error {
 	errors := make([]error, 0)
 	for _, link := range s.links {
 		if link.from != nil && !s.haveNode(link.from) {
-			errors = append(errors, fmt.Errorf("can't have undeclared node '%+v' as 'From' in branch link %+v", link.from, link))
+			errors = append(errors, fmt.Errorf("can't have undeclared node '%+v' as 'from' in branch link %+v", link.from, link))
 		}
 		if link.to != nil && !s.haveNode(link.to) {
-			errors = append(errors, fmt.Errorf("can't have undeclared node '%+v' as 'To' in branch link %+v", link.to, link))
+			errors = append(errors, fmt.Errorf("can't have undeclared node '%+v' as 'to' in branch link %+v", link.to, link))
 		}
 	}
 	return errors

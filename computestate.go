@@ -34,19 +34,6 @@ func ComputeStateBranchPass(branch string) ComputeState {
 	}
 }
 
-func ComputeStateStop() ComputeState {
-	return ComputeState{
-		value: stop,
-	}
-}
-
-func ComputeStateBranchStop(branch string) ComputeState {
-	return ComputeState{
-		value:  stop,
-		branch: &branch,
-	}
-}
-
 func ComputeStateStopOnError(err error) ComputeState {
 	return ComputeState{
 		value: stop,

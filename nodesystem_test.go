@@ -10,6 +10,7 @@ import (
 
 var someActionNode, _ = NewActionNode(func(*Context) error { return nil })
 var anotherActionNode, _ = NewActionNode(func(*Context) error { return nil })
+var someAnotherActionNode, _ = NewActionNode(func(*Context) error { return nil })
 var alwaysTrueDecisionNode, _ = NewDecisionNode(func(*Context) (bool, error) { return true, nil })
 
 func Test_NodeSystem_Validate(t *testing.T) {
@@ -118,7 +119,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 			},
 		},
 		{
-			name: "Can't add empty 'From' on branch link",
+			name: "Can't add empty 'from' on branch link",
 			givenLinks: []NodeLink{
 				NodeLink{to: someActionNode},
 			},
@@ -128,11 +129,11 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				links:    []NodeLink{},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("can't have missing 'From' attribute"),
+				fmt.Errorf("can't have missing 'from' attribute"),
 			},
 		},
 		{
-			name: "Can't add empty 'To' on branch link",
+			name: "Can't add empty 'to' on branch link",
 			givenLinks: []NodeLink{
 				NodeLink{from: someActionNode},
 			},
@@ -142,11 +143,11 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				links:    []NodeLink{},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("can't have missing 'To' attribute"),
+				fmt.Errorf("can't have missing 'to' attribute"),
 			},
 		},
 		{
-			name: "Can't add link with the node on 'From' and 'To'",
+			name: "Can't add link with the node on 'from' and 'to'",
 			givenLinks: []NodeLink{
 				NewLink(someActionNode, someActionNode),
 			},
@@ -182,14 +183,68 @@ func Test_NodeSystem_Validate(t *testing.T) {
 			},
 		},
 		{
-			name: "Can't have multiple links with the same 'To'",
+			name: "Can't have mixed kind links with the same 'from'",
+			givenNodes: []Node{
+				someActionNode,
+				anotherActionNode,
+				someAnotherActionNode,
+			},
+			givenLinks: []NodeLink{
+				NewLink(someActionNode, anotherActionNode),
+				NewForkLink(someActionNode, someAnotherActionNode),
+			},
+			expectedNodeSystem: &NodeSystem{
+				validity: false,
+				nodes: []Node{
+					someActionNode,
+					anotherActionNode,
+					someAnotherActionNode,
+				},
+				links: []NodeLink{
+					NewLink(someActionNode, anotherActionNode),
+					NewForkLink(someActionNode, someAnotherActionNode),
+				},
+			},
+			expectedErrors: []error{
+				fmt.Errorf("Can't have mixed kind links with the same 'from': %+v", []NodeLink{
+					NewLink(someActionNode, anotherActionNode),
+					NewForkLink(someActionNode, someAnotherActionNode),
+				}),
+			},
+		},
+		{
+			name: "Can have fork links with the same 'from'",
 			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
 				anotherActionNode,
 			},
 			givenLinks: []NodeLink{
-				NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+				NewBranchForkLink(alwaysTrueDecisionNode, someActionNode, "true"),
+				NewBranchForkLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+			},
+			expectedNodeSystem: &NodeSystem{
+				validity: true,
+				nodes: []Node{
+					alwaysTrueDecisionNode,
+					someActionNode,
+					anotherActionNode,
+				},
+				links: []NodeLink{
+					NewBranchForkLink(alwaysTrueDecisionNode, someActionNode, "true"),
+					NewBranchForkLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+				},
+			},
+		},
+		{
+			name: "Can't have mixed kind links with the same 'to'",
+			givenNodes: []Node{
+				alwaysTrueDecisionNode,
+				someActionNode,
+				anotherActionNode,
+			},
+			givenLinks: []NodeLink{
+				NewBranchMergeLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
 				NewLink(someActionNode, anotherActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
@@ -200,15 +255,63 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					anotherActionNode,
 				},
 				links: []NodeLink{
-					NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+					NewBranchMergeLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
 					NewLink(someActionNode, anotherActionNode),
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("Can't have multiple links with the same 'To': %+v", []NodeLink{
-					NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+				fmt.Errorf("Can't have mixed kind links with the same 'to': %+v", []NodeLink{
+					NewBranchMergeLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
 					NewLink(someActionNode, anotherActionNode),
 				}),
+			},
+		},
+		{
+			name: "Can have join links with the same 'to'",
+			givenNodes: []Node{
+				alwaysTrueDecisionNode,
+				someActionNode,
+				anotherActionNode,
+			},
+			givenLinks: []NodeLink{
+				NewBranchJoinLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+				NewJoinLink(someActionNode, anotherActionNode),
+			},
+			expectedNodeSystem: &NodeSystem{
+				validity: true,
+				nodes: []Node{
+					alwaysTrueDecisionNode,
+					someActionNode,
+					anotherActionNode,
+				},
+				links: []NodeLink{
+					NewBranchJoinLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+					NewJoinLink(someActionNode, anotherActionNode),
+				},
+			},
+		},
+		{
+			name: "Can have merge links with the same 'to'",
+			givenNodes: []Node{
+				alwaysTrueDecisionNode,
+				someActionNode,
+				anotherActionNode,
+			},
+			givenLinks: []NodeLink{
+				NewBranchMergeLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+				NewMergeLink(someActionNode, anotherActionNode),
+			},
+			expectedNodeSystem: &NodeSystem{
+				validity: true,
+				nodes: []Node{
+					alwaysTrueDecisionNode,
+					someActionNode,
+					anotherActionNode,
+				},
+				links: []NodeLink{
+					NewBranchMergeLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+					NewMergeLink(someActionNode, anotherActionNode),
+				},
 			},
 		},
 		{
@@ -290,7 +393,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 			},
 		},
 		{
-			name: "Can't have a link with an undeclared node as 'To'",
+			name: "Can't have a link with an undeclared node as 'to'",
 			givenNodes: []Node{
 				someActionNode,
 			},
@@ -307,11 +410,11 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("can't have undeclared node '%+v' as 'To' in branch link %+v", anotherActionNode, NewLink(someActionNode, anotherActionNode)),
+				fmt.Errorf("can't have undeclared node '%+v' as 'to' in branch link %+v", anotherActionNode, NewLink(someActionNode, anotherActionNode)),
 			},
 		},
 		{
-			name: "Can't have a link with an undeclared node as 'From'",
+			name: "Can't have a link with an undeclared node as 'from'",
 			givenNodes: []Node{
 				anotherActionNode,
 			},
@@ -328,7 +431,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("can't have undeclared node '%+v' as 'From' in branch link %+v", someActionNode, NewLink(someActionNode, anotherActionNode)),
+				fmt.Errorf("can't have undeclared node '%+v' as 'from' in branch link %+v", someActionNode, NewLink(someActionNode, anotherActionNode)),
 			},
 		},
 		{
@@ -376,7 +479,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("can't have undeclared node '%+v' as 'To' in branch link %+v", anotherActionNode, NewLink(someActionNode, anotherActionNode)),
+				fmt.Errorf("can't have undeclared node '%+v' as 'to' in branch link %+v", anotherActionNode, NewLink(someActionNode, anotherActionNode)),
 			},
 		},
 		{
@@ -497,14 +600,14 @@ func Test_NodeSystem_activate(t *testing.T) {
 		givenLinks           []NodeLink
 		expectedActivatation bool
 		expectedInitialNodes []Node
-		expectedNodeTree     map[Node]map[string]Node
+		expectedLinkTree     map[Node]map[string][]Node
 		expectedError        error
 	}{
 		{
 			name:                 "Can activate an empty validated system",
 			expectedActivatation: true,
 			expectedInitialNodes: []Node{},
-			expectedNodeTree:     map[Node]map[string]Node{},
+			expectedLinkTree:     map[Node]map[string][]Node{},
 		},
 		{
 			name: "Can't activate an unvalidated system",
@@ -519,7 +622,7 @@ func Test_NodeSystem_activate(t *testing.T) {
 			givenNodes:           []Node{someActionNode},
 			expectedActivatation: true,
 			expectedInitialNodes: []Node{someActionNode},
-			expectedNodeTree:     map[Node]map[string]Node{},
+			expectedLinkTree:     map[Node]map[string][]Node{},
 		},
 		{
 			name: "Can activate an no needed branch node link validated system",
@@ -534,9 +637,9 @@ func Test_NodeSystem_activate(t *testing.T) {
 			expectedInitialNodes: []Node{
 				someActionNode,
 			},
-			expectedNodeTree: map[Node]map[string]Node{
-				someActionNode: map[string]Node{
-					"*": anotherActionNode,
+			expectedLinkTree: map[Node]map[string][]Node{
+				someActionNode: map[string][]Node{
+					"*": []Node{anotherActionNode},
 				},
 			},
 		},
@@ -555,9 +658,9 @@ func Test_NodeSystem_activate(t *testing.T) {
 				someActionNode,
 				alwaysTrueDecisionNode,
 			},
-			expectedNodeTree: map[Node]map[string]Node{
-				alwaysTrueDecisionNode: map[string]Node{
-					"true": anotherActionNode,
+			expectedLinkTree: map[Node]map[string][]Node{
+				alwaysTrueDecisionNode: map[string][]Node{
+					"true": []Node{anotherActionNode},
 				},
 			},
 		},
@@ -582,8 +685,8 @@ func Test_NodeSystem_activate(t *testing.T) {
 			if !cmp.Equal(system.InitialNodes(), testCase.expectedInitialNodes, equalOptionForNode) {
 				t.Errorf("initial nodes - got: %+v, want: %+v", system.InitialNodes(), testCase.expectedInitialNodes)
 			}
-			if !cmp.Equal(system.nodesTree, testCase.expectedNodeTree, equalOptionForNode) {
-				t.Errorf("node tree - got: %#v, want: %#v", system.nodesTree, testCase.expectedNodeTree)
+			if !cmp.Equal(system.linkTree, testCase.expectedLinkTree, equalOptionForNode) {
+				t.Errorf("node tree - got: %#v, want: %#v", system.linkTree, testCase.expectedLinkTree)
 			}
 		})
 	}
@@ -601,23 +704,25 @@ func Test_NodeSystem_multiple_activatation(t *testing.T) {
 
 func Test_NodeSystem_follow(t *testing.T) {
 	testCases := []struct {
-		name                  string
-		givenNodes            []Node
-		givenLinks            []NodeLink
-		givenFollowNode       Node
-		givenFollowBranch     *string
-		expectedFollowingNode Node
-		expectedError         error
+		name                   string
+		givenNodes             []Node
+		givenLinks             []NodeLink
+		givenFollowNode        Node
+		givenFollowBranch      *string
+		expectedFollowingNodes []Node
+		expectedLinkKind       linkKind
+		expectedError          error
 	}{
 		{
 			name: "Can't follow on an unactivated system",
 			givenLinks: []NodeLink{
 				NewLink(someActionNode, anotherActionNode),
 			},
-			expectedError: errors.New("can't follow a node if system is not activated"),
+			expectedLinkKind: noLink,
+			expectedError:    errors.New("can't follow a node if system is not activated"),
 		},
 		{
-			name: "Can follow 'From' on no branch link",
+			name: "Can follow 'from' on link",
 			givenNodes: []Node{
 				someActionNode,
 				anotherActionNode,
@@ -625,11 +730,12 @@ func Test_NodeSystem_follow(t *testing.T) {
 			givenLinks: []NodeLink{
 				NewLink(someActionNode, anotherActionNode),
 			},
-			givenFollowNode:       someActionNode,
-			expectedFollowingNode: anotherActionNode,
+			givenFollowNode:        someActionNode,
+			expectedFollowingNodes: []Node{anotherActionNode},
+			expectedLinkKind:       classicLink,
 		},
 		{
-			name: "Can follow 'To' on no branch link",
+			name: "Can follow 'to' on link",
 			givenNodes: []Node{
 				someActionNode,
 				anotherActionNode,
@@ -637,11 +743,132 @@ func Test_NodeSystem_follow(t *testing.T) {
 			givenLinks: []NodeLink{
 				NewLink(someActionNode, anotherActionNode),
 			},
-			givenFollowNode:       anotherActionNode,
-			expectedFollowingNode: nil,
+			givenFollowNode:        anotherActionNode,
+			expectedFollowingNodes: nil,
+			expectedLinkKind:       noLink,
 		},
 		{
-			name: "Can follow 'From' on branch link",
+			name: "Can follow 'from' on fork link",
+			givenNodes: []Node{
+				someActionNode,
+				anotherActionNode,
+				someAnotherActionNode,
+			},
+			givenLinks: []NodeLink{
+				NewForkLink(someActionNode, anotherActionNode),
+				NewForkLink(someActionNode, someAnotherActionNode),
+			},
+			givenFollowNode:        someActionNode,
+			expectedFollowingNodes: []Node{anotherActionNode, someAnotherActionNode},
+			expectedLinkKind:       forkLink,
+		},
+		{
+			name: "Can follow 'to' on fork link",
+			givenNodes: []Node{
+				someActionNode,
+				anotherActionNode,
+				someAnotherActionNode,
+			},
+			givenLinks: []NodeLink{
+				NewForkLink(someActionNode, anotherActionNode),
+				NewForkLink(someActionNode, someAnotherActionNode),
+			},
+			givenFollowNode:        anotherActionNode,
+			expectedFollowingNodes: nil,
+			expectedLinkKind:       noLink,
+		},
+		{
+			name: "Can follow one 'from' on join link",
+			givenNodes: []Node{
+				someActionNode,
+				anotherActionNode,
+				someAnotherActionNode,
+			},
+			givenLinks: []NodeLink{
+				NewJoinLink(someActionNode, someAnotherActionNode),
+				NewJoinLink(anotherActionNode, someAnotherActionNode),
+			},
+			givenFollowNode:        someActionNode,
+			expectedFollowingNodes: []Node{someAnotherActionNode},
+			expectedLinkKind:       joinLink,
+		},
+		{
+			name: "Can follow another 'from' on join link",
+			givenNodes: []Node{
+				someActionNode,
+				anotherActionNode,
+				someAnotherActionNode,
+			},
+			givenLinks: []NodeLink{
+				NewJoinLink(someActionNode, someAnotherActionNode),
+				NewJoinLink(anotherActionNode, someAnotherActionNode),
+			},
+			givenFollowNode:        anotherActionNode,
+			expectedFollowingNodes: []Node{someAnotherActionNode},
+			expectedLinkKind:       joinLink,
+		},
+		{
+			name: "Can follow 'to' on join link",
+			givenNodes: []Node{
+				someActionNode,
+				anotherActionNode,
+				someAnotherActionNode,
+			},
+			givenLinks: []NodeLink{
+				NewJoinLink(someActionNode, someAnotherActionNode),
+				NewJoinLink(anotherActionNode, someAnotherActionNode),
+			},
+			givenFollowNode:        someAnotherActionNode,
+			expectedFollowingNodes: nil,
+			expectedLinkKind:       noLink,
+		},
+		{
+			name: "Can follow one 'from' on merge link",
+			givenNodes: []Node{
+				someActionNode,
+				anotherActionNode,
+				someAnotherActionNode,
+			},
+			givenLinks: []NodeLink{
+				NewMergeLink(someActionNode, someAnotherActionNode),
+				NewMergeLink(anotherActionNode, someAnotherActionNode),
+			},
+			givenFollowNode:        someActionNode,
+			expectedFollowingNodes: []Node{someAnotherActionNode},
+			expectedLinkKind:       mergeLink,
+		},
+		{
+			name: "Can follow another 'from' on merge link",
+			givenNodes: []Node{
+				someActionNode,
+				anotherActionNode,
+				someAnotherActionNode,
+			},
+			givenLinks: []NodeLink{
+				NewMergeLink(someActionNode, someAnotherActionNode),
+				NewMergeLink(anotherActionNode, someAnotherActionNode),
+			},
+			givenFollowNode:        anotherActionNode,
+			expectedFollowingNodes: []Node{someAnotherActionNode},
+			expectedLinkKind:       mergeLink,
+		},
+		{
+			name: "Can follow 'to' on merge link",
+			givenNodes: []Node{
+				someActionNode,
+				anotherActionNode,
+				someAnotherActionNode,
+			},
+			givenLinks: []NodeLink{
+				NewMergeLink(someActionNode, someAnotherActionNode),
+				NewMergeLink(anotherActionNode, someAnotherActionNode),
+			},
+			givenFollowNode:        someAnotherActionNode,
+			expectedFollowingNodes: nil,
+			expectedLinkKind:       noLink,
+		},
+		{
+			name: "Can follow 'from' on branch link",
 			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
@@ -649,12 +876,13 @@ func Test_NodeSystem_follow(t *testing.T) {
 			givenLinks: []NodeLink{
 				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
 			},
-			givenFollowNode:       alwaysTrueDecisionNode,
-			givenFollowBranch:     stringPointer("true"),
-			expectedFollowingNode: someActionNode,
+			givenFollowNode:        alwaysTrueDecisionNode,
+			givenFollowBranch:      stringPointer("true"),
+			expectedFollowingNodes: []Node{someActionNode},
+			expectedLinkKind:       classicLink,
 		},
 		{
-			name: "Can follow 'To' on branch link",
+			name: "Can follow 'to' on branch link",
 			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
@@ -662,11 +890,12 @@ func Test_NodeSystem_follow(t *testing.T) {
 			givenLinks: []NodeLink{
 				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
 			},
-			givenFollowNode:       someActionNode,
-			expectedFollowingNode: nil,
+			givenFollowNode:        someActionNode,
+			expectedFollowingNodes: nil,
+			expectedLinkKind:       noLink,
 		},
 		{
-			name: "Can't follow 'From' on branch link but without passing the branch",
+			name: "Can't follow 'from' on branch link but without passing the branch",
 			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
@@ -674,11 +903,12 @@ func Test_NodeSystem_follow(t *testing.T) {
 			givenLinks: []NodeLink{
 				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
 			},
-			givenFollowNode:       alwaysTrueDecisionNode,
-			expectedFollowingNode: nil,
+			givenFollowNode:        alwaysTrueDecisionNode,
+			expectedFollowingNodes: nil,
+			expectedLinkKind:       noLink,
 		},
 		{
-			name: "Can't follow 'From' on branch link but without passing the right branch",
+			name: "Can't follow 'from' on branch link but without passing the right branch",
 			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
@@ -686,9 +916,10 @@ func Test_NodeSystem_follow(t *testing.T) {
 			givenLinks: []NodeLink{
 				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
 			},
-			givenFollowNode:       alwaysTrueDecisionNode,
-			givenFollowBranch:     stringPointer("false"),
-			expectedFollowingNode: nil,
+			givenFollowNode:        alwaysTrueDecisionNode,
+			givenFollowBranch:      stringPointer("false"),
+			expectedFollowingNodes: nil,
+			expectedLinkKind:       noLink,
 		},
 	}
 	for _, testCase := range testCases {
@@ -702,13 +933,16 @@ func Test_NodeSystem_follow(t *testing.T) {
 			}
 			system.Validate()
 			system.activate()
-			node, err := system.follow(testCase.givenFollowNode, testCase.givenFollowBranch)
+			nodes, kind, err := system.follow(testCase.givenFollowNode, testCase.givenFollowBranch)
 
 			if !cmp.Equal(err, testCase.expectedError, equalOptionForError) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 			}
-			if !cmp.Equal(node, testCase.expectedFollowingNode, equalOptionForNode) {
-				t.Errorf("initial nodes - got: %+v, want: %+v", node, testCase.expectedFollowingNode)
+			if !cmp.Equal(kind, testCase.expectedLinkKind) {
+				t.Errorf("link kind - got: %+v, want: %+v", kind, testCase.expectedLinkKind)
+			}
+			if !cmp.Equal(nodes, testCase.expectedFollowingNodes, equalOptionForNode) {
+				t.Errorf("following nodes - got: %+v, want: %+v", nodes, testCase.expectedFollowingNodes)
 			}
 		})
 	}

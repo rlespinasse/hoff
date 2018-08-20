@@ -313,6 +313,101 @@ func Test_Computation_Compute(t *testing.T) {
 				errorDecision: ComputeStateStopOnError(errors.New("decision error")),
 			},
 		},
+		{
+			name: "Can compute a node system with fork links",
+			givenNodes: []Node{
+				writeAction,
+				readAction,
+				errorAction,
+				deleteAnotherAction,
+			},
+			givenLinks: []NodeLink{
+				NewForkLink(writeAction, deleteAnotherAction),
+				NewForkLink(writeAction, errorAction),
+				NewForkLink(writeAction, readAction),
+			},
+			expectedIsDone: false,
+			expectedContextData: contextData{
+				"write_action": "done",
+			},
+			expectedReport: map[Node]ComputeState{
+				writeAction:         ComputeStatePass(),
+				deleteAnotherAction: ComputeStatePass(),
+				errorAction:         ComputeStateStopOnError(errors.New("action error")),
+			},
+		},
+		{
+			name: "Can compute a node system with join links",
+			givenNodes: []Node{
+				writeAction,
+				errorAction,
+				readAction,
+				deleteAnotherAction,
+			},
+			givenLinks: []NodeLink{
+				NewJoinLink(writeAction, readAction),
+				NewJoinLink(errorAction, readAction),
+				NewLink(readAction, deleteAnotherAction),
+			},
+			expectedIsDone: false,
+			expectedContextData: contextData{
+				"write_action": "done",
+			},
+			expectedReport: map[Node]ComputeState{
+				writeAction: ComputeStatePass(),
+				errorAction: ComputeStateStopOnError(errors.New("action error")),
+			},
+		},
+		{
+			name: "Can compute a node system with merge links",
+			givenNodes: []Node{
+				writeAction,
+				writeActionKeyIsPresent,
+				readAction,
+				deleteAnotherAction,
+			},
+			givenLinks: []NodeLink{
+				NewMergeLink(writeAction, readAction),
+				NewBranchMergeLink(writeActionKeyIsPresent, readAction, "true"),
+				NewLink(readAction, deleteAnotherAction),
+			},
+			expectedIsDone: true,
+			expectedContextData: contextData{
+				"write_action": "done",
+				"read_action":  "the content of write_action is done",
+			},
+			expectedReport: map[Node]ComputeState{
+				writeAction:             ComputeStatePass(),
+				writeActionKeyIsPresent: ComputeStateBranchPass("true"),
+				readAction:              ComputeStatePass(),
+				deleteAnotherAction:     ComputeStatePass(),
+			},
+		},
+		{
+			name: "Can compute a node system with merge links with error",
+			givenNodes: []Node{
+				writeAction,
+				errorAction,
+				readAction,
+				deleteAnotherAction,
+			},
+			givenLinks: []NodeLink{
+				NewMergeLink(writeAction, readAction),
+				NewMergeLink(errorAction, readAction),
+				NewLink(readAction, deleteAnotherAction),
+			},
+			expectedIsDone: false,
+			expectedContextData: contextData{
+				"write_action": "done",
+				"read_action":  "the content of write_action is done",
+			},
+			expectedReport: map[Node]ComputeState{
+				writeAction:         ComputeStatePass(),
+				errorAction:         ComputeStateStopOnError(errors.New("action error")),
+				readAction:          ComputeStatePass(),
+				deleteAnotherAction: ComputeStatePass(),
+			},
+		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
