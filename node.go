@@ -1,4 +1,4 @@
-package flows
+package namingishard
 
 import "github.com/google/go-cmp/cmp"
 
