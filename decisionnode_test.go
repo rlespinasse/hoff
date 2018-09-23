@@ -45,17 +45,17 @@ func Test_DecisionNode_Compute(t *testing.T) {
 		{
 			name:                 "Should Pass on Branch 'true'",
 			givenNode:            passingBranchTrueNode,
-			expectedComputeState: ComputeStateBranchPass(true),
+			expectedComputeState: ComputeStateContinueOnBranch(true),
 		},
 		{
 			name:                 "Should Pass on Branch 'false'",
 			givenNode:            passingBranchFalseNode,
-			expectedComputeState: ComputeStateBranchPass(false),
+			expectedComputeState: ComputeStateContinueOnBranch(false),
 		},
 		{
 			name:                 "Should Fail",
 			givenNode:            failingNode,
-			expectedComputeState: ComputeStateStopOnError(errors.New("error")),
+			expectedComputeState: ComputeStateAbort(errors.New("error")),
 		},
 	}
 	RunTestOnNode(t, tc)

@@ -1,7 +1,6 @@
 package namingishard
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -61,30 +60,31 @@ func Test_Context_Read(t *testing.T) {
 		givenContextData contextData
 		givenKey         string
 		expectedValue    interface{}
-		expectedError    error
+		expectedBool     bool
 	}{
 		{
 			name:             "Can read present key",
 			givenContextData: contextData{"key": "value"},
 			givenKey:         "key",
 			expectedValue:    "value",
+			expectedBool:     true,
 		},
 		{
-			name:          "Can't read unknown key",
-			givenKey:      "key",
-			expectedError: errors.New("unknown key: key"),
+			name:         "Can't read unknown key",
+			givenKey:     "key",
+			expectedBool: false,
 		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			c := setupContext(testCase.givenContextData)
-			value, err := c.Read(testCase.givenKey)
+			value, ok := c.Read(testCase.givenKey)
 
 			if value != testCase.expectedValue {
 				t.Errorf("value - got: %+v, want: %+v", value, testCase.expectedValue)
 			}
-			if !cmp.Equal(err, testCase.expectedError, equalOptionForError) {
-				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
+			if testCase.expectedBool != ok {
+				t.Errorf("bool - got: %+v, want: %+v", ok, testCase.expectedBool)
 			}
 		})
 	}

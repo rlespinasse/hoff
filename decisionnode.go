@@ -16,12 +16,12 @@ func (n DecisionNode) String() string {
 func (n *DecisionNode) Compute(c *Context) ComputeState {
 	decision, err := n.decisionFunc(c)
 	if err != nil {
-		return ComputeStateStopOnError(err)
+		return ComputeStateAbort(err)
 	}
 	if decision {
-		return ComputeStateBranchPass(true)
+		return ComputeStateContinueOnBranch(true)
 	}
-	return ComputeStateBranchPass(false)
+	return ComputeStateContinueOnBranch(false)
 }
 
 func (n *DecisionNode) decideCapability() bool {

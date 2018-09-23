@@ -1,8 +1,6 @@
 package namingishard
 
 import (
-	"fmt"
-
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -24,12 +22,9 @@ func (c *Context) Delete(key string) {
 	delete(c.data, key)
 }
 
-func (c *Context) Read(key string) (interface{}, error) {
+func (c *Context) Read(key string) (interface{}, bool) {
 	value, ok := c.data[key]
-	if ok {
-		return value, nil
-	}
-	return nil, fmt.Errorf("unknown key: %s", key)
+	return value, ok
 }
 
 func (c *Context) HaveKey(key string) bool {

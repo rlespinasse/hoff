@@ -30,9 +30,9 @@ func newBranchLink(from, to Node, branch bool) nodeLink {
 func (n nodeLink) String() string {
 	branch := ""
 	if n.branch != nil {
-		branch = fmt.Sprintf(", branch: %v", *n.branch)
+		branch = fmt.Sprintf(" branch:%v", *n.branch)
 	}
-	return fmt.Sprintf("{from: '%v', to: '%v'%v}", n.from, n.to, branch)
+	return fmt.Sprintf("{from:'%v' to:'%v'%v}", n.from, n.to, branch)
 }
 
 var equalOptionFornodeLink = cmp.Comparer(func(x, y nodeLink) bool {

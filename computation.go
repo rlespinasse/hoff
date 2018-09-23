@@ -46,7 +46,8 @@ func (cp *computation) Compute() error {
 	return nil
 }
 
-func (cp *computation) computeNode(node, callingNode Node, branch *bool) error {
+func (cp *computation) computeNode(node, callingNode Node, callingBranch *bool) error {
+	skipIt := false
 	if callingNode != nil {
 		joinMode := cp.system.NodeJoinMode(node)
 		if joinMode != JoinModeNone {
@@ -56,7 +57,7 @@ func (cp *computation) computeNode(node, callingNode Node, branch *bool) error {
 				report, found := cp.report[linkedNode]
 				if !found {
 					return nil
-				} else if report.value == pass && report.branch == branch {
+				} else if report.value == Continue && report.branch == callingBranch {
 					passingNodesCount++
 				}
 			}
@@ -68,19 +69,53 @@ func (cp *computation) computeNode(node, callingNode Node, branch *bool) error {
 				}
 			}
 		}
-	}
-	state := node.Compute(cp.context)
-	cp.report[node] = state
-	if state.value == pass {
-		nextNodes, _ := cp.system.follow(node, state.branch)
-		for _, newNode := range nextNodes {
-			err := cp.computeNode(newNode, node, state.branch)
-			if err != nil {
-				return err
-			}
+
+		callingState := cp.report[callingNode]
+		if !(callingState.value == Continue && callingState.branch == callingBranch) {
+			skipIt = true
 		}
 	}
-	return state.err
+
+	if !skipIt {
+		state := node.Compute(cp.context)
+		cp.report[node] = state
+
+		if state.value == Abort {
+			return state.err
+		}
+
+	} else {
+		cp.report[node] = ComputeStateSkip()
+	}
+
+	if node.decideCapability() {
+		err := cp.computeNextNodes(node, truePointer)
+		if err != nil {
+			return err
+		}
+		err = cp.computeNextNodes(node, falsePointer)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := cp.computeNextNodes(node, nil)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (cp *computation) computeNextNodes(callingNode Node, followBranch *bool) error {
+	nextNodes, _ := cp.system.follow(callingNode, followBranch)
+	for _, node := range nextNodes {
+		err := cp.computeNode(node, callingNode, followBranch)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (cp *computation) isDone() bool {

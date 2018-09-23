@@ -6,7 +6,7 @@ import (
 
 type ActionNode struct {
 	name       string
-	actionFunc func(*Context) error
+	actionFunc func(*Context) (bool, error)
 }
 
 func (n ActionNode) String() string {
@@ -14,18 +14,21 @@ func (n ActionNode) String() string {
 }
 
 func (n *ActionNode) Compute(c *Context) ComputeState {
-	err := n.actionFunc(c)
+	state, err := n.actionFunc(c)
 	if err != nil {
-		return ComputeStateStopOnError(err)
+		return ComputeStateAbort(err)
 	}
-	return ComputeStatePass()
+	if state {
+		return ComputeStateContinue()
+	}
+	return ComputeStateStop()
 }
 
 func (n *ActionNode) decideCapability() bool {
 	return false
 }
 
-func NewActionNode(name string, actionFunc func(*Context) error) (*ActionNode, error) {
+func NewActionNode(name string, actionFunc func(*Context) (bool, error)) (*ActionNode, error) {
 	if actionFunc == nil {
 		return nil, errors.New("can't create action node without function")
 	}

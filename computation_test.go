@@ -65,31 +65,31 @@ func Test_NewComputation(t *testing.T) {
 }
 
 func Test_Computation_Compute(t *testing.T) {
-	errorAction, _ := NewActionNode("errorAction", func(c *Context) error {
-		return errors.New("action error")
+	errorAction, _ := NewActionNode("errorAction", func(c *Context) (bool, error) {
+		return true, errors.New("action error")
 	})
 	errorDecision, _ := NewDecisionNode("errorDecision", func(c *Context) (bool, error) {
 		return false, errors.New("decision error")
 	})
-	writeAction, _ := NewActionNode("writeAction", func(c *Context) error {
+	writeAction, _ := NewActionNode("writeAction", func(c *Context) (bool, error) {
 		c.Store("write_action", "done")
-		return nil
+		return true, nil
 	})
-	writeAnotherAction, _ := NewActionNode("writeAnotherAction", func(c *Context) error {
+	writeAnotherAction, _ := NewActionNode("writeAnotherAction", func(c *Context) (bool, error) {
 		c.Store("write_another_action", "done")
-		return nil
+		return true, nil
 	})
-	readAction, _ := NewActionNode("readAction", func(c *Context) error {
-		v, err := c.Read("write_action")
-		if err != nil {
-			return err
+	readAction, _ := NewActionNode("readAction", func(c *Context) (bool, error) {
+		v, ok := c.Read("write_action")
+		if !ok {
+			return false, nil
 		}
 		c.Store("read_action", fmt.Sprintf("the content of write_action is %v", v))
-		return nil
+		return true, nil
 	})
-	deleteAnotherAction, _ := NewActionNode("deleteAnotherAction", func(c *Context) error {
+	deleteAnotherAction, _ := NewActionNode("deleteAnotherAction", func(c *Context) (bool, error) {
 		c.Delete("write_another_action")
-		return nil
+		return true, nil
 	})
 	writeActionKeyIsPresent, _ := NewDecisionNode("writeActionKeyIsPresent", func(c *Context) (bool, error) {
 		return c.HaveKey("write_action"), nil
@@ -97,6 +97,7 @@ func Test_Computation_Compute(t *testing.T) {
 	writeAnotherActionKeyIsPresent, _ := NewDecisionNode("writeAnotherActionKeyIsPresent", func(c *Context) (bool, error) {
 		return c.HaveKey("write_another_action"), nil
 	})
+
 	testCases := []struct {
 		name                string
 		givenNodes          []Node
@@ -123,7 +124,18 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 			},
 			expectedReport: map[Node]ComputeState{
-				writeAction: ComputeStatePass(),
+				writeAction: ComputeStateContinue(),
+			},
+		},
+		{
+			name: "Can compute one stop action node system",
+			givenNodes: []Node{
+				readAction,
+			},
+			expectedIsDone:      true,
+			expectedContextData: contextData{},
+			expectedReport: map[Node]ComputeState{
+				readAction: ComputeStateStop(),
 			},
 		},
 		{
@@ -138,8 +150,8 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_another_action": "done",
 			},
 			expectedReport: map[Node]ComputeState{
-				writeAction:        ComputeStatePass(),
-				writeAnotherAction: ComputeStatePass(),
+				writeAction:        ComputeStateContinue(),
+				writeAnotherAction: ComputeStateContinue(),
 			},
 		},
 		{
@@ -157,8 +169,8 @@ func Test_Computation_Compute(t *testing.T) {
 				"read_action":  "the content of write_action is done",
 			},
 			expectedReport: map[Node]ComputeState{
-				writeAction: ComputeStatePass(),
-				readAction:  ComputeStatePass(),
+				writeAction: ComputeStateContinue(),
+				readAction:  ComputeStateContinue(),
 			},
 		},
 		{
@@ -176,8 +188,8 @@ func Test_Computation_Compute(t *testing.T) {
 				"read_action":  "the content of write_action is done",
 			},
 			expectedReport: map[Node]ComputeState{
-				writeAction: ComputeStatePass(),
-				readAction:  ComputeStatePass(),
+				writeAction: ComputeStateContinue(),
+				readAction:  ComputeStateContinue(),
 			},
 		},
 		{
@@ -199,9 +211,10 @@ func Test_Computation_Compute(t *testing.T) {
 				"read_action":  "the content of write_action is done",
 			},
 			expectedReport: map[Node]ComputeState{
-				writeAction:             ComputeStatePass(),
-				writeActionKeyIsPresent: ComputeStateBranchPass(true),
-				readAction:              ComputeStatePass(),
+				writeAction:             ComputeStateContinue(),
+				writeActionKeyIsPresent: ComputeStateContinueOnBranch(true),
+				readAction:              ComputeStateContinue(),
+				deleteAnotherAction:     ComputeStateSkip(),
 			},
 		},
 		{
@@ -220,9 +233,10 @@ func Test_Computation_Compute(t *testing.T) {
 			expectedIsDone:      true,
 			expectedContextData: contextData{},
 			expectedReport: map[Node]ComputeState{
-				writeAnotherAction:      ComputeStatePass(),
-				writeActionKeyIsPresent: ComputeStateBranchPass(false),
-				deleteAnotherAction:     ComputeStatePass(),
+				writeAnotherAction:      ComputeStateContinue(),
+				writeActionKeyIsPresent: ComputeStateContinueOnBranch(false),
+				readAction:              ComputeStateSkip(),
+				deleteAnotherAction:     ComputeStateContinue(),
 			},
 		},
 		{
@@ -244,9 +258,10 @@ func Test_Computation_Compute(t *testing.T) {
 				"read_action":  "the content of write_action is done",
 			},
 			expectedReport: map[Node]ComputeState{
-				writeAction:             ComputeStatePass(),
-				writeActionKeyIsPresent: ComputeStateBranchPass(true),
-				readAction:              ComputeStatePass(),
+				writeAction:             ComputeStateContinue(),
+				writeActionKeyIsPresent: ComputeStateContinueOnBranch(true),
+				readAction:              ComputeStateContinue(),
+				deleteAnotherAction:     ComputeStateSkip(),
 			},
 		},
 		{
@@ -265,9 +280,10 @@ func Test_Computation_Compute(t *testing.T) {
 			expectedIsDone:      true,
 			expectedContextData: contextData{},
 			expectedReport: map[Node]ComputeState{
-				writeAnotherAction:      ComputeStatePass(),
-				writeActionKeyIsPresent: ComputeStateBranchPass(false),
-				deleteAnotherAction:     ComputeStatePass(),
+				writeAnotherAction:      ComputeStateContinue(),
+				writeActionKeyIsPresent: ComputeStateContinueOnBranch(false),
+				readAction:              ComputeStateSkip(),
+				deleteAnotherAction:     ComputeStateContinue(),
 			},
 		},
 		{
@@ -290,9 +306,32 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 			},
 			expectedReport: map[Node]ComputeState{
-				writeAction:             ComputeStatePass(),
-				writeActionKeyIsPresent: ComputeStateBranchPass(true),
-				errorAction:             ComputeStateStopOnError(errors.New("action error")),
+				writeAction:             ComputeStateContinue(),
+				writeActionKeyIsPresent: ComputeStateContinueOnBranch(true),
+				errorAction:             ComputeStateAbort(errors.New("action error")),
+			},
+		},
+		{
+			name: "Can compute another node system with one erroring action node",
+			givenNodes: []Node{
+				writeAnotherAction,
+				writeActionKeyIsPresent,
+				errorAction,
+				readAction,
+			},
+			givenLinks: []nodeLink{
+				newLink(writeAnotherAction, writeActionKeyIsPresent),
+				newBranchLink(writeActionKeyIsPresent, errorAction, false),
+				newLink(errorAction, readAction),
+			},
+			expectedIsDone: false,
+			expectedContextData: contextData{
+				"write_another_action": "done",
+			},
+			expectedReport: map[Node]ComputeState{
+				writeAnotherAction:      ComputeStateContinue(),
+				writeActionKeyIsPresent: ComputeStateContinueOnBranch(false),
+				errorAction:             ComputeStateAbort(errors.New("action error")),
 			},
 		},
 		{
@@ -313,8 +352,8 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 			},
 			expectedReport: map[Node]ComputeState{
-				writeAction:   ComputeStatePass(),
-				errorDecision: ComputeStateStopOnError(errors.New("decision error")),
+				writeAction:   ComputeStateContinue(),
+				errorDecision: ComputeStateAbort(errors.New("decision error")),
 			},
 		},
 		{
@@ -335,9 +374,9 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 			},
 			expectedReport: map[Node]ComputeState{
-				writeAction:         ComputeStatePass(),
-				deleteAnotherAction: ComputeStatePass(),
-				errorAction:         ComputeStateStopOnError(errors.New("action error")),
+				writeAction:         ComputeStateContinue(),
+				deleteAnotherAction: ComputeStateContinue(),
+				errorAction:         ComputeStateAbort(errors.New("action error")),
 			},
 		},
 		{
@@ -362,10 +401,10 @@ func Test_Computation_Compute(t *testing.T) {
 				"read_action":  "the content of write_action is done",
 			},
 			expectedReport: map[Node]ComputeState{
-				writeAction:         ComputeStatePass(),
-				writeAnotherAction:  ComputeStatePass(),
-				readAction:          ComputeStatePass(),
-				deleteAnotherAction: ComputeStatePass(),
+				writeAction:         ComputeStateContinue(),
+				writeAnotherAction:  ComputeStateContinue(),
+				readAction:          ComputeStateContinue(),
+				deleteAnotherAction: ComputeStateContinue(),
 			},
 		},
 		{
@@ -392,9 +431,9 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_another_action": "done",
 			},
 			expectedReport: map[Node]ComputeState{
-				writeAction:             ComputeStatePass(),
-				writeActionKeyIsPresent: ComputeStateBranchPass(true),
-				writeAnotherAction:      ComputeStatePass(),
+				writeAction:             ComputeStateContinue(),
+				writeActionKeyIsPresent: ComputeStateContinueOnBranch(true),
+				writeAnotherAction:      ComputeStateContinue(),
 			},
 		},
 		{
@@ -419,10 +458,10 @@ func Test_Computation_Compute(t *testing.T) {
 				"read_action":  "the content of write_action is done",
 			},
 			expectedReport: map[Node]ComputeState{
-				writeAction:             ComputeStatePass(),
-				writeActionKeyIsPresent: ComputeStateBranchPass(true),
-				readAction:              ComputeStatePass(),
-				deleteAnotherAction:     ComputeStatePass(),
+				writeAction:             ComputeStateContinue(),
+				writeActionKeyIsPresent: ComputeStateContinueOnBranch(true),
+				readAction:              ComputeStateContinue(),
+				deleteAnotherAction:     ComputeStateContinue(),
 			},
 		},
 		{
@@ -444,8 +483,10 @@ func Test_Computation_Compute(t *testing.T) {
 			expectedIsDone:      true,
 			expectedContextData: contextData{},
 			expectedReport: map[Node]ComputeState{
-				writeActionKeyIsPresent:        ComputeStateBranchPass(false),
-				writeAnotherActionKeyIsPresent: ComputeStateBranchPass(false),
+				writeActionKeyIsPresent:        ComputeStateContinueOnBranch(false),
+				writeAnotherActionKeyIsPresent: ComputeStateContinueOnBranch(false),
+				readAction:                     ComputeStateSkip(),
+				deleteAnotherAction:            ComputeStateSkip(),
 			},
 		},
 		{
@@ -469,8 +510,8 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 			},
 			expectedReport: map[Node]ComputeState{
-				writeAction: ComputeStatePass(),
-				errorAction: ComputeStateStopOnError(errors.New("action error")),
+				writeAction: ComputeStateContinue(),
+				errorAction: ComputeStateAbort(errors.New("action error")),
 			},
 		},
 	}

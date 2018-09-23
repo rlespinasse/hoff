@@ -8,9 +8,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-var someActionNode, _ = NewActionNode("someActionNode", func(*Context) error { return nil })
-var anotherActionNode, _ = NewActionNode("anotherActionNode", func(*Context) error { return nil })
-var someAnotherActionNode, _ = NewActionNode("someAnotherActionNode", func(*Context) error { return nil })
+var someActionNode, _ = NewActionNode("someActionNode", func(*Context) (bool, error) { return true, nil })
+var anotherActionNode, _ = NewActionNode("anotherActionNode", func(*Context) (bool, error) { return true, nil })
+var someAnotherActionNode, _ = NewActionNode("someAnotherActionNode", func(*Context) (bool, error) { return true, nil })
 var alwaysTrueDecisionNode, _ = NewDecisionNode("alwaysTrueDecisionNode", func(*Context) (bool, error) { return true, nil })
 
 func Test_NodeSystem_Validate(t *testing.T) {

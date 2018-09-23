@@ -10,7 +10,7 @@ import (
 func Test_NewActionNode(t *testing.T) {
 	testCases := []struct {
 		name          string
-		givenFunc     func(*Context) error
+		givenFunc     func(*Context) (bool, error)
 		expectedError error
 	}{
 		{
@@ -19,7 +19,7 @@ func Test_NewActionNode(t *testing.T) {
 		},
 		{
 			name:          "Can create an action node",
-			givenFunc:     func(*Context) error { return nil },
+			givenFunc:     func(*Context) (bool, error) { return true, nil },
 			expectedError: nil,
 		},
 	}
@@ -38,18 +38,24 @@ func Test_NewActionNode(t *testing.T) {
 }
 
 func Test_ActionNode_Compute(t *testing.T) {
-	passingNode, _ := NewActionNode("passingNode", func(*Context) error { return nil })
-	failingNode, _ := NewActionNode("failingNode", func(*Context) error { return errors.New("error") })
+	continueNode, _ := NewActionNode("continueNode", func(*Context) (bool, error) { return true, nil })
+	stopNode, _ := NewActionNode("stopNode", func(*Context) (bool, error) { return false, nil })
+	abortNode, _ := NewActionNode("abortNode", func(*Context) (bool, error) { return false, errors.New("error") })
 	tc := []NodeTestCase{
 		{
-			name:                 "Should Pass",
-			givenNode:            passingNode,
-			expectedComputeState: ComputeStatePass(),
+			name:                 "Should Continue",
+			givenNode:            continueNode,
+			expectedComputeState: ComputeStateContinue(),
 		},
 		{
-			name:                 "Should Fail",
-			givenNode:            failingNode,
-			expectedComputeState: ComputeStateStopOnError(errors.New("error")),
+			name:                 "Should Stop",
+			givenNode:            stopNode,
+			expectedComputeState: ComputeStateStop(),
+		},
+		{
+			name:                 "Should Abort",
+			givenNode:            abortNode,
+			expectedComputeState: ComputeStateAbort(errors.New("error")),
 		},
 	}
 	RunTestOnNode(t, tc)

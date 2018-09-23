@@ -8,7 +8,7 @@ type SomeNode struct{}
 
 func (n *SomeNode) Compute(c *Context) ComputeState {
 	c.Store("message", "SomeNode is passing")
-	return ComputeStatePass()
+	return ComputeStateContinue()
 }
 
 func (n *SomeNode) decideCapability() bool {
@@ -20,7 +20,7 @@ func Test_SomeNode(t *testing.T) {
 		{
 			name:                 "Should SomeNode Pass and Store a message",
 			givenNode:            &SomeNode{},
-			expectedComputeState: ComputeStatePass(),
+			expectedComputeState: ComputeStateContinue(),
 			expectedContextData:  contextData{"message": "SomeNode is passing"},
 		},
 	}
