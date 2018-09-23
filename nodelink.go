@@ -19,74 +19,78 @@ const (
 type NodeLink struct {
 	from   Node
 	to     Node
-	branch *string
+	branch *bool
 	kind   linkKind
 }
 
 func NewLink(from, to Node) NodeLink {
 	return NodeLink{
-		from: from,
-		to:   to,
-		kind: classicLink,
+		from:   from,
+		to:     to,
+		branch: nil,
+		kind:   classicLink,
 	}
 }
 
-func NewBranchLink(from, to Node, branch string) NodeLink {
+func NewBranchLink(from, to Node, branch bool) NodeLink {
 	return NodeLink{
 		from:   from,
 		to:     to,
-		branch: stringPointer(branch),
+		branch: boolPointer(branch),
 		kind:   classicLink,
 	}
 }
 
 func NewForkLink(from, to Node) NodeLink {
 	return NodeLink{
-		from: from,
-		to:   to,
-		kind: forkLink,
+		from:   from,
+		to:     to,
+		branch: nil,
+		kind:   forkLink,
 	}
 }
 
-func NewBranchForkLink(from, to Node, branch string) NodeLink {
+func NewBranchForkLink(from, to Node, branch bool) NodeLink {
 	return NodeLink{
 		from:   from,
 		to:     to,
-		branch: stringPointer(branch),
+		branch: boolPointer(branch),
 		kind:   forkLink,
 	}
 }
 
 func NewJoinLink(from, to Node) NodeLink {
 	return NodeLink{
-		from: from,
-		to:   to,
-		kind: joinLink,
+		from:   from,
+		to:     to,
+		branch: nil,
+		kind:   joinLink,
 	}
 }
 
-func NewBranchJoinLink(from, to Node, branch string) NodeLink {
+func NewBranchJoinLink(from, to Node, branch bool) NodeLink {
 	return NodeLink{
 		from:   from,
 		to:     to,
-		branch: stringPointer(branch),
+		branch: boolPointer(branch),
 		kind:   joinLink,
 	}
 }
 
 func NewMergeLink(from, to Node) NodeLink {
 	return NodeLink{
-		from: from,
-		to:   to,
-		kind: mergeLink,
+		from:   from,
+		to:     to,
+		branch: nil,
+		kind:   mergeLink,
 	}
 }
 
-func NewBranchMergeLink(from, to Node, branch string) NodeLink {
+func NewBranchMergeLink(from, to Node, branch bool) NodeLink {
 	return NodeLink{
 		from:   from,
 		to:     to,
-		branch: stringPointer(branch),
+		branch: boolPointer(branch),
 		kind:   mergeLink,
 	}
 }

@@ -45,12 +45,12 @@ func Test_DecisionNode_Compute(t *testing.T) {
 		{
 			name:                 "Should Pass on Branch 'true'",
 			givenNode:            passingBranchTrueNode,
-			expectedComputeState: ComputeStateBranchPass("true"),
+			expectedComputeState: ComputeStateBranchPass(true),
 		},
 		{
 			name:                 "Should Pass on Branch 'false'",
 			givenNode:            passingBranchFalseNode,
-			expectedComputeState: ComputeStateBranchPass("false"),
+			expectedComputeState: ComputeStateBranchPass(false),
 		},
 		{
 			name:                 "Should Fail",
@@ -59,14 +59,4 @@ func Test_DecisionNode_Compute(t *testing.T) {
 		},
 	}
 	RunTestOnNode(t, tc)
-}
-
-func Test_DecisionNode_AvailableBranches(t *testing.T) {
-	node, _ := NewDecisionNode(nil)
-	branches := node.AvailableBranches()
-	expectedBranches := []string{"true", "false"}
-
-	if !cmp.Equal(branches, expectedBranches) {
-		t.Errorf("got: %+v, want: %+v", branches, expectedBranches)
-	}
 }

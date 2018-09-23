@@ -186,8 +186,8 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			givenLinks: []NodeLink{
 				NewLink(writeAction, writeActionKeyIsPresent),
-				NewBranchLink(writeActionKeyIsPresent, readAction, "true"),
-				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, "false"),
+				NewBranchLink(writeActionKeyIsPresent, readAction, true),
+				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, false),
 			},
 			expectedIsDone: true,
 			expectedContextData: contextData{
@@ -196,7 +196,7 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			expectedReport: map[Node]ComputeState{
 				writeAction:             ComputeStatePass(),
-				writeActionKeyIsPresent: ComputeStateBranchPass("true"),
+				writeActionKeyIsPresent: ComputeStateBranchPass(true),
 				readAction:              ComputeStatePass(),
 			},
 		},
@@ -210,14 +210,14 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			givenLinks: []NodeLink{
 				NewLink(writeAnotherAction, writeActionKeyIsPresent),
-				NewBranchLink(writeActionKeyIsPresent, readAction, "true"),
-				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, "false"),
+				NewBranchLink(writeActionKeyIsPresent, readAction, true),
+				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, false),
 			},
 			expectedIsDone:      true,
 			expectedContextData: contextData{},
 			expectedReport: map[Node]ComputeState{
 				writeAnotherAction:      ComputeStatePass(),
-				writeActionKeyIsPresent: ComputeStateBranchPass("false"),
+				writeActionKeyIsPresent: ComputeStateBranchPass(false),
 				deleteAnotherAction:     ComputeStatePass(),
 			},
 		},
@@ -231,8 +231,8 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			givenLinks: []NodeLink{
 				NewLink(writeAction, writeActionKeyIsPresent),
-				NewBranchLink(writeActionKeyIsPresent, readAction, "true"),
-				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, "false"),
+				NewBranchLink(writeActionKeyIsPresent, readAction, true),
+				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, false),
 			},
 			expectedIsDone: true,
 			expectedContextData: contextData{
@@ -241,7 +241,7 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			expectedReport: map[Node]ComputeState{
 				writeAction:             ComputeStatePass(),
-				writeActionKeyIsPresent: ComputeStateBranchPass("true"),
+				writeActionKeyIsPresent: ComputeStateBranchPass(true),
 				readAction:              ComputeStatePass(),
 			},
 		},
@@ -255,14 +255,14 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			givenLinks: []NodeLink{
 				NewLink(writeAnotherAction, writeActionKeyIsPresent),
-				NewBranchLink(writeActionKeyIsPresent, readAction, "true"),
-				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, "false"),
+				NewBranchLink(writeActionKeyIsPresent, readAction, true),
+				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, false),
 			},
 			expectedIsDone:      true,
 			expectedContextData: contextData{},
 			expectedReport: map[Node]ComputeState{
 				writeAnotherAction:      ComputeStatePass(),
-				writeActionKeyIsPresent: ComputeStateBranchPass("false"),
+				writeActionKeyIsPresent: ComputeStateBranchPass(false),
 				deleteAnotherAction:     ComputeStatePass(),
 			},
 		},
@@ -277,9 +277,9 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			givenLinks: []NodeLink{
 				NewLink(writeAction, writeActionKeyIsPresent),
-				NewBranchLink(writeActionKeyIsPresent, errorAction, "true"),
+				NewBranchLink(writeActionKeyIsPresent, errorAction, true),
 				NewLink(errorAction, readAction),
-				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, "false"),
+				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, false),
 			},
 			expectedIsDone: false,
 			expectedContextData: contextData{
@@ -287,7 +287,7 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			expectedReport: map[Node]ComputeState{
 				writeAction:             ComputeStatePass(),
-				writeActionKeyIsPresent: ComputeStateBranchPass("true"),
+				writeActionKeyIsPresent: ComputeStateBranchPass(true),
 				errorAction:             ComputeStateStopOnError(errors.New("action error")),
 			},
 		},
@@ -301,8 +301,8 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			givenLinks: []NodeLink{
 				NewLink(writeAction, errorDecision),
-				NewBranchLink(errorDecision, readAction, "true"),
-				NewBranchLink(errorDecision, deleteAnotherAction, "false"),
+				NewBranchLink(errorDecision, readAction, true),
+				NewBranchLink(errorDecision, deleteAnotherAction, false),
 			},
 			expectedIsDone: false,
 			expectedContextData: contextData{
@@ -368,7 +368,7 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			givenLinks: []NodeLink{
 				NewMergeLink(writeAction, readAction),
-				NewBranchMergeLink(writeActionKeyIsPresent, readAction, "true"),
+				NewBranchMergeLink(writeActionKeyIsPresent, readAction, true),
 				NewLink(readAction, deleteAnotherAction),
 			},
 			expectedIsDone: true,
@@ -378,7 +378,7 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			expectedReport: map[Node]ComputeState{
 				writeAction:             ComputeStatePass(),
-				writeActionKeyIsPresent: ComputeStateBranchPass("true"),
+				writeActionKeyIsPresent: ComputeStateBranchPass(true),
 				readAction:              ComputeStatePass(),
 				deleteAnotherAction:     ComputeStatePass(),
 			},

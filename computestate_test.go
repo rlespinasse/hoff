@@ -12,22 +12,22 @@ func Test_ComputeState_Call(t *testing.T) {
 		name                  string
 		givenComputeStateCall func() ComputeState
 		expectedState         State
-		expectedNodeBranch    *string
+		expectedNodeBranch    *bool
 		expectedError         error
 	}{
 		{
-			name: "Should generate a passing state",
+			name:                  "Should generate a passing state",
 			givenComputeStateCall: func() ComputeState { return ComputeStatePass() },
 			expectedState:         pass,
 		},
 		{
-			name: "Should generate a passing state on branch 'branch'",
-			givenComputeStateCall: func() ComputeState { return ComputeStateBranchPass("branch") },
+			name:                  "Should generate a passing state on branch 'true'",
+			givenComputeStateCall: func() ComputeState { return ComputeStateBranchPass(true) },
 			expectedState:         pass,
-			expectedNodeBranch:    stringPointer("branch"),
+			expectedNodeBranch:    boolPointer(true),
 		},
 		{
-			name: "Should generate a fail state",
+			name:                  "Should generate a fail state",
 			givenComputeStateCall: func() ComputeState { return ComputeStateStopOnError(errors.New("error")) },
 			expectedState:         stop,
 			expectedError:         errors.New("error"),

@@ -85,7 +85,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				someActionNode,
 			},
 			givenLinks: []NodeLink{
-				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
+				NewBranchLink(alwaysTrueDecisionNode, someActionNode, true),
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
@@ -94,7 +94,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					someActionNode,
 				},
 				links: []NodeLink{
-					NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
+					NewBranchLink(alwaysTrueDecisionNode, someActionNode, true),
 				},
 			},
 		},
@@ -161,28 +161,6 @@ func Test_NodeSystem_Validate(t *testing.T) {
 			},
 		},
 		{
-			name: "Can't have a link with unknown branch",
-			givenNodes: []Node{
-				alwaysTrueDecisionNode,
-				someActionNode,
-			},
-			givenLinks: []NodeLink{
-				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "some_branch"),
-			},
-			expectedNodeSystem: &NodeSystem{
-				validity: false,
-				nodes: []Node{
-					alwaysTrueDecisionNode,
-					someActionNode,
-				},
-				links: []NodeLink{},
-			},
-			expectedErrors: []error{
-				fmt.Errorf("can't have unknown branch"),
-				fmt.Errorf("can't have orphan multi-branches node: %+v", alwaysTrueDecisionNode),
-			},
-		},
-		{
 			name: "Can't have mixed kind links with the same 'from'",
 			givenNodes: []Node{
 				someActionNode,
@@ -220,8 +198,8 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				anotherActionNode,
 			},
 			givenLinks: []NodeLink{
-				NewBranchForkLink(alwaysTrueDecisionNode, someActionNode, "true"),
-				NewBranchForkLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+				NewBranchForkLink(alwaysTrueDecisionNode, someActionNode, true),
+				NewBranchForkLink(alwaysTrueDecisionNode, anotherActionNode, true),
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
@@ -231,8 +209,8 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					anotherActionNode,
 				},
 				links: []NodeLink{
-					NewBranchForkLink(alwaysTrueDecisionNode, someActionNode, "true"),
-					NewBranchForkLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+					NewBranchForkLink(alwaysTrueDecisionNode, someActionNode, true),
+					NewBranchForkLink(alwaysTrueDecisionNode, anotherActionNode, true),
 				},
 			},
 		},
@@ -244,7 +222,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				anotherActionNode,
 			},
 			givenLinks: []NodeLink{
-				NewBranchMergeLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+				NewBranchMergeLink(alwaysTrueDecisionNode, anotherActionNode, true),
 				NewLink(someActionNode, anotherActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
@@ -255,13 +233,13 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					anotherActionNode,
 				},
 				links: []NodeLink{
-					NewBranchMergeLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+					NewBranchMergeLink(alwaysTrueDecisionNode, anotherActionNode, true),
 					NewLink(someActionNode, anotherActionNode),
 				},
 			},
 			expectedErrors: []error{
 				fmt.Errorf("Can't have mixed kind links with the same 'to': %+v", []NodeLink{
-					NewBranchMergeLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+					NewBranchMergeLink(alwaysTrueDecisionNode, anotherActionNode, true),
 					NewLink(someActionNode, anotherActionNode),
 				}),
 			},
@@ -274,7 +252,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				anotherActionNode,
 			},
 			givenLinks: []NodeLink{
-				NewBranchJoinLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+				NewBranchJoinLink(alwaysTrueDecisionNode, anotherActionNode, true),
 				NewJoinLink(someActionNode, anotherActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
@@ -285,7 +263,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					anotherActionNode,
 				},
 				links: []NodeLink{
-					NewBranchJoinLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+					NewBranchJoinLink(alwaysTrueDecisionNode, anotherActionNode, true),
 					NewJoinLink(someActionNode, anotherActionNode),
 				},
 			},
@@ -298,7 +276,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				anotherActionNode,
 			},
 			givenLinks: []NodeLink{
-				NewBranchMergeLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+				NewBranchMergeLink(alwaysTrueDecisionNode, anotherActionNode, true),
 				NewMergeLink(someActionNode, anotherActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
@@ -309,7 +287,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					anotherActionNode,
 				},
 				links: []NodeLink{
-					NewBranchMergeLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+					NewBranchMergeLink(alwaysTrueDecisionNode, anotherActionNode, true),
 					NewMergeLink(someActionNode, anotherActionNode),
 				},
 			},
@@ -321,7 +299,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				anotherActionNode,
 			},
 			givenLinks: []NodeLink{
-				NewBranchLink(someActionNode, anotherActionNode, "not_needed_branch"),
+				NewBranchLink(someActionNode, anotherActionNode, true),
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
@@ -441,7 +419,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				someActionNode,
 			},
 			givenLinksAfterValidation: []NodeLink{
-				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
+				NewBranchLink(alwaysTrueDecisionNode, someActionNode, true),
 			},
 			expectedNodeSystem: &NodeSystem{
 				validity: true,
@@ -450,7 +428,7 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					someActionNode,
 				},
 				links: []NodeLink{
-					NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
+					NewBranchLink(alwaysTrueDecisionNode, someActionNode, true),
 				},
 			},
 			expectedErrors: []error{
@@ -518,8 +496,8 @@ func Test_NodeSystem_Validate(t *testing.T) {
 				anotherActionNode,
 			},
 			givenLinks: []NodeLink{
-				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
-				NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, "false"),
+				NewBranchLink(alwaysTrueDecisionNode, someActionNode, true),
+				NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, false),
 				NewLink(anotherActionNode, alwaysTrueDecisionNode),
 			},
 
@@ -531,14 +509,14 @@ func Test_NodeSystem_Validate(t *testing.T) {
 					anotherActionNode,
 				},
 				links: []NodeLink{
-					NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
-					NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, "false"),
+					NewBranchLink(alwaysTrueDecisionNode, someActionNode, true),
+					NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, false),
 					NewLink(anotherActionNode, alwaysTrueDecisionNode),
 				},
 			},
 			expectedErrors: []error{
 				fmt.Errorf("Can't have cycle between links: %+v", []NodeLink{
-					NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, "false"),
+					NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, false),
 					NewLink(anotherActionNode, alwaysTrueDecisionNode),
 				}),
 			},
@@ -600,14 +578,14 @@ func Test_NodeSystem_activate(t *testing.T) {
 		givenLinks           []NodeLink
 		expectedActivatation bool
 		expectedInitialNodes []Node
-		expectedLinkTree     map[Node]map[string][]Node
+		expectedLinkTree     map[Node]map[*bool][]Node
 		expectedError        error
 	}{
 		{
 			name:                 "Can activate an empty validated system",
 			expectedActivatation: true,
 			expectedInitialNodes: []Node{},
-			expectedLinkTree:     map[Node]map[string][]Node{},
+			expectedLinkTree:     map[Node]map[*bool][]Node{},
 		},
 		{
 			name: "Can't activate an unvalidated system",
@@ -622,7 +600,7 @@ func Test_NodeSystem_activate(t *testing.T) {
 			givenNodes:           []Node{someActionNode},
 			expectedActivatation: true,
 			expectedInitialNodes: []Node{someActionNode},
-			expectedLinkTree:     map[Node]map[string][]Node{},
+			expectedLinkTree:     map[Node]map[*bool][]Node{},
 		},
 		{
 			name: "Can activate an no needed branch node link validated system",
@@ -637,9 +615,9 @@ func Test_NodeSystem_activate(t *testing.T) {
 			expectedInitialNodes: []Node{
 				someActionNode,
 			},
-			expectedLinkTree: map[Node]map[string][]Node{
-				someActionNode: map[string][]Node{
-					"*": []Node{anotherActionNode},
+			expectedLinkTree: map[Node]map[*bool][]Node{
+				someActionNode: map[*bool][]Node{
+					nil: []Node{anotherActionNode},
 				},
 			},
 		},
@@ -651,16 +629,16 @@ func Test_NodeSystem_activate(t *testing.T) {
 				alwaysTrueDecisionNode,
 			},
 			givenLinks: []NodeLink{
-				NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, "true"),
+				NewBranchLink(alwaysTrueDecisionNode, anotherActionNode, true),
 			},
 			expectedActivatation: true,
 			expectedInitialNodes: []Node{
 				someActionNode,
 				alwaysTrueDecisionNode,
 			},
-			expectedLinkTree: map[Node]map[string][]Node{
-				alwaysTrueDecisionNode: map[string][]Node{
-					"true": []Node{anotherActionNode},
+			expectedLinkTree: map[Node]map[*bool][]Node{
+				alwaysTrueDecisionNode: map[*bool][]Node{
+					truePointer: []Node{anotherActionNode},
 				},
 			},
 		},
@@ -708,7 +686,7 @@ func Test_NodeSystem_follow(t *testing.T) {
 		givenNodes             []Node
 		givenLinks             []NodeLink
 		givenFollowNode        Node
-		givenFollowBranch      *string
+		givenFollowBranch      *bool
 		expectedFollowingNodes []Node
 		expectedLinkKind       linkKind
 		expectedError          error
@@ -874,10 +852,10 @@ func Test_NodeSystem_follow(t *testing.T) {
 				someActionNode,
 			},
 			givenLinks: []NodeLink{
-				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
+				NewBranchLink(alwaysTrueDecisionNode, someActionNode, true),
 			},
 			givenFollowNode:        alwaysTrueDecisionNode,
-			givenFollowBranch:      stringPointer("true"),
+			givenFollowBranch:      boolPointer(true),
 			expectedFollowingNodes: []Node{someActionNode},
 			expectedLinkKind:       classicLink,
 		},
@@ -888,7 +866,7 @@ func Test_NodeSystem_follow(t *testing.T) {
 				someActionNode,
 			},
 			givenLinks: []NodeLink{
-				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
+				NewBranchLink(alwaysTrueDecisionNode, someActionNode, true),
 			},
 			givenFollowNode:        someActionNode,
 			expectedFollowingNodes: nil,
@@ -901,7 +879,7 @@ func Test_NodeSystem_follow(t *testing.T) {
 				someActionNode,
 			},
 			givenLinks: []NodeLink{
-				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
+				NewBranchLink(alwaysTrueDecisionNode, someActionNode, true),
 			},
 			givenFollowNode:        alwaysTrueDecisionNode,
 			expectedFollowingNodes: nil,
@@ -914,10 +892,10 @@ func Test_NodeSystem_follow(t *testing.T) {
 				someActionNode,
 			},
 			givenLinks: []NodeLink{
-				NewBranchLink(alwaysTrueDecisionNode, someActionNode, "true"),
+				NewBranchLink(alwaysTrueDecisionNode, someActionNode, true),
 			},
 			givenFollowNode:        alwaysTrueDecisionNode,
-			givenFollowBranch:      stringPointer("false"),
+			givenFollowBranch:      boolPointer(false),
 			expectedFollowingNodes: nil,
 			expectedLinkKind:       noLink,
 		},

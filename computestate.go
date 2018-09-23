@@ -13,7 +13,7 @@ type State string
 
 type ComputeState struct {
 	value  State
-	branch *string
+	branch *bool
 	err    error
 }
 
@@ -27,10 +27,10 @@ func ComputeStatePass() ComputeState {
 	}
 }
 
-func ComputeStateBranchPass(branch string) ComputeState {
+func ComputeStateBranchPass(branch bool) ComputeState {
 	return ComputeState{
 		value:  pass,
-		branch: &branch,
+		branch: boolPointer(branch),
 	}
 }
 

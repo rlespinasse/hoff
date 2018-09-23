@@ -10,8 +10,9 @@ func (n *SomeNode) Compute(c *Context) ComputeState {
 	c.Store("message", "SomeNode is passing")
 	return ComputeStatePass()
 }
-func (n *SomeNode) AvailableBranches() []string {
-	return nil
+
+func (n *SomeNode) decideCapability() bool {
+	return false
 }
 
 func Test_SomeNode(t *testing.T) {

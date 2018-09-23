@@ -16,8 +16,8 @@ func (n *ActionNode) Compute(c *Context) ComputeState {
 	return ComputeStatePass()
 }
 
-func (n *ActionNode) AvailableBranches() []string {
-	return nil
+func (n *ActionNode) decideCapability() bool {
+	return false
 }
 
 func NewActionNode(actionFunc func(*Context) error) (*ActionNode, error) {

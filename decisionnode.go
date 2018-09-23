@@ -14,13 +14,13 @@ func (n *DecisionNode) Compute(c *Context) ComputeState {
 		return ComputeStateStopOnError(err)
 	}
 	if decision {
-		return ComputeStateBranchPass("true")
+		return ComputeStateBranchPass(true)
 	}
-	return ComputeStateBranchPass("false")
+	return ComputeStateBranchPass(false)
 }
 
-func (n *DecisionNode) AvailableBranches() []string {
-	return []string{"true", "false"}
+func (n *DecisionNode) decideCapability() bool {
+	return true
 }
 
 func NewDecisionNode(decisionFunc func(*Context) (bool, error)) (*DecisionNode, error) {

@@ -54,12 +54,3 @@ func Test_ActionNode_Compute(t *testing.T) {
 	}
 	RunTestOnNode(t, tc)
 }
-
-func Test_ActionNode_AvailableBranches(t *testing.T) {
-	node, _ := NewActionNode(nil)
-	branches := node.AvailableBranches()
-
-	if branches != nil {
-		t.Errorf("got: %+v, want: nil", branches)
-	}
-}

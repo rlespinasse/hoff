@@ -7,10 +7,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-const (
-	noBranchKey = "*"
-)
-
 type NodeSystem struct {
 	active   bool
 	validity bool
@@ -18,8 +14,8 @@ type NodeSystem struct {
 	links    []NodeLink
 
 	initialNodes []Node
-	kindTree     map[Node]map[string]linkKind
-	linkTree     map[Node]map[string][]Node
+	kindTree     map[Node]map[*bool]linkKind
+	linkTree     map[Node]map[*bool][]Node
 	linkedTo     map[Node][]Node
 }
 
@@ -52,26 +48,12 @@ func (s *NodeSystem) AddLink(n NodeLink) (bool, error) {
 		return false, fmt.Errorf("can't have missing 'from' attribute")
 	}
 
-	if n.branch == nil {
-		if len(n.from.AvailableBranches()) > 0 {
-			return false, fmt.Errorf("can't have missing branch")
-		}
-	} else {
-		if n.from.AvailableBranches() == nil {
-			return false, fmt.Errorf("can't have not needed branch")
-		}
+	if n.branch == nil && n.from.decideCapability() {
+		return false, fmt.Errorf("can't have missing branch")
+	}
 
-		if len(n.from.AvailableBranches()) > 0 {
-			unknonwBranch := true
-			for _, branch := range n.from.AvailableBranches() {
-				if branch == *n.branch {
-					unknonwBranch = false
-				}
-			}
-			if unknonwBranch {
-				return false, fmt.Errorf("can't have unknown branch")
-			}
-		}
+	if n.branch != nil && !n.from.decideCapability() {
+		return false, fmt.Errorf("can't have not needed branch")
 	}
 
 	if n.to == nil {
@@ -111,26 +93,24 @@ func (s *NodeSystem) activate() error {
 	}
 
 	initialNodes := make([]Node, 0)
-	linkTree := make(map[Node]map[string][]Node)
-	kindTree := make(map[Node]map[string]linkKind)
+	linkTree := make(map[Node]map[*bool][]Node)
+	kindTree := make(map[Node]map[*bool]linkKind)
 	linkedTo := make(map[Node][]Node)
 
 	toNodes := make([]Node, 0)
 	for _, link := range s.links {
-		branch := noBranchKey
-		if link.branch != nil {
-			branch = *link.branch
-		}
 		linkBranchTree, foundNode := linkTree[link.from]
 		kindBranchTree, _ := kindTree[link.from]
+
 		if !foundNode {
-			linkTree[link.from] = make(map[string][]Node)
-			kindTree[link.from] = make(map[string]linkKind)
+			linkTree[link.from] = make(map[*bool][]Node)
+			kindTree[link.from] = make(map[*bool]linkKind)
 			linkBranchTree, _ = linkTree[link.from]
 			kindBranchTree, _ = kindTree[link.from]
 		}
-		linkBranchTree[branch] = append(linkBranchTree[branch], link.to)
-		kindBranchTree[branch] = link.kind
+
+		linkBranchTree[link.branch] = append(linkBranchTree[link.branch], link.to)
+		kindBranchTree[link.branch] = link.kind
 		linkedTo[link.to] = append(linkedTo[link.to], link.from)
 		toNodes = append(toNodes, link.to)
 	}
@@ -157,17 +137,13 @@ func (s *NodeSystem) activate() error {
 	return nil
 }
 
-func (s *NodeSystem) follow(n Node, b *string) ([]Node, linkKind, error) {
+func (s *NodeSystem) follow(n Node, branch *bool) ([]Node, linkKind, error) {
 	if !s.active {
 		return nil, noLink, errors.New("can't follow a node if system is not activated")
 	}
 	links, foundLinks := s.linkTree[n]
 	if foundLinks {
 		kinds, _ := s.kindTree[n]
-		branch := noBranchKey
-		if b != nil {
-			branch = *b
-		}
 		nodes, foundNodes := links[branch]
 		if foundNodes {
 			kind, _ := kinds[branch]
@@ -201,7 +177,7 @@ func (s *NodeSystem) haveNode(n Node) bool {
 func checkForOrphanMultiBranchesNode(s *NodeSystem) []error {
 	errors := make([]error, 0)
 	for _, node := range s.nodes {
-		if len(node.AvailableBranches()) > 0 {
+		if node.decideCapability() {
 			noLink := true
 			for _, link := range s.links {
 				if link.from == node {
