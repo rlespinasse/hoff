@@ -65,21 +65,21 @@ func Test_NewComputation(t *testing.T) {
 }
 
 func Test_Computation_Compute(t *testing.T) {
-	errorAction, _ := NewActionNode(func(c *Context) error {
+	errorAction, _ := NewActionNode("errorAction", func(c *Context) error {
 		return errors.New("action error")
 	})
-	errorDecision, _ := NewDecisionNode(func(c *Context) (bool, error) {
+	errorDecision, _ := NewDecisionNode("errorDecision", func(c *Context) (bool, error) {
 		return false, errors.New("decision error")
 	})
-	writeAction, _ := NewActionNode(func(c *Context) error {
+	writeAction, _ := NewActionNode("writeAction", func(c *Context) error {
 		c.Store("write_action", "done")
 		return nil
 	})
-	writeAnotherAction, _ := NewActionNode(func(c *Context) error {
+	writeAnotherAction, _ := NewActionNode("writeAnotherAction", func(c *Context) error {
 		c.Store("write_another_action", "done")
 		return nil
 	})
-	readAction, _ := NewActionNode(func(c *Context) error {
+	readAction, _ := NewActionNode("readAction", func(c *Context) error {
 		v, err := c.Read("write_action")
 		if err != nil {
 			return err
@@ -87,14 +87,14 @@ func Test_Computation_Compute(t *testing.T) {
 		c.Store("read_action", fmt.Sprintf("the content of write_action is %v", v))
 		return nil
 	})
-	deleteAnotherAction, _ := NewActionNode(func(c *Context) error {
+	deleteAnotherAction, _ := NewActionNode("deleteAnotherAction", func(c *Context) error {
 		c.Delete("write_another_action")
 		return nil
 	})
-	writeActionKeyIsPresent, _ := NewDecisionNode(func(c *Context) (bool, error) {
+	writeActionKeyIsPresent, _ := NewDecisionNode("writeActionKeyIsPresent", func(c *Context) (bool, error) {
 		return c.HaveKey("write_action"), nil
 	})
-	writeAnotherActionKeyIsPresent, _ := NewDecisionNode(func(c *Context) (bool, error) {
+	writeAnotherActionKeyIsPresent, _ := NewDecisionNode("writeAnotherActionKeyIsPresent", func(c *Context) (bool, error) {
 		return c.HaveKey("write_another_action"), nil
 	})
 	testCases := []struct {

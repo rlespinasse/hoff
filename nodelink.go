@@ -40,7 +40,7 @@ func (n NodeLink) String() string {
 	if n.branch != nil {
 		branch = fmt.Sprintf(", branch: %v", *n.branch)
 	}
-	return fmt.Sprintf("{from: %v, to: %v%v}", n.from, n.to, branch)
+	return fmt.Sprintf("{from: '%v', to: '%v'%v}", n.from, n.to, branch)
 }
 
 var equalOptionForNodeLink = cmp.Comparer(func(x, y NodeLink) bool {

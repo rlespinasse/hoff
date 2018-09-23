@@ -5,7 +5,12 @@ import (
 )
 
 type ActionNode struct {
+	name       string
 	actionFunc func(*Context) error
+}
+
+func (n ActionNode) String() string {
+	return n.name
 }
 
 func (n *ActionNode) Compute(c *Context) ComputeState {
@@ -20,9 +25,9 @@ func (n *ActionNode) decideCapability() bool {
 	return false
 }
 
-func NewActionNode(actionFunc func(*Context) error) (*ActionNode, error) {
+func NewActionNode(name string, actionFunc func(*Context) error) (*ActionNode, error) {
 	if actionFunc == nil {
 		return nil, errors.New("can't create action node without function")
 	}
-	return &ActionNode{actionFunc: actionFunc}, nil
+	return &ActionNode{name: name, actionFunc: actionFunc}, nil
 }

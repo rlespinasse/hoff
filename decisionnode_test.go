@@ -25,7 +25,7 @@ func Test_NewDecisionNode(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			node, err := NewDecisionNode(testCase.givenFunc)
+			node, err := NewDecisionNode("DecisionNode", testCase.givenFunc)
 
 			if !cmp.Equal(err, testCase.expectedError, equalOptionForError) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
@@ -38,9 +38,9 @@ func Test_NewDecisionNode(t *testing.T) {
 }
 
 func Test_DecisionNode_Compute(t *testing.T) {
-	passingBranchTrueNode, _ := NewDecisionNode(func(*Context) (bool, error) { return true, nil })
-	passingBranchFalseNode, _ := NewDecisionNode(func(*Context) (bool, error) { return false, nil })
-	failingNode, _ := NewDecisionNode(func(*Context) (bool, error) { return false, errors.New("error") })
+	passingBranchTrueNode, _ := NewDecisionNode("passingBranchTrueNode", func(*Context) (bool, error) { return true, nil })
+	passingBranchFalseNode, _ := NewDecisionNode("passingBranchFalseNode", func(*Context) (bool, error) { return false, nil })
+	failingNode, _ := NewDecisionNode("failingNode", func(*Context) (bool, error) { return false, errors.New("error") })
 	tc := []NodeTestCase{
 		{
 			name:                 "Should Pass on Branch 'true'",

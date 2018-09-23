@@ -5,7 +5,12 @@ import (
 )
 
 type DecisionNode struct {
+	name         string
 	decisionFunc func(*Context) (bool, error)
+}
+
+func (n DecisionNode) String() string {
+	return n.name
 }
 
 func (n *DecisionNode) Compute(c *Context) ComputeState {
@@ -23,9 +28,9 @@ func (n *DecisionNode) decideCapability() bool {
 	return true
 }
 
-func NewDecisionNode(decisionFunc func(*Context) (bool, error)) (*DecisionNode, error) {
+func NewDecisionNode(name string, decisionFunc func(*Context) (bool, error)) (*DecisionNode, error) {
 	if decisionFunc == nil {
 		return nil, errors.New("can't create decision node without function")
 	}
-	return &DecisionNode{decisionFunc: decisionFunc}, nil
+	return &DecisionNode{name: name, decisionFunc: decisionFunc}, nil
 }

@@ -25,7 +25,7 @@ func Test_NewActionNode(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			node, err := NewActionNode(testCase.givenFunc)
+			node, err := NewActionNode("ActionNode", testCase.givenFunc)
 
 			if !cmp.Equal(err, testCase.expectedError, equalOptionForError) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
@@ -38,8 +38,8 @@ func Test_NewActionNode(t *testing.T) {
 }
 
 func Test_ActionNode_Compute(t *testing.T) {
-	passingNode, _ := NewActionNode(func(*Context) error { return nil })
-	failingNode, _ := NewActionNode(func(*Context) error { return errors.New("error") })
+	passingNode, _ := NewActionNode("passingNode", func(*Context) error { return nil })
+	failingNode, _ := NewActionNode("failingNode", func(*Context) error { return errors.New("error") })
 	tc := []NodeTestCase{
 		{
 			name:                 "Should Pass",
