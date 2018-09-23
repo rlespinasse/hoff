@@ -6,29 +6,24 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-type linkKind string
+type JoinMode string
 
 const (
-	classicLink linkKind = "classic"
-	forkLink             = "fork"
-	joinLink             = "join"
-	mergeLink            = "merge"
-	noLink               = "none"
+	JoinModeAnd  JoinMode = "and"
+	JoinModeOr            = "or"
+	JoinModeNone          = "none"
 )
 
 type NodeLink struct {
 	from   Node
 	to     Node
 	branch *bool
-	kind   linkKind
 }
 
 func NewLink(from, to Node) NodeLink {
 	return NodeLink{
-		from:   from,
-		to:     to,
-		branch: nil,
-		kind:   classicLink,
+		from: from,
+		to:   to,
 	}
 }
 
@@ -37,61 +32,6 @@ func NewBranchLink(from, to Node, branch bool) NodeLink {
 		from:   from,
 		to:     to,
 		branch: boolPointer(branch),
-		kind:   classicLink,
-	}
-}
-
-func NewForkLink(from, to Node) NodeLink {
-	return NodeLink{
-		from:   from,
-		to:     to,
-		branch: nil,
-		kind:   forkLink,
-	}
-}
-
-func NewBranchForkLink(from, to Node, branch bool) NodeLink {
-	return NodeLink{
-		from:   from,
-		to:     to,
-		branch: boolPointer(branch),
-		kind:   forkLink,
-	}
-}
-
-func NewJoinLink(from, to Node) NodeLink {
-	return NodeLink{
-		from:   from,
-		to:     to,
-		branch: nil,
-		kind:   joinLink,
-	}
-}
-
-func NewBranchJoinLink(from, to Node, branch bool) NodeLink {
-	return NodeLink{
-		from:   from,
-		to:     to,
-		branch: boolPointer(branch),
-		kind:   joinLink,
-	}
-}
-
-func NewMergeLink(from, to Node) NodeLink {
-	return NodeLink{
-		from:   from,
-		to:     to,
-		branch: nil,
-		kind:   mergeLink,
-	}
-}
-
-func NewBranchMergeLink(from, to Node, branch bool) NodeLink {
-	return NodeLink{
-		from:   from,
-		to:     to,
-		branch: boolPointer(branch),
-		kind:   mergeLink,
 	}
 }
 
@@ -100,7 +40,7 @@ func (n NodeLink) String() string {
 	if n.branch != nil {
 		branch = fmt.Sprintf(", branch: %v", *n.branch)
 	}
-	return fmt.Sprintf("{kind: %v, from: %v, to: %v%v}", n.kind, n.from, n.to, branch)
+	return fmt.Sprintf("{from: %v, to: %v%v}", n.from, n.to, branch)
 }
 
 var equalOptionForNodeLink = cmp.Comparer(func(x, y NodeLink) bool {

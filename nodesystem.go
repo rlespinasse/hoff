@@ -8,22 +8,23 @@ import (
 )
 
 type NodeSystem struct {
-	active   bool
-	validity bool
-	nodes    []Node
-	links    []NodeLink
+	active         bool
+	validity       bool
+	nodes          []Node
+	nodesJoinModes map[Node]JoinMode
+	links          []NodeLink
 
 	initialNodes []Node
-	kindTree     map[Node]map[*bool]linkKind
 	linkTree     map[Node]map[*bool][]Node
 	linkedTo     map[Node][]Node
 }
 
 func NewNodeSystem() *NodeSystem {
 	return &NodeSystem{
-		validity: false,
-		nodes:    make([]Node, 0),
-		links:    make([]NodeLink, 0),
+		validity:       false,
+		nodes:          make([]Node, 0),
+		nodesJoinModes: make(map[Node]JoinMode),
+		links:          make([]NodeLink, 0),
 	}
 }
 
@@ -36,6 +37,14 @@ func (s *NodeSystem) AddNode(n Node) (bool, error) {
 		return false, errors.New("can't add node, node system is freeze due to successful validation")
 	}
 	s.nodes = append(s.nodes, n)
+	return true, nil
+}
+
+func (s *NodeSystem) AddNodeJoinMode(n Node, m JoinMode) (bool, error) {
+	if s.IsValidated() {
+		return false, errors.New("can't add node join mode, node system is freeze due to successful validation")
+	}
+	s.nodesJoinModes[n] = m
 	return true, nil
 }
 
@@ -71,8 +80,6 @@ func (s *NodeSystem) AddLink(n NodeLink) (bool, error) {
 func (s *NodeSystem) Validate() (bool, []error) {
 	errors := make([]error, 0)
 	errors = append(errors, checkForOrphanMultiBranchesNode(s)...)
-	errors = append(errors, checkForMultipleLinksWithSameFrom(s)...)
-	errors = append(errors, checkForMultipleLinksWithSameTo(s)...)
 	errors = append(errors, checkForCyclicRedundancyInNodeLinks(s)...)
 	errors = append(errors, checkForUndeclaredNodeInNodeLink(s)...)
 	errors = append(errors, checkForMultipleInstanceOfSameNode(s)...)
@@ -94,23 +101,18 @@ func (s *NodeSystem) activate() error {
 
 	initialNodes := make([]Node, 0)
 	linkTree := make(map[Node]map[*bool][]Node)
-	kindTree := make(map[Node]map[*bool]linkKind)
 	linkedTo := make(map[Node][]Node)
 
 	toNodes := make([]Node, 0)
 	for _, link := range s.links {
 		linkBranchTree, foundNode := linkTree[link.from]
-		kindBranchTree, _ := kindTree[link.from]
 
 		if !foundNode {
 			linkTree[link.from] = make(map[*bool][]Node)
-			kindTree[link.from] = make(map[*bool]linkKind)
 			linkBranchTree, _ = linkTree[link.from]
-			kindBranchTree, _ = kindTree[link.from]
 		}
 
 		linkBranchTree[link.branch] = append(linkBranchTree[link.branch], link.to)
-		kindBranchTree[link.branch] = link.kind
 		linkedTo[link.to] = append(linkedTo[link.to], link.from)
 		toNodes = append(toNodes, link.to)
 	}
@@ -130,27 +132,32 @@ func (s *NodeSystem) activate() error {
 
 	s.initialNodes = initialNodes
 	s.linkTree = linkTree
-	s.kindTree = kindTree
 	s.linkedTo = linkedTo
 
 	s.active = true
 	return nil
 }
 
-func (s *NodeSystem) follow(n Node, branch *bool) ([]Node, linkKind, error) {
+func (s *NodeSystem) NodeJoinMode(n Node) JoinMode {
+	mode, foundMode := s.nodesJoinModes[n]
+	if foundMode {
+		return mode
+	}
+	return JoinModeNone
+}
+
+func (s *NodeSystem) follow(n Node, branch *bool) ([]Node, error) {
 	if !s.active {
-		return nil, noLink, errors.New("can't follow a node if system is not activated")
+		return nil, errors.New("can't follow a node if system is not activated")
 	}
 	links, foundLinks := s.linkTree[n]
 	if foundLinks {
-		kinds, _ := s.kindTree[n]
 		nodes, foundNodes := links[branch]
 		if foundNodes {
-			kind, _ := kinds[branch]
-			return nodes, kind, nil
+			return nodes, nil
 		}
 	}
-	return nil, noLink, nil
+	return nil, nil
 }
 
 func (s *NodeSystem) nodesLinkedTo(n Node) []Node {
@@ -186,55 +193,7 @@ func checkForOrphanMultiBranchesNode(s *NodeSystem) []error {
 				}
 			}
 			if noLink {
-				errors = append(errors, fmt.Errorf("can't have orphan multi-branches node: %+v", node))
-			}
-		}
-	}
-	return errors
-}
-
-func checkForMultipleLinksWithSameFrom(s *NodeSystem) []error {
-	errors := make([]error, 0)
-	sameFromNodes := make(map[Node][]NodeLink)
-	for i := 0; i < len(s.links); i++ {
-		for j := 0; j < len(s.links); j++ {
-			if i != j && s.links[i].from == s.links[j].from {
-				sameFromNodes[s.links[i].from] = append(sameFromNodes[s.links[i].from], s.links[i])
-			}
-		}
-	}
-	for _, links := range sameFromNodes {
-		if len(links) > 1 {
-			kind := links[0].kind
-			for _, link := range links {
-				if kind != link.kind {
-					errors = append(errors, fmt.Errorf("Can't have mixed kind links with the same 'from': %+v", links))
-					break
-				}
-			}
-		}
-	}
-	return errors
-}
-
-func checkForMultipleLinksWithSameTo(s *NodeSystem) []error {
-	errors := make([]error, 0)
-	sameToNodes := make(map[Node][]NodeLink)
-	for i := 0; i < len(s.links); i++ {
-		for j := 0; j < len(s.links); j++ {
-			if i != j && s.links[i].to == s.links[j].to {
-				sameToNodes[s.links[i].to] = append(sameToNodes[s.links[i].to], s.links[i])
-			}
-		}
-	}
-	for _, links := range sameToNodes {
-		if len(links) > 1 {
-			kind := links[0].kind
-			for _, link := range links {
-				if kind != link.kind {
-					errors = append(errors, fmt.Errorf("Can't have mixed kind links with the same 'to': %+v", links))
-					break
-				}
+				errors = append(errors, fmt.Errorf("can't have decision node without link from it: %+v", node))
 			}
 		}
 	}

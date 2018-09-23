@@ -94,9 +94,13 @@ func Test_Computation_Compute(t *testing.T) {
 	writeActionKeyIsPresent, _ := NewDecisionNode(func(c *Context) (bool, error) {
 		return c.HaveKey("write_action"), nil
 	})
+	writeAnotherActionKeyIsPresent, _ := NewDecisionNode(func(c *Context) (bool, error) {
+		return c.HaveKey("write_another_action"), nil
+	})
 	testCases := []struct {
 		name                string
 		givenNodes          []Node
+		givenNodesJoinModes map[Node]JoinMode
 		givenLinks          []NodeLink
 		givenContextData    contextData
 		expectedIsDone      bool
@@ -322,9 +326,9 @@ func Test_Computation_Compute(t *testing.T) {
 				deleteAnotherAction,
 			},
 			givenLinks: []NodeLink{
-				NewForkLink(writeAction, deleteAnotherAction),
-				NewForkLink(writeAction, errorAction),
-				NewForkLink(writeAction, readAction),
+				NewLink(writeAction, deleteAnotherAction),
+				NewLink(writeAction, errorAction),
+				NewLink(writeAction, readAction),
 			},
 			expectedIsDone: false,
 			expectedContextData: contextData{
@@ -340,22 +344,57 @@ func Test_Computation_Compute(t *testing.T) {
 			name: "Can compute a node system with join links",
 			givenNodes: []Node{
 				writeAction,
-				errorAction,
+				writeAnotherAction,
 				readAction,
 				deleteAnotherAction,
 			},
+			givenNodesJoinModes: map[Node]JoinMode{
+				readAction: JoinModeAnd,
+			},
 			givenLinks: []NodeLink{
-				NewJoinLink(writeAction, readAction),
-				NewJoinLink(errorAction, readAction),
+				NewLink(writeAction, readAction),
+				NewLink(writeAnotherAction, readAction),
 				NewLink(readAction, deleteAnotherAction),
 			},
-			expectedIsDone: false,
+			expectedIsDone: true,
 			expectedContextData: contextData{
 				"write_action": "done",
+				"read_action":  "the content of write_action is done",
 			},
 			expectedReport: map[Node]ComputeState{
-				writeAction: ComputeStatePass(),
-				errorAction: ComputeStateStopOnError(errors.New("action error")),
+				writeAction:         ComputeStatePass(),
+				writeAnotherAction:  ComputeStatePass(),
+				readAction:          ComputeStatePass(),
+				deleteAnotherAction: ComputeStatePass(),
+			},
+		},
+		{
+			name: "Can compute a node system with partial join links",
+			givenNodes: []Node{
+				writeAction,
+				writeActionKeyIsPresent,
+				writeAnotherAction,
+				readAction,
+				deleteAnotherAction,
+			},
+			givenNodesJoinModes: map[Node]JoinMode{
+				readAction: JoinModeAnd,
+			},
+			givenLinks: []NodeLink{
+				NewLink(writeAction, readAction),
+				NewBranchLink(writeActionKeyIsPresent, readAction, false),
+				NewLink(writeAnotherAction, readAction),
+				NewLink(readAction, deleteAnotherAction),
+			},
+			expectedIsDone: true,
+			expectedContextData: contextData{
+				"write_action":         "done",
+				"write_another_action": "done",
+			},
+			expectedReport: map[Node]ComputeState{
+				writeAction:             ComputeStatePass(),
+				writeActionKeyIsPresent: ComputeStateBranchPass(true),
+				writeAnotherAction:      ComputeStatePass(),
 			},
 		},
 		{
@@ -366,9 +405,12 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
+			givenNodesJoinModes: map[Node]JoinMode{
+				readAction: JoinModeOr,
+			},
 			givenLinks: []NodeLink{
-				NewMergeLink(writeAction, readAction),
-				NewBranchMergeLink(writeActionKeyIsPresent, readAction, true),
+				NewLink(writeAction, readAction),
+				NewBranchLink(writeActionKeyIsPresent, readAction, true),
 				NewLink(readAction, deleteAnotherAction),
 			},
 			expectedIsDone: true,
@@ -384,28 +426,51 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 		},
 		{
-			name: "Can compute a node system with merge links with error",
+			name: "Can compute a node system with partial merge links",
+			givenNodes: []Node{
+				writeActionKeyIsPresent,
+				writeAnotherActionKeyIsPresent,
+				readAction,
+				deleteAnotherAction,
+			},
+			givenNodesJoinModes: map[Node]JoinMode{
+				readAction: JoinModeOr,
+			},
+			givenLinks: []NodeLink{
+				NewBranchLink(writeActionKeyIsPresent, readAction, true),
+				NewBranchLink(writeAnotherActionKeyIsPresent, readAction, true),
+				NewLink(readAction, deleteAnotherAction),
+			},
+			expectedIsDone:      true,
+			expectedContextData: contextData{},
+			expectedReport: map[Node]ComputeState{
+				writeActionKeyIsPresent:        ComputeStateBranchPass(false),
+				writeAnotherActionKeyIsPresent: ComputeStateBranchPass(false),
+			},
+		},
+		{
+			name: "Can compute a node system with merge links who generate error",
 			givenNodes: []Node{
 				writeAction,
 				errorAction,
 				readAction,
 				deleteAnotherAction,
 			},
+			givenNodesJoinModes: map[Node]JoinMode{
+				readAction: JoinModeOr,
+			},
 			givenLinks: []NodeLink{
-				NewMergeLink(writeAction, readAction),
-				NewMergeLink(errorAction, readAction),
+				NewLink(writeAction, readAction),
+				NewLink(errorAction, readAction),
 				NewLink(readAction, deleteAnotherAction),
 			},
 			expectedIsDone: false,
 			expectedContextData: contextData{
 				"write_action": "done",
-				"read_action":  "the content of write_action is done",
 			},
 			expectedReport: map[Node]ComputeState{
-				writeAction:         ComputeStatePass(),
-				errorAction:         ComputeStateStopOnError(errors.New("action error")),
-				readAction:          ComputeStatePass(),
-				deleteAnotherAction: ComputeStatePass(),
+				writeAction: ComputeStatePass(),
+				errorAction: ComputeStateStopOnError(errors.New("action error")),
 			},
 		},
 	}
@@ -414,6 +479,9 @@ func Test_Computation_Compute(t *testing.T) {
 			system := NewNodeSystem()
 			for _, node := range testCase.givenNodes {
 				system.AddNode(node)
+			}
+			for node, mode := range testCase.givenNodesJoinModes {
+				system.AddNodeJoinMode(node, mode)
 			}
 			for _, link := range testCase.givenLinks {
 				system.AddLink(link)
