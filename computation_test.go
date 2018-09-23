@@ -101,7 +101,7 @@ func Test_Computation_Compute(t *testing.T) {
 		name                string
 		givenNodes          []Node
 		givenNodesJoinModes map[Node]JoinMode
-		givenLinks          []NodeLink
+		givenLinks          []nodeLink
 		givenContextData    contextData
 		expectedIsDone      bool
 		expectedContextData contextData
@@ -148,8 +148,8 @@ func Test_Computation_Compute(t *testing.T) {
 				writeAction,
 				readAction,
 			},
-			givenLinks: []NodeLink{
-				NewLink(writeAction, readAction),
+			givenLinks: []nodeLink{
+				newLink(writeAction, readAction),
 			},
 			expectedIsDone: true,
 			expectedContextData: contextData{
@@ -167,8 +167,8 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				writeAction,
 			},
-			givenLinks: []NodeLink{
-				NewLink(writeAction, readAction),
+			givenLinks: []nodeLink{
+				newLink(writeAction, readAction),
 			},
 			expectedIsDone: true,
 			expectedContextData: contextData{
@@ -188,10 +188,10 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenLinks: []NodeLink{
-				NewLink(writeAction, writeActionKeyIsPresent),
-				NewBranchLink(writeActionKeyIsPresent, readAction, true),
-				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, false),
+			givenLinks: []nodeLink{
+				newLink(writeAction, writeActionKeyIsPresent),
+				newBranchLink(writeActionKeyIsPresent, readAction, true),
+				newBranchLink(writeActionKeyIsPresent, deleteAnotherAction, false),
 			},
 			expectedIsDone: true,
 			expectedContextData: contextData{
@@ -212,10 +212,10 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenLinks: []NodeLink{
-				NewLink(writeAnotherAction, writeActionKeyIsPresent),
-				NewBranchLink(writeActionKeyIsPresent, readAction, true),
-				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, false),
+			givenLinks: []nodeLink{
+				newLink(writeAnotherAction, writeActionKeyIsPresent),
+				newBranchLink(writeActionKeyIsPresent, readAction, true),
+				newBranchLink(writeActionKeyIsPresent, deleteAnotherAction, false),
 			},
 			expectedIsDone:      true,
 			expectedContextData: contextData{},
@@ -233,10 +233,10 @@ func Test_Computation_Compute(t *testing.T) {
 				writeActionKeyIsPresent,
 				writeAction,
 			},
-			givenLinks: []NodeLink{
-				NewLink(writeAction, writeActionKeyIsPresent),
-				NewBranchLink(writeActionKeyIsPresent, readAction, true),
-				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, false),
+			givenLinks: []nodeLink{
+				newLink(writeAction, writeActionKeyIsPresent),
+				newBranchLink(writeActionKeyIsPresent, readAction, true),
+				newBranchLink(writeActionKeyIsPresent, deleteAnotherAction, false),
 			},
 			expectedIsDone: true,
 			expectedContextData: contextData{
@@ -257,10 +257,10 @@ func Test_Computation_Compute(t *testing.T) {
 				writeActionKeyIsPresent,
 				writeAnotherAction,
 			},
-			givenLinks: []NodeLink{
-				NewLink(writeAnotherAction, writeActionKeyIsPresent),
-				NewBranchLink(writeActionKeyIsPresent, readAction, true),
-				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, false),
+			givenLinks: []nodeLink{
+				newLink(writeAnotherAction, writeActionKeyIsPresent),
+				newBranchLink(writeActionKeyIsPresent, readAction, true),
+				newBranchLink(writeActionKeyIsPresent, deleteAnotherAction, false),
 			},
 			expectedIsDone:      true,
 			expectedContextData: contextData{},
@@ -279,11 +279,11 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenLinks: []NodeLink{
-				NewLink(writeAction, writeActionKeyIsPresent),
-				NewBranchLink(writeActionKeyIsPresent, errorAction, true),
-				NewLink(errorAction, readAction),
-				NewBranchLink(writeActionKeyIsPresent, deleteAnotherAction, false),
+			givenLinks: []nodeLink{
+				newLink(writeAction, writeActionKeyIsPresent),
+				newBranchLink(writeActionKeyIsPresent, errorAction, true),
+				newLink(errorAction, readAction),
+				newBranchLink(writeActionKeyIsPresent, deleteAnotherAction, false),
 			},
 			expectedIsDone: false,
 			expectedContextData: contextData{
@@ -303,10 +303,10 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenLinks: []NodeLink{
-				NewLink(writeAction, errorDecision),
-				NewBranchLink(errorDecision, readAction, true),
-				NewBranchLink(errorDecision, deleteAnotherAction, false),
+			givenLinks: []nodeLink{
+				newLink(writeAction, errorDecision),
+				newBranchLink(errorDecision, readAction, true),
+				newBranchLink(errorDecision, deleteAnotherAction, false),
 			},
 			expectedIsDone: false,
 			expectedContextData: contextData{
@@ -325,10 +325,10 @@ func Test_Computation_Compute(t *testing.T) {
 				errorAction,
 				deleteAnotherAction,
 			},
-			givenLinks: []NodeLink{
-				NewLink(writeAction, deleteAnotherAction),
-				NewLink(writeAction, errorAction),
-				NewLink(writeAction, readAction),
+			givenLinks: []nodeLink{
+				newLink(writeAction, deleteAnotherAction),
+				newLink(writeAction, errorAction),
+				newLink(writeAction, readAction),
 			},
 			expectedIsDone: false,
 			expectedContextData: contextData{
@@ -351,10 +351,10 @@ func Test_Computation_Compute(t *testing.T) {
 			givenNodesJoinModes: map[Node]JoinMode{
 				readAction: JoinModeAnd,
 			},
-			givenLinks: []NodeLink{
-				NewLink(writeAction, readAction),
-				NewLink(writeAnotherAction, readAction),
-				NewLink(readAction, deleteAnotherAction),
+			givenLinks: []nodeLink{
+				newLink(writeAction, readAction),
+				newLink(writeAnotherAction, readAction),
+				newLink(readAction, deleteAnotherAction),
 			},
 			expectedIsDone: true,
 			expectedContextData: contextData{
@@ -380,11 +380,11 @@ func Test_Computation_Compute(t *testing.T) {
 			givenNodesJoinModes: map[Node]JoinMode{
 				readAction: JoinModeAnd,
 			},
-			givenLinks: []NodeLink{
-				NewLink(writeAction, readAction),
-				NewBranchLink(writeActionKeyIsPresent, readAction, false),
-				NewLink(writeAnotherAction, readAction),
-				NewLink(readAction, deleteAnotherAction),
+			givenLinks: []nodeLink{
+				newLink(writeAction, readAction),
+				newBranchLink(writeActionKeyIsPresent, readAction, false),
+				newLink(writeAnotherAction, readAction),
+				newLink(readAction, deleteAnotherAction),
 			},
 			expectedIsDone: true,
 			expectedContextData: contextData{
@@ -408,10 +408,10 @@ func Test_Computation_Compute(t *testing.T) {
 			givenNodesJoinModes: map[Node]JoinMode{
 				readAction: JoinModeOr,
 			},
-			givenLinks: []NodeLink{
-				NewLink(writeAction, readAction),
-				NewBranchLink(writeActionKeyIsPresent, readAction, true),
-				NewLink(readAction, deleteAnotherAction),
+			givenLinks: []nodeLink{
+				newLink(writeAction, readAction),
+				newBranchLink(writeActionKeyIsPresent, readAction, true),
+				newLink(readAction, deleteAnotherAction),
 			},
 			expectedIsDone: true,
 			expectedContextData: contextData{
@@ -436,10 +436,10 @@ func Test_Computation_Compute(t *testing.T) {
 			givenNodesJoinModes: map[Node]JoinMode{
 				readAction: JoinModeOr,
 			},
-			givenLinks: []NodeLink{
-				NewBranchLink(writeActionKeyIsPresent, readAction, true),
-				NewBranchLink(writeAnotherActionKeyIsPresent, readAction, true),
-				NewLink(readAction, deleteAnotherAction),
+			givenLinks: []nodeLink{
+				newBranchLink(writeActionKeyIsPresent, readAction, true),
+				newBranchLink(writeAnotherActionKeyIsPresent, readAction, true),
+				newLink(readAction, deleteAnotherAction),
 			},
 			expectedIsDone:      true,
 			expectedContextData: contextData{},
@@ -459,10 +459,10 @@ func Test_Computation_Compute(t *testing.T) {
 			givenNodesJoinModes: map[Node]JoinMode{
 				readAction: JoinModeOr,
 			},
-			givenLinks: []NodeLink{
-				NewLink(writeAction, readAction),
-				NewLink(errorAction, readAction),
-				NewLink(readAction, deleteAnotherAction),
+			givenLinks: []nodeLink{
+				newLink(writeAction, readAction),
+				newLink(errorAction, readAction),
+				newLink(readAction, deleteAnotherAction),
 			},
 			expectedIsDone: false,
 			expectedContextData: contextData{
@@ -484,7 +484,11 @@ func Test_Computation_Compute(t *testing.T) {
 				system.AddNodeJoinMode(node, mode)
 			}
 			for _, link := range testCase.givenLinks {
-				system.AddLink(link)
+				if link.branch == nil {
+					system.AddLink(link.from, link.to)
+				} else {
+					system.AddBranchLink(link.from, link.to, *link.branch)
+				}
 			}
 			_, errs := system.Validate()
 			if errs != nil {

@@ -6,36 +6,28 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-type JoinMode string
-
-const (
-	JoinModeAnd  JoinMode = "and"
-	JoinModeOr            = "or"
-	JoinModeNone          = "none"
-)
-
-type NodeLink struct {
+type nodeLink struct {
 	from   Node
 	to     Node
 	branch *bool
 }
 
-func NewLink(from, to Node) NodeLink {
-	return NodeLink{
+func newLink(from, to Node) nodeLink {
+	return nodeLink{
 		from: from,
 		to:   to,
 	}
 }
 
-func NewBranchLink(from, to Node, branch bool) NodeLink {
-	return NodeLink{
+func newBranchLink(from, to Node, branch bool) nodeLink {
+	return nodeLink{
 		from:   from,
 		to:     to,
 		branch: boolPointer(branch),
 	}
 }
 
-func (n NodeLink) String() string {
+func (n nodeLink) String() string {
 	branch := ""
 	if n.branch != nil {
 		branch = fmt.Sprintf(", branch: %v", *n.branch)
@@ -43,6 +35,6 @@ func (n NodeLink) String() string {
 	return fmt.Sprintf("{from: '%v', to: '%v'%v}", n.from, n.to, branch)
 }
 
-var equalOptionForNodeLink = cmp.Comparer(func(x, y NodeLink) bool {
+var equalOptionFornodeLink = cmp.Comparer(func(x, y nodeLink) bool {
 	return cmp.Equal(x.from, y.from, equalOptionForNode) && cmp.Equal(x.to, y.to, equalOptionForNode) && cmp.Equal(x.branch, y.branch)
 })

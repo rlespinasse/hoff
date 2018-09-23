@@ -12,7 +12,7 @@ type NodeSystem struct {
 	validity       bool
 	nodes          []Node
 	nodesJoinModes map[Node]JoinMode
-	links          []NodeLink
+	links          []nodeLink
 
 	initialNodes []Node
 	linkTree     map[Node]map[*bool][]Node
@@ -24,12 +24,12 @@ func NewNodeSystem() *NodeSystem {
 		validity:       false,
 		nodes:          make([]Node, 0),
 		nodesJoinModes: make(map[Node]JoinMode),
-		links:          make([]NodeLink, 0),
+		links:          make([]nodeLink, 0),
 	}
 }
 
 func (x *NodeSystem) Equal(y *NodeSystem) bool {
-	return cmp.Equal(x.validity, y.validity) && cmp.Equal(x.nodes, y.nodes, equalOptionForNode) && cmp.Equal(x.links, y.links, equalOptionForNodeLink)
+	return cmp.Equal(x.validity, y.validity) && cmp.Equal(x.nodes, y.nodes, equalOptionForNode) && cmp.Equal(x.links, y.links, equalOptionFornodeLink)
 }
 
 func (s *NodeSystem) AddNode(n Node) (bool, error) {
@@ -48,40 +48,52 @@ func (s *NodeSystem) AddNodeJoinMode(n Node, m JoinMode) (bool, error) {
 	return true, nil
 }
 
-func (s *NodeSystem) AddLink(n NodeLink) (bool, error) {
+func (s *NodeSystem) addLink(from, to Node, branch *bool) (bool, error) {
 	if s.IsValidated() {
 		return false, errors.New("can't add branch link, node system is freeze due to successful validation")
 	}
 
-	if n.from == nil {
+	if from == nil {
 		return false, fmt.Errorf("can't have missing 'from' attribute")
 	}
 
-	if n.branch == nil && n.from.decideCapability() {
+	if branch == nil && from.decideCapability() {
 		return false, fmt.Errorf("can't have missing branch")
 	}
 
-	if n.branch != nil && !n.from.decideCapability() {
+	if branch != nil && !from.decideCapability() {
 		return false, fmt.Errorf("can't have not needed branch")
 	}
 
-	if n.to == nil {
+	if to == nil {
 		return false, fmt.Errorf("can't have missing 'to' attribute")
 	}
 
-	if n.from == n.to {
+	if from == to {
 		return false, fmt.Errorf("can't have link on from and to the same node")
 	}
 
-	s.links = append(s.links, n)
+	if branch == nil {
+		s.links = append(s.links, newLink(from, to))
+	} else {
+		s.links = append(s.links, newBranchLink(from, to, *branch))
+	}
 	return true, nil
+}
+
+func (s *NodeSystem) AddLink(from, to Node) (bool, error) {
+	return s.addLink(from, to, nil)
+}
+
+func (s *NodeSystem) AddBranchLink(from, to Node, branch bool) (bool, error) {
+	return s.addLink(from, to, &branch)
 }
 
 func (s *NodeSystem) Validate() (bool, []error) {
 	errors := make([]error, 0)
 	errors = append(errors, checkForOrphanMultiBranchesNode(s)...)
-	errors = append(errors, checkForCyclicRedundancyInNodeLinks(s)...)
-	errors = append(errors, checkForUndeclaredNodeInNodeLink(s)...)
+	errors = append(errors, checkForCyclicRedundancyInnodeLinks(s)...)
+	errors = append(errors, checkForUndeclaredNodeInnodeLink(s)...)
 	errors = append(errors, checkForMultipleInstanceOfSameNode(s)...)
 
 	s.validity = len(errors) < 1
@@ -200,7 +212,7 @@ func checkForOrphanMultiBranchesNode(s *NodeSystem) []error {
 	return errors
 }
 
-func checkForCyclicRedundancyInNodeLinks(s *NodeSystem) []error {
+func checkForCyclicRedundancyInnodeLinks(s *NodeSystem) []error {
 	errors := make([]error, 0)
 	nodesInCycle := make([]Node, 0)
 	for i := 0; i < len(s.links); i++ {
@@ -213,20 +225,20 @@ func checkForCyclicRedundancyInNodeLinks(s *NodeSystem) []error {
 			}
 		}
 		if notInCycle {
-			cycleNodeLinks := walkNodeLink(l, l, s.links, []NodeLink{})
-			if cycleNodeLinks != nil {
-				for _, link := range cycleNodeLinks {
+			cyclenodeLinks := walknodeLink(l, l, s.links, []nodeLink{})
+			if cyclenodeLinks != nil {
+				for _, link := range cyclenodeLinks {
 					nodesInCycle = append(nodesInCycle, link.from)
 				}
-				errors = append(errors, fmt.Errorf("Can't have cycle between links: %+v", cycleNodeLinks))
+				errors = append(errors, fmt.Errorf("Can't have cycle between links: %+v", cyclenodeLinks))
 			}
 		}
 	}
 	return errors
 }
 
-func walkNodeLink(startingLink NodeLink, link NodeLink, links []NodeLink, walkedNodeLinks []NodeLink) []NodeLink {
-	nodeLinks := append(walkedNodeLinks, link)
+func walknodeLink(startingLink nodeLink, link nodeLink, links []nodeLink, walkednodeLinks []nodeLink) []nodeLink {
+	nodeLinks := append(walkednodeLinks, link)
 	if link.to == startingLink.from {
 		return nodeLinks
 	}
@@ -235,13 +247,13 @@ func walkNodeLink(startingLink NodeLink, link NodeLink, links []NodeLink, walked
 			continue
 		}
 		if link.to == links[i].from {
-			return walkNodeLink(startingLink, links[i], links, nodeLinks)
+			return walknodeLink(startingLink, links[i], links, nodeLinks)
 		}
 	}
 	return nil
 }
 
-func checkForUndeclaredNodeInNodeLink(s *NodeSystem) []error {
+func checkForUndeclaredNodeInnodeLink(s *NodeSystem) []error {
 	errors := make([]error, 0)
 	for _, link := range s.links {
 		if link.from != nil && !s.haveNode(link.from) {
