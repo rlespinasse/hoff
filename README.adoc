@@ -1,0 +1,5 @@
+image::.docs/hoff-square.png[Hoff,200,200,float="left"]
+
+= Higher Order Function Flows
+
+*See more documentation at* https://godoc.org/github.com/rlespinasse/hoff
