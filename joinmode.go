@@ -1,4 +1,4 @@
-package namingishard
+package hoff
 
 type JoinMode string
 

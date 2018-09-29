@@ -1,4 +1,4 @@
-package namingishard
+package hoff
 
 import (
 	"errors"
