@@ -1,3 +1,6 @@
+/*
+Package joinmode expose possible join mode as enum for the node system.
+*/
 package joinmode
 
 // JoinMode define the mode to join multiple Nodes (source) to the same linked Node (target)
