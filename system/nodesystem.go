@@ -1,3 +1,8 @@
+/*
+Package system expose functions to create and manipulate a Node system.
+
+NOTE: The NodeSystem, once correctly configure, need to be activate in order to work propertly.
+*/
 package system
 
 import (

@@ -1,3 +1,6 @@
+/*
+Package statetype expose possible compuration state type as StateType enum.
+*/
 package statetype
 
 // StateType is the type of the computation state of a Node during a Computation

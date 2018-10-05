@@ -1,12 +1,15 @@
+/*
+Package computation serve to create and run a sequential computation of the Node system.
+*/
 package computation
 
 import (
 	"errors"
 
 	"github.com/rlespinasse/hoff/computestate"
-	"github.com/rlespinasse/hoff/internal/statetype"
 	"github.com/rlespinasse/hoff/internal/utils"
 	"github.com/rlespinasse/hoff/node"
+	"github.com/rlespinasse/hoff/statetype"
 	"github.com/rlespinasse/hoff/system"
 	"github.com/rlespinasse/hoff/system/joinmode"
 
