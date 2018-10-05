@@ -1,0 +1,15 @@
+= Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on https://keepachangelog.com/en/1.0.0/[Keep a Changelog],
+and this project adheres to https://semver.org/spec/v2.0.0.html[Semantic Versioning].
+
+== [Unreleased]
+
+== [0.1.0] - 2018-10-05
+=== Added
+
+* Create action node,
+* Create decision node,
+* Create and manipulate a Node system,
+* Create and run a sequential computation of the Node system.
