@@ -1,13 +1,21 @@
-package hoff
+package node
 
 import (
 	"errors"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/rlespinasse/hoff/computestate"
+	"github.com/rlespinasse/hoff/internal/utils"
 )
 
-func Test_NewActionNode(t *testing.T) {
+var (
+	continueNode, _ = NewAction("continueNode", func(*Context) (bool, error) { return true, nil })
+	stopNode, _     = NewAction("stopNode", func(*Context) (bool, error) { return false, nil })
+	abortNode, _    = NewAction("abortNode", func(*Context) (bool, error) { return false, errors.New("error") })
+)
+
+func Test_NewAction(t *testing.T) {
 	testCases := []struct {
 		name          string
 		givenFunc     func(*Context) (bool, error)
@@ -25,9 +33,9 @@ func Test_NewActionNode(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			node, err := NewActionNode("ActionNode", testCase.givenFunc)
+			node, err := NewAction("ActionNode", testCase.givenFunc)
 
-			if !cmp.Equal(err, testCase.expectedError, equalOptionForError) {
+			if !cmp.Equal(err, testCase.expectedError, utils.ErrorComparator) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 			}
 			if testCase.givenFunc == nil && node != nil {
@@ -38,25 +46,34 @@ func Test_NewActionNode(t *testing.T) {
 }
 
 func Test_ActionNode_Compute(t *testing.T) {
-	continueNode, _ := NewActionNode("continueNode", func(*Context) (bool, error) { return true, nil })
-	stopNode, _ := NewActionNode("stopNode", func(*Context) (bool, error) { return false, nil })
-	abortNode, _ := NewActionNode("abortNode", func(*Context) (bool, error) { return false, errors.New("error") })
 	tc := []NodeTestCase{
 		{
 			name:                 "Should Continue",
 			givenNode:            continueNode,
-			expectedComputeState: ComputeStateContinue(),
+			expectedComputeState: computestate.Continue(),
 		},
 		{
 			name:                 "Should Stop",
 			givenNode:            stopNode,
-			expectedComputeState: ComputeStateStop(),
+			expectedComputeState: computestate.Stop(),
 		},
 		{
 			name:                 "Should Abort",
 			givenNode:            abortNode,
-			expectedComputeState: ComputeStateAbort(errors.New("error")),
+			expectedComputeState: computestate.Abort(errors.New("error")),
 		},
 	}
 	RunTestOnNode(t, tc)
+}
+
+func Test_ActionNode_DecideCapability(t *testing.T) {
+	if continueNode.DecideCapability() {
+		t.Error("action node must have no decide capability")
+	}
+}
+
+func Test_ActionNode_String(t *testing.T) {
+	if continueNode.String() != "continueNode" {
+		t.Error("action node must print its name")
+	}
 }

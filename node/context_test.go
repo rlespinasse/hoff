@@ -1,4 +1,4 @@
-package hoff
+package node
 
 import (
 	"testing"
@@ -6,9 +6,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func Test_NewContext(t *testing.T) {
-	c := NewContext()
-	emptyData := contextData{}
+func Test_New(t *testing.T) {
+	c := NewWithoutData()
+	emptyData := map[string]interface{}{}
 
 	if !cmp.Equal(c.data, emptyData) {
 		t.Errorf("context data - got: %+v, want: %+v", c.data, emptyData)
@@ -20,31 +20,30 @@ func Test_Context_Store(t *testing.T) {
 		name                string
 		givenKey            string
 		givenValue          interface{}
-		expectedContextData contextData
-		expectedError       error
+		expectedContextData map[string]interface{}
 	}{
 		{
 			name:                "Can store key:value",
 			givenKey:            "key",
 			givenValue:          "value",
-			expectedContextData: contextData{"key": "value"},
+			expectedContextData: map[string]interface{}{"key": "value"},
 		},
 		{
 			name:                "Can store key:nil",
 			givenKey:            "key",
 			givenValue:          nil,
-			expectedContextData: contextData{"key": nil},
+			expectedContextData: map[string]interface{}{"key": nil},
 		},
 		{
 			name:                "Can store key:interface",
 			givenKey:            "key",
 			givenValue:          map[string]string{"map_key": "value"},
-			expectedContextData: contextData{"key": map[string]string{"map_key": "value"}},
+			expectedContextData: map[string]interface{}{"key": map[string]string{"map_key": "value"}},
 		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			c := NewContext()
+			c := NewWithoutData()
 			c.Store(testCase.givenKey, testCase.givenValue)
 
 			if !cmp.Equal(c.data, testCase.expectedContextData) {
@@ -57,14 +56,14 @@ func Test_Context_Store(t *testing.T) {
 func Test_Context_Read(t *testing.T) {
 	testCases := []struct {
 		name             string
-		givenContextData contextData
+		givenContextData map[string]interface{}
 		givenKey         string
 		expectedValue    interface{}
 		expectedBool     bool
 	}{
 		{
 			name:             "Can read present key",
-			givenContextData: contextData{"key": "value"},
+			givenContextData: map[string]interface{}{"key": "value"},
 			givenKey:         "key",
 			expectedValue:    "value",
 			expectedBool:     true,
@@ -77,7 +76,9 @@ func Test_Context_Read(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			c := setupContext(testCase.givenContextData)
+			c := &Context{
+				data: testCase.givenContextData,
+			}
 			value, ok := c.Read(testCase.givenKey)
 
 			if value != testCase.expectedValue {
@@ -93,41 +94,43 @@ func Test_Context_Read(t *testing.T) {
 func Test_Context_Delete(t *testing.T) {
 	testCases := []struct {
 		name                string
-		givenContextData    contextData
+		givenContextData    map[string]interface{}
 		givenKey            string
-		expectedContextData contextData
+		expectedContextData map[string]interface{}
 	}{
 		{
 			name:                "Can delete a key",
-			givenContextData:    contextData{"key": "value"},
+			givenContextData:    map[string]interface{}{"key": "value"},
 			givenKey:            "key",
-			expectedContextData: contextData{},
+			expectedContextData: map[string]interface{}{},
 		},
 		{
 			name: "Can delete a present key without deleting other keys",
-			givenContextData: contextData{
+			givenContextData: map[string]interface{}{
 				"key":         "value",
 				"another_key": "another_value",
 			},
 			givenKey: "another_key",
-			expectedContextData: contextData{
+			expectedContextData: map[string]interface{}{
 				"key": "value",
 			},
 		},
 		{
 			name: "Can delete a missing key",
-			givenContextData: contextData{
+			givenContextData: map[string]interface{}{
 				"key": "value",
 			},
 			givenKey: "missing_key",
-			expectedContextData: contextData{
+			expectedContextData: map[string]interface{}{
 				"key": "value",
 			},
 		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			c := setupContext(testCase.givenContextData)
+			c := &Context{
+				data: testCase.givenContextData,
+			}
 			c.Delete(testCase.givenKey)
 
 			if !cmp.Equal(c.data, testCase.expectedContextData) {
@@ -140,26 +143,28 @@ func Test_Context_Delete(t *testing.T) {
 func Test_Context_Have(t *testing.T) {
 	testCases := []struct {
 		name             string
-		givenContextData contextData
+		givenContextData map[string]interface{}
 		givenKey         string
 		expectedResult   bool
 	}{
 		{
 			name:             "Can check if context have present key",
-			givenContextData: contextData{"key": "value"},
+			givenContextData: map[string]interface{}{"key": "value"},
 			givenKey:         "key",
 			expectedResult:   true,
 		},
 		{
 			name:             "Can check if context have missing key",
-			givenContextData: contextData{"key": "value"},
+			givenContextData: map[string]interface{}{"key": "value"},
 			givenKey:         "missing_key",
 			expectedResult:   false,
 		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			c := setupContext(testCase.givenContextData)
+			c := &Context{
+				data: testCase.givenContextData,
+			}
 			result := c.HaveKey(testCase.givenKey)
 
 			if result != testCase.expectedResult {
