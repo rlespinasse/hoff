@@ -1,13 +1,21 @@
-package hoff
+package node
 
 import (
 	"errors"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/rlespinasse/hoff/computestate"
+	"github.com/rlespinasse/hoff/internal/utils"
 )
 
-func Test_NewDecisionNode(t *testing.T) {
+var (
+	passingBranchTrueNode, _  = NewDecision("passingBranchTrueNode", func(*Context) (bool, error) { return true, nil })
+	passingBranchFalseNode, _ = NewDecision("passingBranchFalseNode", func(*Context) (bool, error) { return false, nil })
+	failingNode, _            = NewDecision("failingNode", func(*Context) (bool, error) { return false, errors.New("error") })
+)
+
+func Test_NewDecision(t *testing.T) {
 	testCases := []struct {
 		name          string
 		givenFunc     func(*Context) (bool, error)
@@ -25,9 +33,9 @@ func Test_NewDecisionNode(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			node, err := NewDecisionNode("DecisionNode", testCase.givenFunc)
+			node, err := NewDecision("DecisionNode", testCase.givenFunc)
 
-			if !cmp.Equal(err, testCase.expectedError, equalOptionForError) {
+			if !cmp.Equal(err, testCase.expectedError, utils.ErrorComparator) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 			}
 			if testCase.givenFunc == nil && node != nil {
@@ -38,25 +46,34 @@ func Test_NewDecisionNode(t *testing.T) {
 }
 
 func Test_DecisionNode_Compute(t *testing.T) {
-	passingBranchTrueNode, _ := NewDecisionNode("passingBranchTrueNode", func(*Context) (bool, error) { return true, nil })
-	passingBranchFalseNode, _ := NewDecisionNode("passingBranchFalseNode", func(*Context) (bool, error) { return false, nil })
-	failingNode, _ := NewDecisionNode("failingNode", func(*Context) (bool, error) { return false, errors.New("error") })
 	tc := []NodeTestCase{
 		{
 			name:                 "Should Pass on Branch 'true'",
 			givenNode:            passingBranchTrueNode,
-			expectedComputeState: ComputeStateContinueOnBranch(true),
+			expectedComputeState: computestate.ContinueOnBranch(true),
 		},
 		{
 			name:                 "Should Pass on Branch 'false'",
 			givenNode:            passingBranchFalseNode,
-			expectedComputeState: ComputeStateContinueOnBranch(false),
+			expectedComputeState: computestate.ContinueOnBranch(false),
 		},
 		{
 			name:                 "Should Fail",
 			givenNode:            failingNode,
-			expectedComputeState: ComputeStateAbort(errors.New("error")),
+			expectedComputeState: computestate.Abort(errors.New("error")),
 		},
 	}
 	RunTestOnNode(t, tc)
+}
+
+func Test_DecisionNode_DecideCapability(t *testing.T) {
+	if !passingBranchTrueNode.DecideCapability() {
+		t.Error("decision node must have decide capability")
+	}
+}
+
+func Test_DecisionNode_String(t *testing.T) {
+	if passingBranchTrueNode.String() != "passingBranchTrueNode" {
+		t.Error("decision node must print its name")
+	}
 }

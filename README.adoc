@@ -1,5 +1,3 @@
-image::.docs/hoff-square.png[Hoff,200,200,float="left"]
-
 = Higher Order Function Flows
 
 image:https://travis-ci.org/rlespinasse/hoff.svg?branch=v0["Build Status", link="https://travis-ci.org/rlespinasse/hoff"]
