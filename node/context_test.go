@@ -7,7 +7,7 @@ import (
 )
 
 func Test_New(t *testing.T) {
-	c := NewWithoutData()
+	c := NewContextWithoutData()
 	emptyData := map[string]interface{}{}
 
 	if !cmp.Equal(c.data, emptyData) {
@@ -43,7 +43,7 @@ func Test_Context_Store(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			c := NewWithoutData()
+			c := NewContextWithoutData()
 			c.Store(testCase.givenKey, testCase.givenValue)
 
 			if !cmp.Equal(c.data, testCase.expectedContextData) {

@@ -1,3 +1,6 @@
+/*
+Package utils expose utility functions.
+*/
 package utils
 
 import "github.com/google/go-cmp/cmp"

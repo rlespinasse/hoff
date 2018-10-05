@@ -1,3 +1,11 @@
+/*
+Package node define action, and decision nodes.
+
+You can also create your own node if the struct respect the Node interface.
+A Node use a Context during computation as input data and output data.
+
+NOTE: you will also find a "go-cmp" comparator for Node.
+*/
 package node
 
 import (

@@ -9,15 +9,15 @@ type Context struct {
 	data map[string]interface{}
 }
 
-// NewWithoutData generate a new empty Context
-func NewWithoutData() *Context {
+// NewContextWithoutData generate a new empty Context
+func NewContextWithoutData() *Context {
 	return &Context{
 		data: make(map[string]interface{}),
 	}
 }
 
-// New generate a new Context with data
-func New(data map[string]interface{}) *Context {
+// NewContext generate a new Context with data
+func NewContext(data map[string]interface{}) *Context {
 	return &Context{
 		data: data,
 	}

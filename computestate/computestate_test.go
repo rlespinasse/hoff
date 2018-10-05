@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rlespinasse/hoff/internal/statetype"
 	"github.com/rlespinasse/hoff/internal/utils"
+	"github.com/rlespinasse/hoff/statetype"
 )
 
 func Test_ComputeState_Call(t *testing.T) {

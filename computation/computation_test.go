@@ -19,7 +19,7 @@ func Test_New(t *testing.T) {
 	var activatedSystem = system.New()
 	activatedSystem.Activate()
 
-	var emptyContext = node.NewWithoutData()
+	var emptyContext = node.NewContextWithoutData()
 
 	testCases := []struct {
 		name                string
@@ -538,7 +538,7 @@ func Test_Computation_Compute(t *testing.T) {
 			if testCase.givenContextData == nil {
 				testCase.givenContextData = make(map[string]interface{})
 			}
-			context := node.New(testCase.givenContextData)
+			context := node.NewContext(testCase.givenContextData)
 
 			c, err := New(system, context)
 			if err != nil {
@@ -554,7 +554,7 @@ func Test_Computation_Compute(t *testing.T) {
 			if testCase.expectedContextData == nil {
 				testCase.expectedContextData = make(map[string]interface{})
 			}
-			expectedContext := node.New(testCase.expectedContextData)
+			expectedContext := node.NewContext(testCase.expectedContextData)
 			if !cmp.Equal(c.Context, expectedContext) {
 				t.Errorf("context data - got: %+v, want: %+v", c.Context, expectedContext)
 			}

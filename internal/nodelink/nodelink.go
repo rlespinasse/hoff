@@ -1,3 +1,6 @@
+/*
+Package nodelink serve to internally store a link between nodes in the Node system.
+*/
 package nodelink
 
 import (

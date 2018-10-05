@@ -1,10 +1,15 @@
+/*
+Package computestate expose utility functions to create a ComputeState object.
+
+NOTE: possible state values are availables in the "statetype" package
+*/
 package computestate
 
 import (
 	"fmt"
 
-	"github.com/rlespinasse/hoff/internal/statetype"
 	"github.com/rlespinasse/hoff/internal/utils"
+	"github.com/rlespinasse/hoff/statetype"
 )
 
 // ComputeState hold the result of a Node computation
