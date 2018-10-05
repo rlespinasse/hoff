@@ -1,5 +1,5 @@
 /*
-Package statetype expose possible compuration state type as StateType enum.
+Package statetype expose possible computation state type as enum.
 */
 package statetype
 
