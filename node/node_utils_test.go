@@ -24,7 +24,7 @@ func RunTestOnNode(t *testing.T, testCases []NodeTestCase) {
 				testCase.givenContextData = make(map[string]interface{})
 			}
 			testContext := &Context{
-				data: testCase.givenContextData,
+				Data: testCase.givenContextData,
 			}
 			testState := testCase.givenNode.Compute(testContext)
 
@@ -32,8 +32,8 @@ func RunTestOnNode(t *testing.T, testCases []NodeTestCase) {
 				t.Errorf("context state - got: %+v, want: %+v", testState, testCase.expectedComputeState)
 			}
 
-			if testCase.expectedContextData != nil && !cmp.Equal(testContext.data, testCase.expectedContextData) {
-				t.Errorf("context data - got: %+v, want: %+v", testContext.data, testCase.expectedContextData)
+			if testCase.expectedContextData != nil && !cmp.Equal(testContext.Data, testCase.expectedContextData) {
+				t.Errorf("context data - got: %+v, want: %+v", testContext.Data, testCase.expectedContextData)
 			}
 		})
 	}

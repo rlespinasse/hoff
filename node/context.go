@@ -6,46 +6,46 @@ import (
 
 // Context hold data during an Computation
 type Context struct {
-	data map[string]interface{}
+	Data map[string]interface{}
 }
 
 // NewContextWithoutData generate a new empty Context
 func NewContextWithoutData() *Context {
 	return &Context{
-		data: make(map[string]interface{}),
+		Data: make(map[string]interface{}),
 	}
 }
 
 // NewContext generate a new Context with data
 func NewContext(data map[string]interface{}) *Context {
 	return &Context{
-		data: data,
+		Data: data,
 	}
 }
 
 // Equal validate the two Context are equals
 func (c Context) Equal(o Context) bool {
-	return cmp.Equal(c.data, o.data)
+	return cmp.Equal(c.Data, o.Data)
 }
 
 // Store add a key and its value to the context
 func (c *Context) Store(key string, value interface{}) {
-	c.data[key] = value
+	c.Data[key] = value
 }
 
 // Delete remove a value in the context by its key
 func (c *Context) Delete(key string) {
-	delete(c.data, key)
+	delete(c.Data, key)
 }
 
 // Read get a value in the context by its key
 func (c *Context) Read(key string) (interface{}, bool) {
-	value, ok := c.data[key]
+	value, ok := c.Data[key]
 	return value, ok
 }
 
 // HaveKey validate that a key is in the context
 func (c *Context) HaveKey(key string) bool {
-	_, ok := c.data[key]
+	_, ok := c.Data[key]
 	return ok
 }

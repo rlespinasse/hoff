@@ -10,8 +10,8 @@ func Test_New(t *testing.T) {
 	c := NewContextWithoutData()
 	emptyData := map[string]interface{}{}
 
-	if !cmp.Equal(c.data, emptyData) {
-		t.Errorf("context data - got: %+v, want: %+v", c.data, emptyData)
+	if !cmp.Equal(c.Data, emptyData) {
+		t.Errorf("context data - got: %+v, want: %+v", c.Data, emptyData)
 	}
 }
 
@@ -46,8 +46,8 @@ func Test_Context_Store(t *testing.T) {
 			c := NewContextWithoutData()
 			c.Store(testCase.givenKey, testCase.givenValue)
 
-			if !cmp.Equal(c.data, testCase.expectedContextData) {
-				t.Errorf("got: %+v, want: %+v", c.data, testCase.expectedContextData)
+			if !cmp.Equal(c.Data, testCase.expectedContextData) {
+				t.Errorf("got: %+v, want: %+v", c.Data, testCase.expectedContextData)
 			}
 		})
 	}
@@ -77,7 +77,7 @@ func Test_Context_Read(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			c := &Context{
-				data: testCase.givenContextData,
+				Data: testCase.givenContextData,
 			}
 			value, ok := c.Read(testCase.givenKey)
 
@@ -129,12 +129,12 @@ func Test_Context_Delete(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			c := &Context{
-				data: testCase.givenContextData,
+				Data: testCase.givenContextData,
 			}
 			c.Delete(testCase.givenKey)
 
-			if !cmp.Equal(c.data, testCase.expectedContextData) {
-				t.Errorf("got: %+v, want: %+v", c.data, testCase.expectedContextData)
+			if !cmp.Equal(c.Data, testCase.expectedContextData) {
+				t.Errorf("got: %+v, want: %+v", c.Data, testCase.expectedContextData)
 			}
 		})
 	}
@@ -163,7 +163,7 @@ func Test_Context_Have(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			c := &Context{
-				data: testCase.givenContextData,
+				Data: testCase.givenContextData,
 			}
 			result := c.HaveKey(testCase.givenKey)
 
