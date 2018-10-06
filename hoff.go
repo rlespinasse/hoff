@@ -15,7 +15,7 @@ Create a node system and activate it:
 		// error handling
 	}
 
-Create a computation and launch it:
+Create a single computation and launch it:
 
 	cxt := node.NewContextWithoutData()
 	cxt.Store("input_info", input_info)
@@ -26,6 +26,21 @@ Create a computation and launch it:
 	}
 	fmt.Printf("computation report: %+v", cp.Report)
 	fmt.Printf("output_data: %+v", cp.Context.Read("output_data"))
+
+Create an engine and run multiple computations:
+
+	eng := engine.New()
+	eng.ConfigureNodeSystem(ns)
+
+	cr1 := eng.Compute(input_info)
+	fmt.Printf("computation error: %+v", cr1.Error)
+	fmt.Printf("computation report: %+v", cr1.Report)
+	fmt.Printf("computed data: %+v", cr1.Data)
+
+	cr2 := eng.Compute(another_aninput_info)
+	fmt.Printf("computation error: %+v", cr2.Error)
+	fmt.Printf("computation report: %+v", cr2.Report)
+	fmt.Printf("computed data: %+v", cr2.Data)
 
 */
 package hoff
