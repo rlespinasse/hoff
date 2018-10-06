@@ -404,7 +404,6 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 				t.Errorf("errors - got: %+v, want: %+v", errs, testCase.expectedErrors)
 			}
 			if !cmp.Equal(system, testCase.expectedNodeSystem) {
-				fmt.Printf("%+v\n", testCase.name)
 				t.Errorf("system - got: %+v, want: %+v", system, testCase.expectedNodeSystem)
 			}
 		})
