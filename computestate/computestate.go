@@ -48,13 +48,6 @@ func ContinueOnBranch(branch bool) ComputeState {
 	}
 }
 
-// Stop generate a computation state to stop to following nodes
-func Stop() ComputeState {
-	return ComputeState{
-		Value: statetype.StopState,
-	}
-}
-
 // Skip generate a computation state to specify
 // that the Node computation have been skipped
 func Skip() ComputeState {
