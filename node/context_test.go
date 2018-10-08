@@ -6,12 +6,53 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func Test_New(t *testing.T) {
+func Test_NewContext(t *testing.T) {
+	c := NewContext(map[string]interface{}{
+		"key": "value",
+	})
+	expectedData := map[string]interface{}{
+		"key": "value",
+	}
+
+	if !cmp.Equal(c.Data, expectedData) {
+		t.Errorf("context data - got: %+v, want: %+v", c.Data, expectedData)
+	}
+}
+
+func Test_NewContextWithoutData(t *testing.T) {
 	c := NewContextWithoutData()
 	emptyData := map[string]interface{}{}
 
 	if !cmp.Equal(c.Data, emptyData) {
 		t.Errorf("context data - got: %+v, want: %+v", c.Data, emptyData)
+	}
+}
+
+func Test_Context_Equal(t *testing.T) {
+	c1 := NewContext(map[string]interface{}{
+		"key": "value",
+	})
+	c2 := NewContext(map[string]interface{}{
+		"key": "value",
+	})
+
+	result := cmp.Equal(c1, c2)
+	if !result {
+		t.Errorf("got: %+v, want: %+v", result, true)
+	}
+}
+
+func Test_Context_NotEqual(t *testing.T) {
+	c1 := NewContext(map[string]interface{}{
+		"key": "value",
+	})
+	c2 := NewContext(map[string]interface{}{
+		"other_key": "value",
+	})
+
+	result := cmp.Equal(c1, c2)
+	if result {
+		t.Errorf("got: %+v, want: %+v", result, false)
 	}
 }
 
