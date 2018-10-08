@@ -32,12 +32,6 @@ func Test_ComputeState_Call(t *testing.T) {
 			expectedString:        "'Continue on true'",
 		},
 		{
-			name:                  "Should generate a stop state",
-			givenComputeStateCall: func() ComputeState { return Stop() },
-			expectedState:         statetype.StopState,
-			expectedString:        "'Stop'",
-		},
-		{
 			name:                  "Should generate a skip state",
 			givenComputeStateCall: func() ComputeState { return Skip() },
 			expectedState:         statetype.SkipState,
