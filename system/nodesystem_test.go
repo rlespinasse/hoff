@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	someActionNode, _         = node.NewAction("someActionNode", func(*node.Context) (bool, error) { return true, nil })
-	anotherActionNode, _      = node.NewAction("anotherActionNode", func(*node.Context) (bool, error) { return true, nil })
+	someActionNode, _         = node.NewAction("someActionNode", func(*node.Context) error { return nil })
+	anotherActionNode, _      = node.NewAction("anotherActionNode", func(*node.Context) error { return nil })
 	alwaysTrueDecisionNode, _ = node.NewDecision("alwaysTrueDecisionNode", func(*node.Context) (bool, error) { return true, nil })
 )
 

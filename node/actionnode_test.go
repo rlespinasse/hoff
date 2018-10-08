@@ -10,15 +10,14 @@ import (
 )
 
 var (
-	continueNode, _ = NewAction("continueNode", func(*Context) (bool, error) { return true, nil })
-	stopNode, _     = NewAction("stopNode", func(*Context) (bool, error) { return false, nil })
-	abortNode, _    = NewAction("abortNode", func(*Context) (bool, error) { return false, errors.New("error") })
+	continueNode, _ = NewAction("continueNode", func(*Context) error { return nil })
+	abortNode, _    = NewAction("abortNode", func(*Context) error { return errors.New("error") })
 )
 
 func Test_NewAction(t *testing.T) {
 	testCases := []struct {
 		name          string
-		givenFunc     func(*Context) (bool, error)
+		givenFunc     func(*Context) error
 		expectedError error
 	}{
 		{
@@ -27,7 +26,7 @@ func Test_NewAction(t *testing.T) {
 		},
 		{
 			name:          "Can create an action node",
-			givenFunc:     func(*Context) (bool, error) { return true, nil },
+			givenFunc:     func(*Context) error { return nil },
 			expectedError: nil,
 		},
 	}
@@ -51,11 +50,6 @@ func Test_ActionNode_Compute(t *testing.T) {
 			name:                 "Should Continue",
 			givenNode:            continueNode,
 			expectedComputeState: computestate.Continue(),
-		},
-		{
-			name:                 "Should Stop",
-			givenNode:            stopNode,
-			expectedComputeState: computestate.Stop(),
 		},
 		{
 			name:                 "Should Abort",

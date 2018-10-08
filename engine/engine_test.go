@@ -68,14 +68,14 @@ func Test_Engine_Compute(t *testing.T) {
 	keyIsPresent, _ := node.NewDecision("keyIsPresent", func(c *node.Context) (bool, error) {
 		return c.HaveKey("key"), nil
 	})
-	stringAction, _ := node.NewAction("stringAction", func(c *node.Context) (bool, error) {
+	stringAction, _ := node.NewAction("stringAction", func(c *node.Context) error {
 		keyValue, _ := c.Read("key")
 		c.Store("string", fmt.Sprintf("'%+v'", keyValue))
-		return true, nil
+		return nil
 	})
 	throwedError := errors.New("missing 'key' in context")
-	throwError, _ := node.NewAction("throwError", func(c *node.Context) (bool, error) {
-		return false, throwedError
+	throwError, _ := node.NewAction("throwError", func(c *node.Context) error {
+		return throwedError
 	})
 
 	ns := system.New()
