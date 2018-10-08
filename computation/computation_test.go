@@ -72,31 +72,28 @@ func Test_New(t *testing.T) {
 }
 
 func Test_Computation_Compute(t *testing.T) {
-	errorAction, _ := node.NewAction("errorAction", func(c *node.Context) (bool, error) {
-		return true, errors.New("action error")
+	errorAction, _ := node.NewAction("errorAction", func(c *node.Context) error {
+		return errors.New("action error")
 	})
 	errorDecision, _ := node.NewDecision("errorDecision", func(c *node.Context) (bool, error) {
 		return false, errors.New("decision error")
 	})
-	writeAction, _ := node.NewAction("writeAction", func(c *node.Context) (bool, error) {
+	writeAction, _ := node.NewAction("writeAction", func(c *node.Context) error {
 		c.Store("write_action", "done")
-		return true, nil
+		return nil
 	})
-	writeAnotherAction, _ := node.NewAction("writeAnotherAction", func(c *node.Context) (bool, error) {
+	writeAnotherAction, _ := node.NewAction("writeAnotherAction", func(c *node.Context) error {
 		c.Store("write_another_action", "done")
-		return true, nil
+		return nil
 	})
-	readAction, _ := node.NewAction("readAction", func(c *node.Context) (bool, error) {
-		v, ok := c.Read("write_action")
-		if !ok {
-			return false, nil
-		}
+	readAction, _ := node.NewAction("readAction", func(c *node.Context) error {
+		v, _ := c.Read("write_action")
 		c.Store("read_action", fmt.Sprintf("the content of write_action is %v", v))
-		return true, nil
+		return nil
 	})
-	deleteAnotherAction, _ := node.NewAction("deleteAnotherAction", func(c *node.Context) (bool, error) {
+	deleteAnotherAction, _ := node.NewAction("deleteAnotherAction", func(c *node.Context) error {
 		c.Delete("write_another_action")
-		return true, nil
+		return nil
 	})
 	writeActionKeyIsPresent, _ := node.NewDecision("writeActionKeyIsPresent", func(c *node.Context) (bool, error) {
 		return c.HaveKey("write_action"), nil
@@ -132,17 +129,6 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			expectedReport: map[node.Node]computestate.ComputeState{
 				writeAction: computestate.Continue(),
-			},
-		},
-		{
-			name: "Can compute one stop action node system",
-			givenNodes: []node.Node{
-				readAction,
-			},
-			expectedStatus:      true,
-			expectedContextData: map[string]interface{}{},
-			expectedReport: map[node.Node]computestate.ComputeState{
-				readAction: computestate.Stop(),
 			},
 		},
 		{

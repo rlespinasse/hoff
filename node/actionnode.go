@@ -10,7 +10,7 @@ import (
 // to realize some actions based on Context.
 type ActionNode struct {
 	name       string
-	actionFunc func(*Context) (bool, error)
+	actionFunc func(*Context) error
 }
 
 func (n ActionNode) String() string {
@@ -19,14 +19,11 @@ func (n ActionNode) String() string {
 
 // Compute run the action function and decide which compute state to return.
 func (n *ActionNode) Compute(c *Context) computestate.ComputeState {
-	state, err := n.actionFunc(c)
+	err := n.actionFunc(c)
 	if err != nil {
 		return computestate.Abort(err)
 	}
-	if state {
-		return computestate.Continue()
-	}
-	return computestate.Stop()
+	return computestate.Continue()
 }
 
 // DecideCapability is desactived due to the fact that an action don't take a decision.
@@ -35,7 +32,7 @@ func (n *ActionNode) DecideCapability() bool {
 }
 
 // NewAction create a ActionNode based on a name and a function to realize the needed action.
-func NewAction(name string, actionFunc func(*Context) (bool, error)) (*ActionNode, error) {
+func NewAction(name string, actionFunc func(*Context) error) (*ActionNode, error) {
 	if actionFunc == nil {
 		return nil, errors.New("can't create action node without function")
 	}

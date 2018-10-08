@@ -12,6 +12,7 @@ and this project adheres to https://semver.org/spec/v2.0.0.html[Semantic Version
 === Changed
 
 * Expose Data field in the Context.
+* An action node can't stop.
 
 == [0.1.0] - 2018-10-05
 === Added
