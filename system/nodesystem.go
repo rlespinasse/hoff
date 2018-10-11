@@ -87,6 +87,7 @@ func (s *NodeSystem) IsValid() (bool, []error) {
 	errors = append(errors, checkForCyclicRedundancyInnodeLinks(s)...)
 	errors = append(errors, checkForUndeclaredNodeInnodeLink(s)...)
 	errors = append(errors, checkForMultipleInstanceOfSameNode(s)...)
+	errors = append(errors, checkForMultipleLinksToNodeWithoutJoinMode(s)...)
 
 	if len(errors) == 0 {
 		return true, nil
@@ -329,6 +330,20 @@ func checkForMultipleInstanceOfSameNode(s *NodeSystem) []error {
 	for n, c := range count {
 		if c > 1 {
 			errors = append(errors, fmt.Errorf("can't have multiple instances (%v) of the same node: %+v", c, n))
+		}
+	}
+	return errors
+}
+
+func checkForMultipleLinksToNodeWithoutJoinMode(s *NodeSystem) []error {
+	errors := make([]error, 0)
+	count := make(map[node.Node]int)
+	for _, link := range s.links {
+		count[link.To]++
+	}
+	for n, c := range count {
+		if c > 1 && s.JoinModeOfNode(n) == joinmode.NONE {
+			errors = append(errors, fmt.Errorf("can't have multiple links (%v) to the same node: %+v without join mode", c, n))
 		}
 	}
 	return errors

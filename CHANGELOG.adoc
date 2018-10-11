@@ -5,6 +5,10 @@ The format is based on https://keepachangelog.com/en/1.0.0/[Keep a Changelog],
 and this project adheres to https://semver.org/spec/v2.0.0.html[Semantic Versioning].
 
 == [Unreleased]
+=== Added
+
+* An node system can't authorized multiple links to a node without a join mode defined.
+
 === Fixed
 
 * Don't compute twice a node when using AND or OR as join mode on it.
