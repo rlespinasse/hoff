@@ -74,7 +74,7 @@ func (cp *Computation) computeNode(node node.Node) error {
 	order := cp.calculateComputeOrder(node)
 
 	switch order {
-	case dontRunIt:
+	case dontRunIt, alreadyRunOnce:
 		return nil
 	case skipIt:
 		cp.Report[node] = computestate.Skip()
@@ -101,6 +101,10 @@ func (cp *Computation) computeFollowingNodes(node node.Node, branches ...*bool) 
 }
 
 func (cp *Computation) calculateComputeOrder(node node.Node) computeOrder {
+	if _, ok := cp.Report[node]; ok {
+		return alreadyRunOnce
+	}
+
 	ancestorsCount, ancestorsComputed, ancestorsWithContinueState := cp.ansectorsComputationStatistics(node)
 	if ancestorsCount != ancestorsComputed {
 		return dontRunIt
@@ -161,9 +165,10 @@ func (cp *Computation) ansectorsComputationStatisticsOnBranch(node node.Node, br
 type computeOrder string
 
 const (
-	computeIt computeOrder = "compute_it"
-	skipIt                 = "skip_it"
-	dontRunIt              = "dont_run_it"
+	computeIt      computeOrder = "compute_it"
+	skipIt                      = "skip_it"
+	dontRunIt                   = "dont_run_it"
+	alreadyRunOnce              = "already_run_once"
 )
 
 func nodeBranches(node node.Node) []*bool {
