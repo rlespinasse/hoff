@@ -18,7 +18,7 @@ import (
 	"github.com/rlespinasse/hoff/system"
 )
 
-// Engine expose an engine to manage mutliple computations based on a node system.
+// Engine expose an engine to manage multiple computations based on a node system.
 type Engine struct {
 	mode   ComputationMode
 	system *system.NodeSystem
