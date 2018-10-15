@@ -3,3 +3,4 @@
 image:https://travis-ci.org/rlespinasse/hoff.svg?branch=v0["Build Status", link="https://travis-ci.org/rlespinasse/hoff"]
 image:https://coveralls.io/repos/github/rlespinasse/hoff/badge.svg?branch=v0["Coverage Status", link="https://coveralls.io/github/rlespinasse/hoff?branch=v0"]
 image:https://godoc.org/github.com/rlespinasse/hoff?status.svg["GoDoc", link="https://godoc.org/github.com/rlespinasse/hoff"]
+image:https://goreportcard.com/badge/github.com/rlespinasse/hoff["Go Report Card", link="https://goreportcard.com/report/github.com/rlespinasse/hoff"]
