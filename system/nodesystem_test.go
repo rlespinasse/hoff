@@ -125,7 +125,7 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 		{
 			name: "Can't add empty 'from' on branch link",
 			givenLinks: []nodelink.NodeLink{
-				nodelink.NodeLink{To: someActionNode},
+				{To: someActionNode},
 			},
 			expectedNodeSystem: &NodeSystem{
 				nodes:          []node.Node{},
@@ -139,7 +139,7 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 		{
 			name: "Can't add empty 'to' on branch link",
 			givenLinks: []nodelink.NodeLink{
-				nodelink.NodeLink{From: someActionNode},
+				{From: someActionNode},
 			},
 			expectedNodeSystem: &NodeSystem{
 				nodes:          []node.Node{},
@@ -463,8 +463,8 @@ func Test_NodeSystem_Activate(t *testing.T) {
 				someActionNode,
 			},
 			expectedFollowingNodesTree: map[node.Node]map[*bool][]node.Node{
-				someActionNode: map[*bool][]node.Node{
-					nil: []node.Node{anotherActionNode},
+				someActionNode: {
+					nil: {anotherActionNode},
 				},
 			},
 		},
@@ -484,8 +484,8 @@ func Test_NodeSystem_Activate(t *testing.T) {
 				alwaysTrueDecisionNode,
 			},
 			expectedFollowingNodesTree: map[node.Node]map[*bool][]node.Node{
-				alwaysTrueDecisionNode: map[*bool][]node.Node{
-					utils.BoolPointer(true): []node.Node{anotherActionNode},
+				alwaysTrueDecisionNode: {
+					utils.BoolPointer(true): {anotherActionNode},
 				},
 			},
 		},
