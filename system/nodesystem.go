@@ -84,7 +84,7 @@ func (s *NodeSystem) AddLinkOnBranch(from, to node.Node, branch bool) (bool, err
 func (s *NodeSystem) IsValid() (bool, []error) {
 	errors := make([]error, 0)
 	errors = append(errors, checkForOrphanMultiBranchesNode(s)...)
-	errors = append(errors, checkForCyclicRedundancyInnodeLinks(s)...)
+	errors = append(errors, checkForCyclicRedundancyInNodeLinks(s)...)
 	errors = append(errors, checkForUndeclaredNodeInnodeLink(s)...)
 	errors = append(errors, checkForMultipleInstanceOfSameNode(s)...)
 	errors = append(errors, checkForMultipleLinksToNodeWithoutJoinMode(s)...)
@@ -263,45 +263,79 @@ func checkForOrphanMultiBranchesNode(s *NodeSystem) []error {
 	return errors
 }
 
-func checkForCyclicRedundancyInnodeLinks(s *NodeSystem) []error {
+func checkForCyclicRedundancyInNodeLinks(s *NodeSystem) []error {
 	errors := make([]error, 0)
-	nodesInCycle := make([]node.Node, 0)
-	for i := 0; i < len(s.links); i++ {
-		l := s.links[i]
-		notInCycle := true
-		for _, node := range nodesInCycle {
-			if node == l.From {
-				notInCycle = false
-				break
-			}
-		}
-		if notInCycle {
-			cyclenodeLinks := walkNodeLinks(l, l, s.links, []nodelink.NodeLink{})
-			if cyclenodeLinks != nil {
-				for _, link := range cyclenodeLinks {
-					nodesInCycle = append(nodesInCycle, link.From)
+	cycles := make([][]nodelink.NodeLink, 0)
+	for _, node := range s.nodes {
+		possibleCycles := findCycle(s, node, node, nil)
+		cycles = append(cycles, possibleCycles...)
+	}
+
+	nodeLinkSliceComparator := cmp.Comparer(func(x, y []nodelink.NodeLink) bool {
+		sameLinkCount := 0
+		for _, xItem := range x {
+			foundIt := false
+			for _, yItem := range y {
+				if cmp.Equal(xItem, yItem, nodelink.NodeLinkComparator) {
+					foundIt = true
+					break
 				}
-				errors = append(errors, fmt.Errorf("Can't have cycle between links: %+v", cyclenodeLinks))
+			}
+			if foundIt {
+				sameLinkCount++
 			}
 		}
+		return sameLinkCount == len(x)
+	})
+
+	trimmedCycles := make([][]nodelink.NodeLink, 0)
+	for _, cycle := range cycles {
+		alreadyTrimmed := false
+		for _, trimmedCycle := range trimmedCycles {
+			if cmp.Equal(cycle, trimmedCycle, nodeLinkSliceComparator) {
+				alreadyTrimmed = true
+			}
+		}
+		if !alreadyTrimmed {
+			trimmedCycles = append(trimmedCycles, cycle)
+		}
+	}
+
+	for _, cycle := range trimmedCycles {
+		errors = append(errors, fmt.Errorf("Can't have cycle in links between nodes: %+v", cycle))
 	}
 	return errors
 }
 
-func walkNodeLinks(startingLink, link nodelink.NodeLink, links []nodelink.NodeLink, walkedLinks []nodelink.NodeLink) []nodelink.NodeLink {
-	nodeLinks := append(walkedLinks, link)
-	if link.To == startingLink.From {
-		return nodeLinks
-	}
-	for i := 0; i < len(links); i++ {
-		if links[i] == link || links[i] == startingLink {
-			continue
+func findCycle(s *NodeSystem, topNode, currentNode node.Node, walkedNodeLinks []nodelink.NodeLink) [][]nodelink.NodeLink {
+	if walkedNodeLinks != nil && len(walkedNodeLinks) > 0 {
+		if topNode == currentNode {
+			return [][]nodelink.NodeLink{walkedNodeLinks}
 		}
-		if link.To == links[i].From {
-			return walkNodeLinks(startingLink, links[i], links, nodeLinks)
+		for _, link := range walkedNodeLinks {
+			if currentNode == link.From {
+				return [][]nodelink.NodeLink{}
+			}
 		}
 	}
-	return nil
+	var selectedLinks []nodelink.NodeLink
+	for _, link := range s.links {
+		if link.From == currentNode {
+			selectedLinks = append(selectedLinks, link)
+		}
+	}
+
+	if len(selectedLinks) == 0 {
+		return nil
+	}
+
+	cycles := make([][]nodelink.NodeLink, 0)
+	for _, link := range selectedLinks {
+		newWalkedNodeLinks := append(walkedNodeLinks, link)
+		linkCycles := findCycle(s, topNode, link.To, newWalkedNodeLinks)
+		cycles = append(cycles, linkCycles...)
+	}
+	return cycles
 }
 
 func checkForUndeclaredNodeInnodeLink(s *NodeSystem) []error {
