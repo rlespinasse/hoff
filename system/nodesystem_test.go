@@ -332,7 +332,7 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 			},
 		},
 		{
-			name: "Can't have cycle between some links",
+			name: "Can't have cycle between 2 links",
 			givenNodes: []node.Node{
 				someActionNode,
 				anotherActionNode,
@@ -353,7 +353,44 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("Can't have cycle between links: %+v", []nodelink.NodeLink{
+				fmt.Errorf("Can't have cycle in links between nodes: %+v", []nodelink.NodeLink{
+					nodelink.New(someActionNode, anotherActionNode),
+					nodelink.New(anotherActionNode, someActionNode),
+				}),
+			},
+		},
+		{
+			name: "Can't have cycle between some links",
+			givenNodes: []node.Node{
+				alwaysTrueDecisionNode,
+				someActionNode,
+				anotherActionNode,
+			},
+			givenLinks: []nodelink.NodeLink{
+				nodelink.NewOnBranch(alwaysTrueDecisionNode, someActionNode, true),
+				nodelink.New(someActionNode, anotherActionNode),
+				nodelink.New(anotherActionNode, someActionNode),
+			},
+			givenNodesJoinModes: map[node.Node]joinmode.JoinMode{
+				someActionNode: joinmode.AND,
+			},
+			expectedNodeSystem: &NodeSystem{
+				nodes: []node.Node{
+					alwaysTrueDecisionNode,
+					someActionNode,
+					anotherActionNode,
+				},
+				nodesJoinModes: map[node.Node]joinmode.JoinMode{
+					someActionNode: joinmode.AND,
+				},
+				links: []nodelink.NodeLink{
+					nodelink.NewOnBranch(alwaysTrueDecisionNode, someActionNode, true),
+					nodelink.New(someActionNode, anotherActionNode),
+					nodelink.New(anotherActionNode, someActionNode),
+				},
+			},
+			expectedErrors: []error{
+				fmt.Errorf("Can't have cycle in links between nodes: %+v", []nodelink.NodeLink{
 					nodelink.New(someActionNode, anotherActionNode),
 					nodelink.New(anotherActionNode, someActionNode),
 				}),
@@ -385,7 +422,7 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 				},
 			},
 			expectedErrors: []error{
-				fmt.Errorf("Can't have cycle between links: %+v", []nodelink.NodeLink{
+				fmt.Errorf("Can't have cycle in links between nodes: %+v", []nodelink.NodeLink{
 					nodelink.NewOnBranch(alwaysTrueDecisionNode, anotherActionNode, false),
 					nodelink.New(anotherActionNode, alwaysTrueDecisionNode),
 				}),
