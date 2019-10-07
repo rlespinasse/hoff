@@ -7,22 +7,20 @@ import (
 	"github.com/rlespinasse/hoff/internal/utils"
 	"github.com/rlespinasse/hoff/node"
 	"github.com/rlespinasse/hoff/statetype"
-	"github.com/rlespinasse/hoff/system"
-	"github.com/rlespinasse/hoff/system/joinmode"
 
 	"github.com/google/go-cmp/cmp"
 )
 
 // Computation take a NodeSystem and compute a Context against it.
 type Computation struct {
-	System  *system.NodeSystem
+	System  *NodeSystem
 	Context *node.Context
 	Status  bool
 	Report  map[node.Node]computestate.ComputeState
 }
 
 // NewComputation create a computation based on a valid, and activated NodeSystem and a Context.
-func NewComputation(system *system.NodeSystem, context *node.Context) (*Computation, error) {
+func NewComputation(system *NodeSystem, context *node.Context) (*Computation, error) {
 	if system == nil {
 		return nil, errors.New("must have a node system to work properly")
 	}
@@ -111,15 +109,15 @@ func (cp *Computation) calculateComputeOrder(node node.Node) computeOrder {
 
 	joinMode := cp.System.JoinModeOfNode(node)
 	switch joinMode {
-	case joinmode.AND:
+	case JoinAnd:
 		if ancestorsCount == ancestorsWithContinueState {
 			return computeIt
 		}
-	case joinmode.OR:
+	case JoinOr:
 		if ancestorsWithContinueState > 0 {
 			return computeIt
 		}
-	case joinmode.NONE:
+	case JoinNone:
 		if ancestorsWithContinueState == 1 {
 			return computeIt
 		}

@@ -11,19 +11,17 @@ import (
 	"github.com/rlespinasse/hoff/internal/nodelink"
 	"github.com/rlespinasse/hoff/internal/utils"
 	"github.com/rlespinasse/hoff/node"
-	"github.com/rlespinasse/hoff/system"
-	"github.com/rlespinasse/hoff/system/joinmode"
 )
 
 func Test_NewComputation(t *testing.T) {
-	var activatedSystem = system.New()
+	var activatedSystem = NewNodeSystem()
 	activatedSystem.Activate()
 
 	var emptyContext = node.NewContextWithoutData()
 
 	testCases := []struct {
 		name                string
-		givenSystem         *system.NodeSystem
+		givenSystem         *NodeSystem
 		givenContext        *node.Context
 		expectedComputation *Computation
 		expectedError       error
@@ -37,7 +35,7 @@ func Test_NewComputation(t *testing.T) {
 		},
 		{
 			name:                "Can't have a computation without activated system",
-			givenSystem:         system.New(),
+			givenSystem:         NewNodeSystem(),
 			givenContext:        emptyContext,
 			expectedComputation: nil,
 			expectedError:       errors.New("must have an activated node system to work properly"),
@@ -105,7 +103,7 @@ func Test_Computation_Compute(t *testing.T) {
 	testCases := []struct {
 		name                string
 		givenNodes          []node.Node
-		givenNodesJoinModes map[node.Node]joinmode.JoinMode
+		givenNodesJoinModes map[node.Node]JoinMode
 		givenLinks          []nodelink.NodeLink
 		givenContextData    map[string]interface{}
 		expectedStatus      bool
@@ -380,8 +378,8 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenNodesJoinModes: map[node.Node]joinmode.JoinMode{
-				readAction: joinmode.AND,
+			givenNodesJoinModes: map[node.Node]JoinMode{
+				readAction: JoinAnd,
 			},
 			givenLinks: []nodelink.NodeLink{
 				nodelink.New(writeAction, readAction),
@@ -409,8 +407,8 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenNodesJoinModes: map[node.Node]joinmode.JoinMode{
-				readAction: joinmode.AND,
+			givenNodesJoinModes: map[node.Node]JoinMode{
+				readAction: JoinAnd,
 			},
 			givenLinks: []nodelink.NodeLink{
 				nodelink.New(writeAction, readAction),
@@ -439,8 +437,8 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenNodesJoinModes: map[node.Node]joinmode.JoinMode{
-				readAction: joinmode.OR,
+			givenNodesJoinModes: map[node.Node]JoinMode{
+				readAction: JoinOr,
 			},
 			givenLinks: []nodelink.NodeLink{
 				nodelink.New(writeAction, readAction),
@@ -467,8 +465,8 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenNodesJoinModes: map[node.Node]joinmode.JoinMode{
-				readAction: joinmode.OR,
+			givenNodesJoinModes: map[node.Node]JoinMode{
+				readAction: JoinOr,
 			},
 			givenLinks: []nodelink.NodeLink{
 				nodelink.NewOnBranch(writeActionKeyIsPresent, readAction, true),
@@ -492,8 +490,8 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenNodesJoinModes: map[node.Node]joinmode.JoinMode{
-				readAction: joinmode.OR,
+			givenNodesJoinModes: map[node.Node]JoinMode{
+				readAction: JoinOr,
 			},
 			givenLinks: []nodelink.NodeLink{
 				nodelink.New(writeAction, readAction),
@@ -512,8 +510,8 @@ func Test_Computation_Compute(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			system := system.New()
-			load(system, testCase.givenNodes, testCase.givenNodesJoinModes, testCase.givenLinks)
+			system := NewNodeSystem()
+			loadNodeSystem(system, testCase.givenNodes, testCase.givenNodesJoinModes, testCase.givenLinks)
 
 			_, errs := system.IsValid()
 			if errs != nil {
@@ -551,45 +549,15 @@ func Test_Computation_Compute(t *testing.T) {
 	}
 }
 
-func load(system *system.NodeSystem, nodes []node.Node, nodesJoinModes map[node.Node]joinmode.JoinMode, links []nodelink.NodeLink) []error {
-	var errs []error
-	for _, node := range nodes {
-		_, err := system.AddNode(node)
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
-	for node, mode := range nodesJoinModes {
-		_, err := system.ConfigureJoinModeOnNode(node, mode)
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
-	for _, link := range links {
-		if link.Branch == nil {
-			_, err := system.AddLink(link.From, link.To)
-			if err != nil {
-				errs = append(errs, err)
-			}
-		} else {
-			_, err := system.AddLinkOnBranch(link.From, link.To, *link.Branch)
-			if err != nil {
-				errs = append(errs, err)
-			}
-		}
-	}
-	return errs
-}
-
 func Test_Github_Issue_11_JoinMode_AND(t *testing.T) {
-	testGithubIssue11JoinMode(joinmode.AND, t)
+	testGithubIssue11JoinMode(JoinAnd, t)
 }
 
 func Test_Github_Issue_11_JoinMode_OR(t *testing.T) {
-	testGithubIssue11JoinMode(joinmode.OR, t)
+	testGithubIssue11JoinMode(JoinOr, t)
 }
 
-func testGithubIssue11JoinMode(mode joinmode.JoinMode, t *testing.T) {
+func testGithubIssue11JoinMode(mode JoinMode, t *testing.T) {
 	action1, _ := node.NewAction("action1", func(c *node.Context) error {
 		data, _ := c.Read("run_order")
 		newData := append(data.([]string), "action1")
@@ -625,7 +593,7 @@ func testGithubIssue11JoinMode(mode joinmode.JoinMode, t *testing.T) {
 		"run_order": []string{},
 	}
 
-	ns := system.New()
+	ns := NewNodeSystem()
 	ns.AddNode(action1)
 	ns.AddNode(decision2)
 	ns.AddNode(action3)
