@@ -1,4 +1,4 @@
-package computation
+package hoff
 
 import (
 	"errors"
@@ -15,7 +15,7 @@ import (
 	"github.com/rlespinasse/hoff/system/joinmode"
 )
 
-func Test_New(t *testing.T) {
+func Test_NewComputation(t *testing.T) {
 	var activatedSystem = system.New()
 	activatedSystem.Activate()
 
@@ -59,7 +59,7 @@ func Test_New(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			c, err := New(testCase.givenSystem, testCase.givenContext)
+			c, err := NewComputation(testCase.givenSystem, testCase.givenContext)
 
 			if !cmp.Equal(c, testCase.expectedComputation) {
 				t.Errorf("computation - got: %+v, want: %+v", c, testCase.expectedComputation)
@@ -526,7 +526,7 @@ func Test_Computation_Compute(t *testing.T) {
 			}
 			context := node.NewContext(testCase.givenContextData)
 
-			c, err := New(system, context)
+			c, err := NewComputation(system, context)
 			if err != nil {
 				t.Errorf("can't compute: %+v", err)
 				t.FailNow()
@@ -579,4 +579,73 @@ func load(system *system.NodeSystem, nodes []node.Node, nodesJoinModes map[node.
 		}
 	}
 	return errs
+}
+
+func Test_Github_Issue_11_JoinMode_AND(t *testing.T) {
+	testGithubIssue11JoinMode(joinmode.AND, t)
+}
+
+func Test_Github_Issue_11_JoinMode_OR(t *testing.T) {
+	testGithubIssue11JoinMode(joinmode.OR, t)
+}
+
+func testGithubIssue11JoinMode(mode joinmode.JoinMode, t *testing.T) {
+	action1, _ := node.NewAction("action1", func(c *node.Context) error {
+		data, _ := c.Read("run_order")
+		newData := append(data.([]string), "action1")
+		c.Store("run_order", newData)
+		return nil
+	})
+	decision2, _ := node.NewDecision("decision2", func(c *node.Context) (bool, error) {
+		data, _ := c.Read("run_order")
+		newData := append(data.([]string), "decision2")
+		c.Store("run_order", newData)
+		return true, nil
+	})
+	action3, _ := node.NewAction("action3", func(c *node.Context) error {
+		data, _ := c.Read("run_order")
+		newData := append(data.([]string), "action3")
+		c.Store("run_order", newData)
+		return nil
+	})
+	action4, _ := node.NewAction("action4", func(c *node.Context) error {
+		data, _ := c.Read("run_order")
+		newData := append(data.([]string), "action4")
+		c.Store("run_order", newData)
+		return nil
+	})
+	action5, _ := node.NewAction("action5", func(c *node.Context) error {
+		data, _ := c.Read("run_order")
+		newData := append(data.([]string), "action5")
+		c.Store("run_order", newData)
+		return nil
+	})
+
+	data := map[string]interface{}{
+		"run_order": []string{},
+	}
+
+	ns := system.New()
+	ns.AddNode(action1)
+	ns.AddNode(decision2)
+	ns.AddNode(action3)
+	ns.AddNode(action4)
+	ns.AddNode(action5)
+	ns.AddLink(action1, decision2)
+	ns.AddLinkOnBranch(decision2, action3, true)
+	ns.AddLinkOnBranch(decision2, action4, false)
+	ns.AddLink(action3, action5)
+	ns.AddLink(action1, action5)
+	ns.ConfigureJoinModeOnNode(action5, mode)
+	ns.Activate()
+
+	cp, _ := NewComputation(ns, node.NewContext(data))
+	cp.Compute()
+
+	resultData, _ := cp.Context.Read("run_order")
+	expectedData := []string{"action1", "decision2", "action3", "action5"}
+
+	if !cmp.Equal(resultData, expectedData) {
+		t.Errorf("run order - got: %+v, want: %+v", resultData, expectedData)
+	}
 }
