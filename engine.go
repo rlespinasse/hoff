@@ -1,12 +1,4 @@
-/*
-Package engine serve to run multiple computations against a node system.
-
-Supported computations:
-
-	sequential
-
-*/
-package engine
+package hoff
 
 import (
 	"errors"
@@ -24,9 +16,9 @@ type Engine struct {
 	system *system.NodeSystem
 }
 
-// New create an engine with computation mode.
+// NewEngine create an engine with computation mode.
 // Need to be configured with a node system
-func New(mode ComputationMode) *Engine {
+func NewEngine(mode ComputationMode) *Engine {
 	return &Engine{
 		mode: mode,
 	}
