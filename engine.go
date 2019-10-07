@@ -3,7 +3,6 @@ package hoff
 import (
 	"errors"
 
-	"github.com/rlespinasse/hoff/computation"
 	"github.com/rlespinasse/hoff/computestate"
 	"github.com/rlespinasse/hoff/node"
 
@@ -45,7 +44,7 @@ func (e *Engine) Compute(data map[string]interface{}) ComputationResult {
 		}
 	}
 
-	cp, _ := computation.New(e.system, node.NewContext(data))
+	cp, _ := NewComputation(e.system, node.NewContext(data))
 
 	err := cp.Compute()
 	return ComputationResult{

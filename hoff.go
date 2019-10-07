@@ -19,7 +19,7 @@ Create a single computation and launch it:
 
 	cxt := node.NewContextWithoutData()
 	cxt.Store("input_info", input_info)
-	cp := computation.New(ns, context)
+	cp := hoff.NewComputation(ns, context)
 	err := cp.Compute()
 	if err != nil {
 		// error handling

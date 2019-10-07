@@ -9,6 +9,7 @@ and this project adheres to https://semver.org/spec/v2.0.0.html[Semantic Version
 
 * Rename `engine.New(..)` into `hoff.NewEngine(..)`
 * Rename `engine.SEQUENTIAL` into `hoff.SequentialComputation`
+* Rename `computation.New(..)` into `hoff.NewComputation(..)`
 
 == [0.3.1] - 2018-11-12
 === Fixed

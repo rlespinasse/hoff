@@ -1,7 +1,4 @@
-/*
-Package computation serve to create and run a sequential computation of the Node system.
-*/
-package computation
+package hoff
 
 import (
 	"errors"
@@ -24,8 +21,8 @@ type Computation struct {
 	Report  map[node.Node]computestate.ComputeState
 }
 
-// New create a computation based on a valid, and activated NodeSystem and a Context.
-func New(system *system.NodeSystem, context *node.Context) (*Computation, error) {
+// NewComputation create a computation based on a valid, and activated NodeSystem and a Context.
+func NewComputation(system *system.NodeSystem, context *node.Context) (*Computation, error) {
 	if system == nil {
 		return nil, errors.New("must have a node system to work properly")
 	}
