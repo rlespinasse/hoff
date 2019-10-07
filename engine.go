@@ -5,14 +5,12 @@ import (
 
 	"github.com/rlespinasse/hoff/computestate"
 	"github.com/rlespinasse/hoff/node"
-
-	"github.com/rlespinasse/hoff/system"
 )
 
 // Engine expose an engine to manage multiple computations based on a node system.
 type Engine struct {
 	mode   ComputationMode
-	system *system.NodeSystem
+	system *NodeSystem
 }
 
 // NewEngine create an engine with computation mode.
@@ -24,7 +22,7 @@ func NewEngine(mode ComputationMode) *Engine {
 }
 
 // ConfigureNodeSystem add a node system to the engine (only once).
-func (e *Engine) ConfigureNodeSystem(system *system.NodeSystem) error {
+func (e *Engine) ConfigureNodeSystem(system *NodeSystem) error {
 	if e.system != nil {
 		return errors.New("node system already configured")
 	}

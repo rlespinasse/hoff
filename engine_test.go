@@ -8,13 +8,12 @@ import (
 	"github.com/rlespinasse/hoff/computestate"
 	"github.com/rlespinasse/hoff/internal/utils"
 	"github.com/rlespinasse/hoff/node"
-	"github.com/rlespinasse/hoff/system"
 
 	"github.com/google/go-cmp/cmp"
 )
 
 func Test_Engine_ConfigureNodeSystem(t *testing.T) {
-	activatedNodeSystem := system.New()
+	activatedNodeSystem := NewNodeSystem()
 	activatedNodeSystem.Activate()
 
 	configuredEngine := &Engine{
@@ -25,7 +24,7 @@ func Test_Engine_ConfigureNodeSystem(t *testing.T) {
 	testCases := []struct {
 		name            string
 		givenEngine     *Engine
-		givenNodeSystem *system.NodeSystem
+		givenNodeSystem *NodeSystem
 		expectedEngine  *Engine
 		expectedError   error
 	}{
@@ -38,7 +37,7 @@ func Test_Engine_ConfigureNodeSystem(t *testing.T) {
 		{
 			name:            "Configure unactivated node system",
 			givenEngine:     NewEngine(SequentialComputation),
-			givenNodeSystem: system.New(),
+			givenNodeSystem: NewNodeSystem(),
 			expectedEngine:  NewEngine(SequentialComputation),
 			expectedError:   fmt.Errorf("node system need to be activated"),
 		},
@@ -78,7 +77,7 @@ func Test_Engine_Compute(t *testing.T) {
 		return throwedError
 	})
 
-	ns := system.New()
+	ns := NewNodeSystem()
 	ns.AddNode(keyIsPresent)
 	ns.AddNode(stringAction)
 	ns.AddNode(throwError)

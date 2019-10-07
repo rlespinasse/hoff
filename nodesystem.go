@@ -1,9 +1,4 @@
-/*
-Package system expose functions to create and manipulate a Node system.
-
-NOTE: The NodeSystem, once correctly configure, need to be activate in order to work properly.
-*/
-package system
+package hoff
 
 import (
 	"errors"
@@ -12,7 +7,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/rlespinasse/hoff/internal/nodelink"
 	"github.com/rlespinasse/hoff/node"
-	"github.com/rlespinasse/hoff/system/joinmode"
 )
 
 // NodeSystem is a system to configure workflow between action nodes, or decision nodes.
@@ -21,7 +15,7 @@ import (
 type NodeSystem struct {
 	activated      bool
 	nodes          []node.Node
-	nodesJoinModes map[node.Node]joinmode.JoinMode
+	nodesJoinModes map[node.Node]JoinMode
 	links          []nodelink.NodeLink
 
 	initialNodes       []node.Node
@@ -29,14 +23,14 @@ type NodeSystem struct {
 	ancestorsNodesTree map[node.Node]map[*bool][]node.Node
 }
 
-// New create an empty Node system
+// NewNodeSystem create an empty Node system
 // who need to be valid and activated in order to be used.
-func New() *NodeSystem {
+func NewNodeSystem() *NodeSystem {
 	return &NodeSystem{
 		activated:          false,
 		nodes:              make([]node.Node, 0),
 		links:              make([]nodelink.NodeLink, 0),
-		nodesJoinModes:     make(map[node.Node]joinmode.JoinMode),
+		nodesJoinModes:     make(map[node.Node]JoinMode),
 		initialNodes:       make([]node.Node, 0),
 		followingNodesTree: make(map[node.Node]map[*bool][]node.Node),
 		ancestorsNodesTree: make(map[node.Node]map[*bool][]node.Node),
@@ -58,7 +52,7 @@ func (s *NodeSystem) AddNode(n node.Node) (bool, error) {
 }
 
 // ConfigureJoinModeOnNode configure the join mode of a node into the system before activation.
-func (s *NodeSystem) ConfigureJoinModeOnNode(n node.Node, m joinmode.JoinMode) (bool, error) {
+func (s *NodeSystem) ConfigureJoinModeOnNode(n node.Node, m JoinMode) (bool, error) {
 	if s.activated {
 		return false, errors.New("can't add node join mode, node system is freeze due to activation")
 	}
@@ -153,12 +147,12 @@ func (s *NodeSystem) Activate() error {
 }
 
 // JoinModeOfNode get the configured join mode of a node
-func (s *NodeSystem) JoinModeOfNode(n node.Node) joinmode.JoinMode {
+func (s *NodeSystem) JoinModeOfNode(n node.Node) JoinMode {
 	mode, foundMode := s.nodesJoinModes[n]
 	if foundMode {
 		return mode
 	}
-	return joinmode.NONE
+	return JoinNone
 }
 
 // InitialNodes get the initial nodes
@@ -376,7 +370,7 @@ func checkForMultipleLinksToNodeWithoutJoinMode(s *NodeSystem) []error {
 		count[link.To]++
 	}
 	for n, c := range count {
-		if c > 1 && s.JoinModeOfNode(n) == joinmode.NONE {
+		if c > 1 && s.JoinModeOfNode(n) == JoinNone {
 			errors = append(errors, fmt.Errorf("can't have multiple links (%v) to the same node: %+v without join mode", c, n))
 		}
 	}
