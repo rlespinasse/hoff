@@ -29,7 +29,7 @@ Create a single computation and launch it:
 
 Create an engine and run multiple computations:
 
-	eng := engine.New()
+	eng := hoff.NewEngine(hoff.SequentialComputation)
 	eng.ConfigureNodeSystem(ns)
 
 	cr1 := eng.Compute(input_info)

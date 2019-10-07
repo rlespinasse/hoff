@@ -1,4 +1,4 @@
-package engine
+package hoff
 
 import (
 	"errors"
@@ -18,7 +18,7 @@ func Test_Engine_ConfigureNodeSystem(t *testing.T) {
 	activatedNodeSystem.Activate()
 
 	configuredEngine := &Engine{
-		mode:   SEQUENTIAL,
+		mode:   SequentialComputation,
 		system: activatedNodeSystem,
 	}
 
@@ -31,15 +31,15 @@ func Test_Engine_ConfigureNodeSystem(t *testing.T) {
 	}{
 		{
 			name:            "Configure activated node system",
-			givenEngine:     New(SEQUENTIAL),
+			givenEngine:     NewEngine(SequentialComputation),
 			givenNodeSystem: activatedNodeSystem,
 			expectedEngine:  configuredEngine,
 		},
 		{
 			name:            "Configure unactivated node system",
-			givenEngine:     New(SEQUENTIAL),
+			givenEngine:     NewEngine(SequentialComputation),
 			givenNodeSystem: system.New(),
-			expectedEngine:  New(SEQUENTIAL),
+			expectedEngine:  NewEngine(SequentialComputation),
 			expectedError:   fmt.Errorf("node system need to be activated"),
 		},
 		{
@@ -86,7 +86,7 @@ func Test_Engine_Compute(t *testing.T) {
 	ns.AddLinkOnBranch(keyIsPresent, throwError, false)
 	ns.Activate()
 
-	eng := New(SEQUENTIAL)
+	eng := NewEngine(SequentialComputation)
 	eng.ConfigureNodeSystem(ns)
 
 	testCases := []struct {
@@ -137,7 +137,7 @@ func Test_Engine_Compute(t *testing.T) {
 }
 
 func Test_UnconfiguredEngine_Compute(t *testing.T) {
-	eng := New(SEQUENTIAL)
+	eng := NewEngine(SequentialComputation)
 	data := make(map[string]interface{})
 	result := eng.Compute(data)
 

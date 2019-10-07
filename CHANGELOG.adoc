@@ -5,6 +5,10 @@ The format is based on https://keepachangelog.com/en/1.0.0/[Keep a Changelog],
 and this project adheres to https://semver.org/spec/v2.0.0.html[Semantic Versioning].
 
 == [Unreleased]
+=== Changed
+
+* Rename `engine.New(..)` into `hoff.NewEngine(..)`
+* Rename `engine.SEQUENTIAL` into `hoff.SequentialComputation`
 
 == [0.3.1] - 2018-11-12
 === Fixed
