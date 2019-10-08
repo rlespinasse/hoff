@@ -2,8 +2,6 @@ package hoff
 
 import (
 	"errors"
-
-	"github.com/rlespinasse/hoff/computestate"
 )
 
 // Engine expose an engine to manage multiple computations based on a node system.
@@ -55,5 +53,5 @@ func (e *Engine) Compute(data map[string]interface{}) ComputationResult {
 type ComputationResult struct {
 	Error  error
 	Data   map[string]interface{}
-	Report map[Node]computestate.ComputeState
+	Report map[Node]ComputeState
 }

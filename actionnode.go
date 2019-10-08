@@ -2,8 +2,6 @@ package hoff
 
 import (
 	"errors"
-
-	"github.com/rlespinasse/hoff/computestate"
 )
 
 // ActionNode is a type of Node who compute a function
@@ -18,12 +16,12 @@ func (n ActionNode) String() string {
 }
 
 // Compute run the action function and decide which compute state to return.
-func (n *ActionNode) Compute(c *Context) computestate.ComputeState {
+func (n *ActionNode) Compute(c *Context) ComputeState {
 	err := n.actionFunc(c)
 	if err != nil {
-		return computestate.Abort(err)
+		return NewAbortComputeState(err)
 	}
-	return computestate.Continue()
+	return NewContinueComputeState()
 }
 
 // DecideCapability is desactived due to the fact that an action don't take a decision.

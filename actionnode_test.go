@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rlespinasse/hoff/computestate"
 	"github.com/rlespinasse/hoff/internal/utils"
 )
 
@@ -49,12 +48,12 @@ func Test_ActionNode_Compute(t *testing.T) {
 		{
 			name:                 "Should Continue",
 			givenNode:            continueNode,
-			expectedComputeState: computestate.Continue(),
+			expectedComputeState: NewContinueComputeState(),
 		},
 		{
 			name:                 "Should Abort",
 			givenNode:            abortNode,
-			expectedComputeState: computestate.Abort(errors.New("error")),
+			expectedComputeState: NewAbortComputeState(errors.New("error")),
 		},
 	}
 	RunTestOnNode(t, tc)

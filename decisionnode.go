@@ -2,8 +2,6 @@ package hoff
 
 import (
 	"errors"
-
-	"github.com/rlespinasse/hoff/computestate"
 )
 
 // DecisionNode is a type of Node who compute a function
@@ -18,15 +16,15 @@ func (n DecisionNode) String() string {
 }
 
 // Compute run the decision function and decide which compute state to return.
-func (n *DecisionNode) Compute(c *Context) computestate.ComputeState {
+func (n *DecisionNode) Compute(c *Context) ComputeState {
 	decision, err := n.decisionFunc(c)
 	if err != nil {
-		return computestate.Abort(err)
+		return NewAbortComputeState(err)
 	}
 	if decision {
-		return computestate.ContinueOnBranch(true)
+		return NewContinueOnBranchComputeState(true)
 	}
-	return computestate.ContinueOnBranch(false)
+	return NewContinueOnBranchComputeState(false)
 }
 
 // DecideCapability is actived due to the fact that an decision is taked during compute.

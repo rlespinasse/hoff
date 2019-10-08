@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/rlespinasse/hoff/computestate"
 	"github.com/rlespinasse/hoff/internal/utils"
 
 	"github.com/google/go-cmp/cmp"
@@ -98,10 +97,10 @@ func Test_Engine_Compute(t *testing.T) {
 			expectedResult: ComputationResult{
 				Data:  make(map[string]interface{}),
 				Error: throwedError,
-				Report: map[Node]computestate.ComputeState{
-					keyIsPresent: computestate.ContinueOnBranch(false),
-					stringAction: computestate.Skip(),
-					throwError:   computestate.Abort(throwedError),
+				Report: map[Node]ComputeState{
+					keyIsPresent: NewContinueOnBranchComputeState(false),
+					stringAction: NewSkipComputeState(),
+					throwError:   NewAbortComputeState(throwedError),
 				},
 			},
 		},
@@ -115,10 +114,10 @@ func Test_Engine_Compute(t *testing.T) {
 					"key":    []string{"Compute", "without", "error"},
 					"string": "'[Compute without error]'",
 				},
-				Report: map[Node]computestate.ComputeState{
-					keyIsPresent: computestate.ContinueOnBranch(true),
-					stringAction: computestate.Continue(),
-					throwError:   computestate.Skip(),
+				Report: map[Node]ComputeState{
+					keyIsPresent: NewContinueOnBranchComputeState(true),
+					stringAction: NewContinueComputeState(),
+					throwError:   NewSkipComputeState(),
 				},
 			},
 		},

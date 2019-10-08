@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rlespinasse/hoff/computestate"
 	"github.com/rlespinasse/hoff/internal/utils"
 )
 
@@ -50,17 +49,17 @@ func Test_DecisionNode_Compute(t *testing.T) {
 		{
 			name:                 "Should Pass on Branch 'true'",
 			givenNode:            passingBranchTrueNode,
-			expectedComputeState: computestate.ContinueOnBranch(true),
+			expectedComputeState: NewContinueOnBranchComputeState(true),
 		},
 		{
 			name:                 "Should Pass on Branch 'false'",
 			givenNode:            passingBranchFalseNode,
-			expectedComputeState: computestate.ContinueOnBranch(false),
+			expectedComputeState: NewContinueOnBranchComputeState(false),
 		},
 		{
 			name:                 "Should Fail",
 			givenNode:            failingNode,
-			expectedComputeState: computestate.Abort(errors.New("error")),
+			expectedComputeState: NewAbortComputeState(errors.New("error")),
 		},
 	}
 	RunTestOnNode(t, tc)

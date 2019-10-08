@@ -3,7 +3,6 @@ package hoff
 import (
 	"errors"
 
-	"github.com/rlespinasse/hoff/computestate"
 	"github.com/rlespinasse/hoff/internal/utils"
 	"github.com/rlespinasse/hoff/statetype"
 
@@ -15,7 +14,7 @@ type Computation struct {
 	System  *NodeSystem
 	Context *Context
 	Status  bool
-	Report  map[Node]computestate.ComputeState
+	Report  map[Node]ComputeState
 }
 
 // NewComputation create a computation based on a valid, and activated NodeSystem and a Context.
@@ -45,7 +44,7 @@ func (cp Computation) Equal(o Computation) bool {
 // At the end of the computation (Status at true), you can read the compute state
 // of each node in the Report.
 func (cp *Computation) Compute() error {
-	cp.Report = make(map[Node]computestate.ComputeState)
+	cp.Report = make(map[Node]ComputeState)
 	err := cp.computeNodes(cp.System.InitialNodes())
 	if err != nil {
 		return err
@@ -71,7 +70,7 @@ func (cp *Computation) computeNode(node Node) error {
 	case dontRunIt, alreadyRunOnce:
 		return nil
 	case skipIt:
-		cp.Report[node] = computestate.Skip()
+		cp.Report[node] = NewSkipComputeState()
 	case computeIt:
 		state := node.Compute(cp.Context)
 		cp.Report[node] = state
