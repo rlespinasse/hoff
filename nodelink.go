@@ -1,7 +1,4 @@
-/*
-Package nodelink serve to internally store a link between nodes in the Node system.
-*/
-package nodelink
+package hoff
 
 import (
 	"fmt"
@@ -12,30 +9,30 @@ import (
 )
 
 var (
-	// NodeLinkComparator is a google/go-cmp comparator of Node Links
-	NodeLinkComparator = cmp.Comparer(func(x, y NodeLink) bool {
+	// nodeLinkComparator is a google/go-cmp comparator of Node Links
+	nodeLinkComparator = cmp.Comparer(func(x, y nodeLink) bool {
 		return cmp.Equal(x.From, y.From, node.NodeComparator) && cmp.Equal(x.To, y.To, node.NodeComparator) && cmp.Equal(x.Branch, y.Branch)
 	})
 )
 
-// NodeLink store all information needed to represent a link in the node system
-type NodeLink struct {
+// nodeLink store all information needed to represent a link in the node system
+type nodeLink struct {
 	From   node.Node
 	To     node.Node
 	Branch *bool
 }
 
-// New create a new link from a node to another node
-func New(from, to node.Node) NodeLink {
-	return NodeLink{
+// newNodeLink create a new link from a node to another node
+func newNodeLink(from, to node.Node) nodeLink {
+	return nodeLink{
 		From: from,
 		To:   to,
 	}
 }
 
-// NewOnBranch create a new link from a node (and his branch output) to another node
-func NewOnBranch(from, to node.Node, branch bool) NodeLink {
-	return NodeLink{
+// newNodeLinkOnBranch create a new link from a node (and his branch output) to another node
+func newNodeLinkOnBranch(from, to node.Node, branch bool) nodeLink {
+	return nodeLink{
 		From:   from,
 		To:     to,
 		Branch: utils.BoolPointer(branch),
@@ -43,7 +40,7 @@ func NewOnBranch(from, to node.Node, branch bool) NodeLink {
 }
 
 // String print human-readable version of a node link
-func (n NodeLink) String() string {
+func (n nodeLink) String() string {
 	branch := ""
 	if n.Branch != nil {
 		branch = fmt.Sprintf(" branch:%v", *n.Branch)

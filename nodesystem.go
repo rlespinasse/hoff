@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rlespinasse/hoff/internal/nodelink"
 	"github.com/rlespinasse/hoff/node"
 )
 
@@ -16,7 +15,7 @@ type NodeSystem struct {
 	activated      bool
 	nodes          []node.Node
 	nodesJoinModes map[node.Node]JoinMode
-	links          []nodelink.NodeLink
+	links          []nodeLink
 
 	initialNodes       []node.Node
 	followingNodesTree map[node.Node]map[*bool][]node.Node
@@ -29,7 +28,7 @@ func NewNodeSystem() *NodeSystem {
 	return &NodeSystem{
 		activated:          false,
 		nodes:              make([]node.Node, 0),
-		links:              make([]nodelink.NodeLink, 0),
+		links:              make([]nodeLink, 0),
 		nodesJoinModes:     make(map[node.Node]JoinMode),
 		initialNodes:       make([]node.Node, 0),
 		followingNodesTree: make(map[node.Node]map[*bool][]node.Node),
@@ -39,7 +38,7 @@ func NewNodeSystem() *NodeSystem {
 
 // Equal validate the two NodeSystem are equals.
 func (s *NodeSystem) Equal(o *NodeSystem) bool {
-	return cmp.Equal(s.activated, o.activated) && cmp.Equal(s.nodes, o.nodes, node.NodeComparator) && cmp.Equal(s.nodesJoinModes, o.nodesJoinModes) && cmp.Equal(s.links, o.links, nodelink.NodeLinkComparator)
+	return cmp.Equal(s.activated, o.activated) && cmp.Equal(s.nodes, o.nodes, node.NodeComparator) && cmp.Equal(s.nodesJoinModes, o.nodesJoinModes) && cmp.Equal(s.links, o.links, nodeLinkComparator)
 }
 
 // AddNode add a node to the system before activation.
@@ -79,7 +78,7 @@ func (s *NodeSystem) IsValid() (bool, []error) {
 	errors := make([]error, 0)
 	errors = append(errors, checkForOrphanMultiBranchesNode(s)...)
 	errors = append(errors, checkForCyclicRedundancyInNodeLinks(s)...)
-	errors = append(errors, checkForUndeclaredNodeInnodeLink(s)...)
+	errors = append(errors, checkForUndeclaredNodeInNodeLink(s)...)
 	errors = append(errors, checkForMultipleInstanceOfSameNode(s)...)
 	errors = append(errors, checkForMultipleLinksToNodeWithoutJoinMode(s)...)
 
@@ -222,9 +221,9 @@ func (s *NodeSystem) addLink(from, to node.Node, branch *bool) (bool, error) {
 	}
 
 	if branch == nil {
-		s.links = append(s.links, nodelink.New(from, to))
+		s.links = append(s.links, newNodeLink(from, to))
 	} else {
-		s.links = append(s.links, nodelink.NewOnBranch(from, to, *branch))
+		s.links = append(s.links, newNodeLinkOnBranch(from, to, *branch))
 	}
 	return true, nil
 }
@@ -259,18 +258,18 @@ func checkForOrphanMultiBranchesNode(s *NodeSystem) []error {
 
 func checkForCyclicRedundancyInNodeLinks(s *NodeSystem) []error {
 	errors := make([]error, 0)
-	cycles := make([][]nodelink.NodeLink, 0)
+	cycles := make([][]nodeLink, 0)
 	for _, node := range s.nodes {
 		possibleCycles := findCycle(s, node, node, nil)
 		cycles = append(cycles, possibleCycles...)
 	}
 
-	nodeLinkSliceComparator := cmp.Comparer(func(x, y []nodelink.NodeLink) bool {
+	nodeLinkSliceComparator := cmp.Comparer(func(x, y []nodeLink) bool {
 		sameLinkCount := 0
 		for _, xItem := range x {
 			foundIt := false
 			for _, yItem := range y {
-				if cmp.Equal(xItem, yItem, nodelink.NodeLinkComparator) {
+				if cmp.Equal(xItem, yItem, nodeLinkComparator) {
 					foundIt = true
 					break
 				}
@@ -282,7 +281,7 @@ func checkForCyclicRedundancyInNodeLinks(s *NodeSystem) []error {
 		return sameLinkCount == len(x)
 	})
 
-	trimmedCycles := make([][]nodelink.NodeLink, 0)
+	trimmedCycles := make([][]nodeLink, 0)
 	for _, cycle := range cycles {
 		alreadyTrimmed := false
 		for _, trimmedCycle := range trimmedCycles {
@@ -301,18 +300,18 @@ func checkForCyclicRedundancyInNodeLinks(s *NodeSystem) []error {
 	return errors
 }
 
-func findCycle(s *NodeSystem, topNode, currentNode node.Node, walkedNodeLinks []nodelink.NodeLink) [][]nodelink.NodeLink {
-	if walkedNodeLinks != nil && len(walkedNodeLinks) > 0 {
+func findCycle(s *NodeSystem, topNode, currentNode node.Node, walkednodeLinks []nodeLink) [][]nodeLink {
+	if walkednodeLinks != nil && len(walkednodeLinks) > 0 {
 		if topNode == currentNode {
-			return [][]nodelink.NodeLink{walkedNodeLinks}
+			return [][]nodeLink{walkednodeLinks}
 		}
-		for _, link := range walkedNodeLinks {
+		for _, link := range walkednodeLinks {
 			if currentNode == link.From {
-				return [][]nodelink.NodeLink{}
+				return [][]nodeLink{}
 			}
 		}
 	}
-	var selectedLinks []nodelink.NodeLink
+	var selectedLinks []nodeLink
 	for _, link := range s.links {
 		if link.From == currentNode {
 			selectedLinks = append(selectedLinks, link)
@@ -323,16 +322,16 @@ func findCycle(s *NodeSystem, topNode, currentNode node.Node, walkedNodeLinks []
 		return nil
 	}
 
-	cycles := make([][]nodelink.NodeLink, 0)
+	cycles := make([][]nodeLink, 0)
 	for _, link := range selectedLinks {
-		newWalkedNodeLinks := append(walkedNodeLinks, link)
-		linkCycles := findCycle(s, topNode, link.To, newWalkedNodeLinks)
+		newWalkednodeLinks := append(walkednodeLinks, link)
+		linkCycles := findCycle(s, topNode, link.To, newWalkednodeLinks)
 		cycles = append(cycles, linkCycles...)
 	}
 	return cycles
 }
 
-func checkForUndeclaredNodeInnodeLink(s *NodeSystem) []error {
+func checkForUndeclaredNodeInNodeLink(s *NodeSystem) []error {
 	errors := make([]error, 0)
 	for _, link := range s.links {
 		if link.From != nil && !s.haveNode(link.From) {
