@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rlespinasse/hoff/computestate"
 )
 
 func Test_SomeNode(t *testing.T) {
@@ -12,7 +11,7 @@ func Test_SomeNode(t *testing.T) {
 		{
 			name:                 "Should SomeNode Pass and Store a message",
 			givenNode:            &SomeNode{},
-			expectedComputeState: computestate.Continue(),
+			expectedComputeState: NewContinueComputeState(),
 			expectedContextData:  map[string]interface{}{"message": "SomeNode is passing"},
 		},
 	}

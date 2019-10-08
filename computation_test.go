@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rlespinasse/hoff/computestate"
 
 	"github.com/rlespinasse/hoff/internal/utils"
 )
@@ -106,13 +105,13 @@ func Test_Computation_Compute(t *testing.T) {
 		givenContextData    map[string]interface{}
 		expectedStatus      bool
 		expectedContextData map[string]interface{}
-		expectedReport      map[Node]computestate.ComputeState
+		expectedReport      map[Node]ComputeState
 	}{
 		{
 			name:                "Can compute empty validated system",
 			expectedStatus:      true,
 			expectedContextData: map[string]interface{}{},
-			expectedReport:      map[Node]computestate.ComputeState{},
+			expectedReport:      map[Node]ComputeState{},
 		},
 		{
 			name: "Can compute one action node system",
@@ -123,8 +122,8 @@ func Test_Computation_Compute(t *testing.T) {
 			expectedContextData: map[string]interface{}{
 				"write_action": "done",
 			},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeAction: computestate.Continue(),
+			expectedReport: map[Node]ComputeState{
+				writeAction: NewContinueComputeState(),
 			},
 		},
 		{
@@ -138,9 +137,9 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action":         "done",
 				"write_another_action": "done",
 			},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeAction:        computestate.Continue(),
-				writeAnotherAction: computestate.Continue(),
+			expectedReport: map[Node]ComputeState{
+				writeAction:        NewContinueComputeState(),
+				writeAnotherAction: NewContinueComputeState(),
 			},
 		},
 		{
@@ -157,9 +156,9 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 				"read_action":  "the content of write_action is done",
 			},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeAction: computestate.Continue(),
-				readAction:  computestate.Continue(),
+			expectedReport: map[Node]ComputeState{
+				writeAction: NewContinueComputeState(),
+				readAction:  NewContinueComputeState(),
 			},
 		},
 		{
@@ -176,9 +175,9 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 				"read_action":  "the content of write_action is done",
 			},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeAction: computestate.Continue(),
-				readAction:  computestate.Continue(),
+			expectedReport: map[Node]ComputeState{
+				writeAction: NewContinueComputeState(),
+				readAction:  NewContinueComputeState(),
 			},
 		},
 		{
@@ -199,11 +198,11 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 				"read_action":  "the content of write_action is done",
 			},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeAction:             computestate.Continue(),
-				writeActionKeyIsPresent: computestate.ContinueOnBranch(true),
-				readAction:              computestate.Continue(),
-				deleteAnotherAction:     computestate.Skip(),
+			expectedReport: map[Node]ComputeState{
+				writeAction:             NewContinueComputeState(),
+				writeActionKeyIsPresent: NewContinueOnBranchComputeState(true),
+				readAction:              NewContinueComputeState(),
+				deleteAnotherAction:     NewSkipComputeState(),
 			},
 		},
 		{
@@ -221,11 +220,11 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			expectedStatus:      true,
 			expectedContextData: map[string]interface{}{},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeAnotherAction:      computestate.Continue(),
-				writeActionKeyIsPresent: computestate.ContinueOnBranch(false),
-				readAction:              computestate.Skip(),
-				deleteAnotherAction:     computestate.Continue(),
+			expectedReport: map[Node]ComputeState{
+				writeAnotherAction:      NewContinueComputeState(),
+				writeActionKeyIsPresent: NewContinueOnBranchComputeState(false),
+				readAction:              NewSkipComputeState(),
+				deleteAnotherAction:     NewContinueComputeState(),
 			},
 		},
 		{
@@ -246,11 +245,11 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 				"read_action":  "the content of write_action is done",
 			},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeAction:             computestate.Continue(),
-				writeActionKeyIsPresent: computestate.ContinueOnBranch(true),
-				readAction:              computestate.Continue(),
-				deleteAnotherAction:     computestate.Skip(),
+			expectedReport: map[Node]ComputeState{
+				writeAction:             NewContinueComputeState(),
+				writeActionKeyIsPresent: NewContinueOnBranchComputeState(true),
+				readAction:              NewContinueComputeState(),
+				deleteAnotherAction:     NewSkipComputeState(),
 			},
 		},
 		{
@@ -268,11 +267,11 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			expectedStatus:      true,
 			expectedContextData: map[string]interface{}{},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeAnotherAction:      computestate.Continue(),
-				writeActionKeyIsPresent: computestate.ContinueOnBranch(false),
-				readAction:              computestate.Skip(),
-				deleteAnotherAction:     computestate.Continue(),
+			expectedReport: map[Node]ComputeState{
+				writeAnotherAction:      NewContinueComputeState(),
+				writeActionKeyIsPresent: NewContinueOnBranchComputeState(false),
+				readAction:              NewSkipComputeState(),
+				deleteAnotherAction:     NewContinueComputeState(),
 			},
 		},
 		{
@@ -294,10 +293,10 @@ func Test_Computation_Compute(t *testing.T) {
 			expectedContextData: map[string]interface{}{
 				"write_action": "done",
 			},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeAction:             computestate.Continue(),
-				writeActionKeyIsPresent: computestate.ContinueOnBranch(true),
-				errorAction:             computestate.Abort(errors.New("action error")),
+			expectedReport: map[Node]ComputeState{
+				writeAction:             NewContinueComputeState(),
+				writeActionKeyIsPresent: NewContinueOnBranchComputeState(true),
+				errorAction:             NewAbortComputeState(errors.New("action error")),
 			},
 		},
 		{
@@ -317,10 +316,10 @@ func Test_Computation_Compute(t *testing.T) {
 			expectedContextData: map[string]interface{}{
 				"write_another_action": "done",
 			},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeAnotherAction:      computestate.Continue(),
-				writeActionKeyIsPresent: computestate.ContinueOnBranch(false),
-				errorAction:             computestate.Abort(errors.New("action error")),
+			expectedReport: map[Node]ComputeState{
+				writeAnotherAction:      NewContinueComputeState(),
+				writeActionKeyIsPresent: NewContinueOnBranchComputeState(false),
+				errorAction:             NewAbortComputeState(errors.New("action error")),
 			},
 		},
 		{
@@ -340,9 +339,9 @@ func Test_Computation_Compute(t *testing.T) {
 			expectedContextData: map[string]interface{}{
 				"write_action": "done",
 			},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeAction:   computestate.Continue(),
-				errorDecision: computestate.Abort(errors.New("decision error")),
+			expectedReport: map[Node]ComputeState{
+				writeAction:   NewContinueComputeState(),
+				errorDecision: NewAbortComputeState(errors.New("decision error")),
 			},
 		},
 		{
@@ -362,10 +361,10 @@ func Test_Computation_Compute(t *testing.T) {
 			expectedContextData: map[string]interface{}{
 				"write_action": "done",
 			},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeAction:         computestate.Continue(),
-				deleteAnotherAction: computestate.Continue(),
-				errorAction:         computestate.Abort(errors.New("action error")),
+			expectedReport: map[Node]ComputeState{
+				writeAction:         NewContinueComputeState(),
+				deleteAnotherAction: NewContinueComputeState(),
+				errorAction:         NewAbortComputeState(errors.New("action error")),
 			},
 		},
 		{
@@ -389,11 +388,11 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 				"read_action":  "the content of write_action is done",
 			},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeAction:         computestate.Continue(),
-				writeAnotherAction:  computestate.Continue(),
-				readAction:          computestate.Continue(),
-				deleteAnotherAction: computestate.Continue(),
+			expectedReport: map[Node]ComputeState{
+				writeAction:         NewContinueComputeState(),
+				writeAnotherAction:  NewContinueComputeState(),
+				readAction:          NewContinueComputeState(),
+				deleteAnotherAction: NewContinueComputeState(),
 			},
 		},
 		{
@@ -419,12 +418,12 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action":         "done",
 				"write_another_action": "done",
 			},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeAction:             computestate.Continue(),
-				writeActionKeyIsPresent: computestate.ContinueOnBranch(true),
-				writeAnotherAction:      computestate.Continue(),
-				readAction:              computestate.Skip(),
-				deleteAnotherAction:     computestate.Skip(),
+			expectedReport: map[Node]ComputeState{
+				writeAction:             NewContinueComputeState(),
+				writeActionKeyIsPresent: NewContinueOnBranchComputeState(true),
+				writeAnotherAction:      NewContinueComputeState(),
+				readAction:              NewSkipComputeState(),
+				deleteAnotherAction:     NewSkipComputeState(),
 			},
 		},
 		{
@@ -448,11 +447,11 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 				"read_action":  "the content of write_action is done",
 			},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeAction:                    computestate.Continue(),
-				writeAnotherActionKeyIsPresent: computestate.ContinueOnBranch(false),
-				readAction:                     computestate.Continue(),
-				deleteAnotherAction:            computestate.Continue(),
+			expectedReport: map[Node]ComputeState{
+				writeAction:                    NewContinueComputeState(),
+				writeAnotherActionKeyIsPresent: NewContinueOnBranchComputeState(false),
+				readAction:                     NewContinueComputeState(),
+				deleteAnotherAction:            NewContinueComputeState(),
 			},
 		},
 		{
@@ -473,11 +472,11 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			expectedStatus:      true,
 			expectedContextData: map[string]interface{}{},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeActionKeyIsPresent:        computestate.ContinueOnBranch(false),
-				writeAnotherActionKeyIsPresent: computestate.ContinueOnBranch(false),
-				readAction:                     computestate.Skip(),
-				deleteAnotherAction:            computestate.Skip(),
+			expectedReport: map[Node]ComputeState{
+				writeActionKeyIsPresent:        NewContinueOnBranchComputeState(false),
+				writeAnotherActionKeyIsPresent: NewContinueOnBranchComputeState(false),
+				readAction:                     NewSkipComputeState(),
+				deleteAnotherAction:            NewSkipComputeState(),
 			},
 		},
 		{
@@ -500,9 +499,9 @@ func Test_Computation_Compute(t *testing.T) {
 			expectedContextData: map[string]interface{}{
 				"write_action": "done",
 			},
-			expectedReport: map[Node]computestate.ComputeState{
-				writeAction: computestate.Continue(),
-				errorAction: computestate.Abort(errors.New("action error")),
+			expectedReport: map[Node]ComputeState{
+				writeAction: NewContinueComputeState(),
+				errorAction: NewAbortComputeState(errors.New("action error")),
 			},
 		},
 	}

@@ -1,4 +1,4 @@
-package computestate
+package hoff
 
 import (
 	"errors"
@@ -20,26 +20,26 @@ func Test_ComputeState_Call(t *testing.T) {
 	}{
 		{
 			name:                  "Should generate a continue state",
-			givenComputeStateCall: func() ComputeState { return Continue() },
+			givenComputeStateCall: func() ComputeState { return NewContinueComputeState() },
 			expectedState:         statetype.ContinueState,
 			expectedString:        "'Continue'",
 		},
 		{
 			name:                  "Should generate a continue state on branch 'true'",
-			givenComputeStateCall: func() ComputeState { return ContinueOnBranch(true) },
+			givenComputeStateCall: func() ComputeState { return NewContinueOnBranchComputeState(true) },
 			expectedState:         statetype.ContinueState,
 			expectedNodeBranch:    utils.BoolPointer(true),
 			expectedString:        "'Continue on true'",
 		},
 		{
 			name:                  "Should generate a skip state",
-			givenComputeStateCall: func() ComputeState { return Skip() },
+			givenComputeStateCall: func() ComputeState { return NewSkipComputeState() },
 			expectedState:         statetype.SkipState,
 			expectedString:        "'Skip'",
 		},
 		{
 			name:                  "Should generate a abort state",
-			givenComputeStateCall: func() ComputeState { return Abort(errors.New("error")) },
+			givenComputeStateCall: func() ComputeState { return NewAbortComputeState(errors.New("error")) },
 			expectedState:         statetype.AbortState,
 			expectedError:         errors.New("error"),
 			expectedString:        "'Abort on error'",

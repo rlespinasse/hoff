@@ -1,9 +1,4 @@
-/*
-Package computestate expose utility functions to create a ComputeState object.
-
-NOTE: possible state values are availables in the "statetype" package
-*/
-package computestate
+package hoff
 
 import (
 	"fmt"
@@ -32,32 +27,32 @@ func (cs ComputeState) String() string {
 	return fmt.Sprintf("'%v%v%v'", cs.Value, branch, err)
 }
 
-// Continue generate a computation state to continue to following nodes
-func Continue() ComputeState {
+// NewContinueComputeState generate a computation state to continue to following nodes
+func NewContinueComputeState() ComputeState {
 	return ComputeState{
 		Value: statetype.ContinueState,
 	}
 }
 
-// ContinueOnBranch generate a computation state to continue to following nodes
+// NewContinueOnBranchComputeState generate a computation state to continue to following nodes
 // on a branch taken by an Decision Node (DecideCapability at true)
-func ContinueOnBranch(branch bool) ComputeState {
+func NewContinueOnBranchComputeState(branch bool) ComputeState {
 	return ComputeState{
 		Value:  statetype.ContinueState,
 		Branch: utils.BoolPointer(branch),
 	}
 }
 
-// Skip generate a computation state to specify
+// NewSkipComputeState generate a computation state to specify
 // that the Node computation have been skipped
-func Skip() ComputeState {
+func NewSkipComputeState() ComputeState {
 	return ComputeState{
 		Value: statetype.SkipState,
 	}
 }
 
-// Abort generate a computation state to throw an unexpected error
-func Abort(err error) ComputeState {
+// NewAbortComputeState generate a computation state to throw an unexpected error
+func NewAbortComputeState(err error) ComputeState {
 	return ComputeState{
 		Value: statetype.AbortState,
 		Error: err,

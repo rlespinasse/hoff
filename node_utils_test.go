@@ -4,16 +4,15 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rlespinasse/hoff/computestate"
 
 	"github.com/rlespinasse/hoff/internal/utils"
 )
 
 type SomeNode struct{}
 
-func (n *SomeNode) Compute(c *Context) computestate.ComputeState {
+func (n *SomeNode) Compute(c *Context) ComputeState {
 	c.Store("message", "SomeNode is passing")
-	return computestate.Continue()
+	return NewContinueComputeState()
 }
 
 func (n *SomeNode) DecideCapability() bool {
@@ -22,9 +21,9 @@ func (n *SomeNode) DecideCapability() bool {
 
 type AnotherNode struct{}
 
-func (n *AnotherNode) Compute(c *Context) computestate.ComputeState {
+func (n *AnotherNode) Compute(c *Context) ComputeState {
 	c.Store("message", "AnotherNode is passing")
-	return computestate.Continue()
+	return NewContinueComputeState()
 }
 
 func (n *AnotherNode) DecideCapability() bool {
@@ -35,7 +34,7 @@ type NodeTestCase struct {
 	name                 string
 	givenContextData     map[string]interface{}
 	givenNode            Node
-	expectedComputeState computestate.ComputeState
+	expectedComputeState ComputeState
 	expectedContextData  map[string]interface{}
 }
 

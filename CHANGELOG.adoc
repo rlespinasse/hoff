@@ -16,6 +16,10 @@ and this project adheres to https://semver.org/spec/v2.0.0.html[Semantic Version
 * Rename `joinmode.NONE` into `hoff.JoinNone`
 * Rename `node.NewAction(..)` into `hoff.NewActionNode(..)`
 * Rename `node.NewDecision(..)` into `hoff.NewDecisionNode(..)`
+* Rename `computestate.Continue(..)` into `hoff.NewContinueComputeState(..)`
+* Rename `computestate.ContinueOnBranch(..)` into `hoff.NewContinueOnBranchComputeState(..)`
+* Rename `computestate.Skip(..)` into `hoff.NewSkipComputeState(..)`
+* Rename `computestate.Abort(..)` into `hoff.NewAbortComputeState(..)`
 
 == [0.3.1] - 2018-11-12
 === Fixed
