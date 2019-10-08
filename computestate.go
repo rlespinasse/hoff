@@ -4,12 +4,11 @@ import (
 	"fmt"
 
 	"github.com/rlespinasse/hoff/internal/utils"
-	"github.com/rlespinasse/hoff/statetype"
 )
 
 // ComputeState hold the result of a Node computation
 type ComputeState struct {
-	Value  statetype.StateType
+	Value  StateType
 	Branch *bool
 	Error  error
 }
@@ -30,7 +29,7 @@ func (cs ComputeState) String() string {
 // NewContinueComputeState generate a computation state to continue to following nodes
 func NewContinueComputeState() ComputeState {
 	return ComputeState{
-		Value: statetype.ContinueState,
+		Value: ContinueState,
 	}
 }
 
@@ -38,7 +37,7 @@ func NewContinueComputeState() ComputeState {
 // on a branch taken by an Decision Node (DecideCapability at true)
 func NewContinueOnBranchComputeState(branch bool) ComputeState {
 	return ComputeState{
-		Value:  statetype.ContinueState,
+		Value:  ContinueState,
 		Branch: utils.BoolPointer(branch),
 	}
 }
@@ -47,14 +46,14 @@ func NewContinueOnBranchComputeState(branch bool) ComputeState {
 // that the Node computation have been skipped
 func NewSkipComputeState() ComputeState {
 	return ComputeState{
-		Value: statetype.SkipState,
+		Value: SkipState,
 	}
 }
 
 // NewAbortComputeState generate a computation state to throw an unexpected error
 func NewAbortComputeState(err error) ComputeState {
 	return ComputeState{
-		Value: statetype.AbortState,
+		Value: AbortState,
 		Error: err,
 	}
 }

@@ -6,14 +6,13 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/rlespinasse/hoff/internal/utils"
-	"github.com/rlespinasse/hoff/statetype"
 )
 
 func Test_ComputeState_Call(t *testing.T) {
 	testCases := []struct {
 		name                  string
 		givenComputeStateCall func() ComputeState
-		expectedState         statetype.StateType
+		expectedState         StateType
 		expectedNodeBranch    *bool
 		expectedError         error
 		expectedString        string
@@ -21,26 +20,26 @@ func Test_ComputeState_Call(t *testing.T) {
 		{
 			name:                  "Should generate a continue state",
 			givenComputeStateCall: func() ComputeState { return NewContinueComputeState() },
-			expectedState:         statetype.ContinueState,
+			expectedState:         ContinueState,
 			expectedString:        "'Continue'",
 		},
 		{
 			name:                  "Should generate a continue state on branch 'true'",
 			givenComputeStateCall: func() ComputeState { return NewContinueOnBranchComputeState(true) },
-			expectedState:         statetype.ContinueState,
+			expectedState:         ContinueState,
 			expectedNodeBranch:    utils.BoolPointer(true),
 			expectedString:        "'Continue on true'",
 		},
 		{
 			name:                  "Should generate a skip state",
 			givenComputeStateCall: func() ComputeState { return NewSkipComputeState() },
-			expectedState:         statetype.SkipState,
+			expectedState:         SkipState,
 			expectedString:        "'Skip'",
 		},
 		{
 			name:                  "Should generate a abort state",
 			givenComputeStateCall: func() ComputeState { return NewAbortComputeState(errors.New("error")) },
-			expectedState:         statetype.AbortState,
+			expectedState:         AbortState,
 			expectedError:         errors.New("error"),
 			expectedString:        "'Abort on error'",
 		},
