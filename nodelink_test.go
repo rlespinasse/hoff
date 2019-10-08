@@ -1,4 +1,4 @@
-package nodelink
+package hoff
 
 import (
 	"testing"
@@ -20,53 +20,53 @@ func (n *SomeNode) DecideCapability() bool {
 	return false
 }
 
-func Test_New(t *testing.T) {
+func Test_newNodeLink(t *testing.T) {
 	givenFromNode := &SomeNode{}
 	givenToNode := &SomeNode{}
 	expectedString := "{from:'&{}' to:'&{}'}"
 
-	link := New(givenFromNode, givenToNode)
+	link := newNodeLink(givenFromNode, givenToNode)
 	linkString := link.String()
 	if linkString != expectedString {
 		t.Errorf("got: %+v, want: %+v", linkString, expectedString)
 	}
 }
 
-func Test_NewOnBranch(t *testing.T) {
+func Test_newNodeLinkOnBranch(t *testing.T) {
 	givenFromNode := &SomeNode{}
 	givenToNode := &SomeNode{}
 	givenBranch := true
 	expectedString := "{from:'&{}' to:'&{}' branch:true}"
 
-	link := NewOnBranch(givenFromNode, givenToNode, givenBranch)
+	link := newNodeLinkOnBranch(givenFromNode, givenToNode, givenBranch)
 	linkString := link.String()
 	if linkString != expectedString {
 		t.Errorf("got: %+v, want: %+v", linkString, expectedString)
 	}
 }
 
-func Test_NodeLinkComparator_Equal(t *testing.T) {
+func Test_nodeLinkComparator_Equal(t *testing.T) {
 	givenFromNode := &SomeNode{}
 	givenToNode := &SomeNode{}
 	givenBranch := true
 
-	link := NewOnBranch(givenFromNode, givenToNode, givenBranch)
-	anotherLink := NewOnBranch(givenFromNode, givenToNode, givenBranch)
+	link := newNodeLinkOnBranch(givenFromNode, givenToNode, givenBranch)
+	anotherLink := newNodeLinkOnBranch(givenFromNode, givenToNode, givenBranch)
 
-	if !cmp.Equal(link, anotherLink, NodeLinkComparator) {
+	if !cmp.Equal(link, anotherLink, nodeLinkComparator) {
 		t.Errorf("link: %+v and anotherLink: %+v must be equals", link, anotherLink)
 	}
 }
 
-func Test_NodeLinkComparator_NotEqual(t *testing.T) {
+func Test_nodeLinkComparator_NotEqual(t *testing.T) {
 	givenFromNode := &SomeNode{}
 	givenToNode := &SomeNode{}
 	givenBranch := true
 
-	link := New(givenFromNode, givenToNode)
-	anotherLink := NewOnBranch(givenFromNode, givenToNode, givenBranch)
+	link := newNodeLink(givenFromNode, givenToNode)
+	anotherLink := newNodeLinkOnBranch(givenFromNode, givenToNode, givenBranch)
 
-	if cmp.Equal(link, anotherLink, NodeLinkComparator) {
+	if cmp.Equal(link, anotherLink, nodeLinkComparator) {
 		t.Errorf("link: %+v and anotherLink: %+v must not be equals", link, anotherLink)
 	}
 }

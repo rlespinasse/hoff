@@ -8,7 +8,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/rlespinasse/hoff/computestate"
 
-	"github.com/rlespinasse/hoff/internal/nodelink"
 	"github.com/rlespinasse/hoff/internal/utils"
 	"github.com/rlespinasse/hoff/node"
 )
@@ -104,7 +103,7 @@ func Test_Computation_Compute(t *testing.T) {
 		name                string
 		givenNodes          []node.Node
 		givenNodesJoinModes map[node.Node]JoinMode
-		givenLinks          []nodelink.NodeLink
+		givenLinks          []nodeLink
 		givenContextData    map[string]interface{}
 		expectedStatus      bool
 		expectedContextData map[string]interface{}
@@ -151,8 +150,8 @@ func Test_Computation_Compute(t *testing.T) {
 				writeAction,
 				readAction,
 			},
-			givenLinks: []nodelink.NodeLink{
-				nodelink.New(writeAction, readAction),
+			givenLinks: []nodeLink{
+				newNodeLink(writeAction, readAction),
 			},
 			expectedStatus: true,
 			expectedContextData: map[string]interface{}{
@@ -170,8 +169,8 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				writeAction,
 			},
-			givenLinks: []nodelink.NodeLink{
-				nodelink.New(writeAction, readAction),
+			givenLinks: []nodeLink{
+				newNodeLink(writeAction, readAction),
 			},
 			expectedStatus: true,
 			expectedContextData: map[string]interface{}{
@@ -191,10 +190,10 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenLinks: []nodelink.NodeLink{
-				nodelink.New(writeAction, writeActionKeyIsPresent),
-				nodelink.NewOnBranch(writeActionKeyIsPresent, readAction, true),
-				nodelink.NewOnBranch(writeActionKeyIsPresent, deleteAnotherAction, false),
+			givenLinks: []nodeLink{
+				newNodeLink(writeAction, writeActionKeyIsPresent),
+				newNodeLinkOnBranch(writeActionKeyIsPresent, readAction, true),
+				newNodeLinkOnBranch(writeActionKeyIsPresent, deleteAnotherAction, false),
 			},
 			expectedStatus: true,
 			expectedContextData: map[string]interface{}{
@@ -216,10 +215,10 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenLinks: []nodelink.NodeLink{
-				nodelink.New(writeAnotherAction, writeActionKeyIsPresent),
-				nodelink.NewOnBranch(writeActionKeyIsPresent, readAction, true),
-				nodelink.NewOnBranch(writeActionKeyIsPresent, deleteAnotherAction, false),
+			givenLinks: []nodeLink{
+				newNodeLink(writeAnotherAction, writeActionKeyIsPresent),
+				newNodeLinkOnBranch(writeActionKeyIsPresent, readAction, true),
+				newNodeLinkOnBranch(writeActionKeyIsPresent, deleteAnotherAction, false),
 			},
 			expectedStatus:      true,
 			expectedContextData: map[string]interface{}{},
@@ -238,10 +237,10 @@ func Test_Computation_Compute(t *testing.T) {
 				writeActionKeyIsPresent,
 				writeAction,
 			},
-			givenLinks: []nodelink.NodeLink{
-				nodelink.New(writeAction, writeActionKeyIsPresent),
-				nodelink.NewOnBranch(writeActionKeyIsPresent, readAction, true),
-				nodelink.NewOnBranch(writeActionKeyIsPresent, deleteAnotherAction, false),
+			givenLinks: []nodeLink{
+				newNodeLink(writeAction, writeActionKeyIsPresent),
+				newNodeLinkOnBranch(writeActionKeyIsPresent, readAction, true),
+				newNodeLinkOnBranch(writeActionKeyIsPresent, deleteAnotherAction, false),
 			},
 			expectedStatus: true,
 			expectedContextData: map[string]interface{}{
@@ -263,10 +262,10 @@ func Test_Computation_Compute(t *testing.T) {
 				writeActionKeyIsPresent,
 				writeAnotherAction,
 			},
-			givenLinks: []nodelink.NodeLink{
-				nodelink.New(writeAnotherAction, writeActionKeyIsPresent),
-				nodelink.NewOnBranch(writeActionKeyIsPresent, readAction, true),
-				nodelink.NewOnBranch(writeActionKeyIsPresent, deleteAnotherAction, false),
+			givenLinks: []nodeLink{
+				newNodeLink(writeAnotherAction, writeActionKeyIsPresent),
+				newNodeLinkOnBranch(writeActionKeyIsPresent, readAction, true),
+				newNodeLinkOnBranch(writeActionKeyIsPresent, deleteAnotherAction, false),
 			},
 			expectedStatus:      true,
 			expectedContextData: map[string]interface{}{},
@@ -286,11 +285,11 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenLinks: []nodelink.NodeLink{
-				nodelink.New(writeAction, writeActionKeyIsPresent),
-				nodelink.NewOnBranch(writeActionKeyIsPresent, errorAction, true),
-				nodelink.New(errorAction, readAction),
-				nodelink.NewOnBranch(writeActionKeyIsPresent, deleteAnotherAction, false),
+			givenLinks: []nodeLink{
+				newNodeLink(writeAction, writeActionKeyIsPresent),
+				newNodeLinkOnBranch(writeActionKeyIsPresent, errorAction, true),
+				newNodeLink(errorAction, readAction),
+				newNodeLinkOnBranch(writeActionKeyIsPresent, deleteAnotherAction, false),
 			},
 			expectedStatus: false,
 			expectedContextData: map[string]interface{}{
@@ -310,10 +309,10 @@ func Test_Computation_Compute(t *testing.T) {
 				errorAction,
 				readAction,
 			},
-			givenLinks: []nodelink.NodeLink{
-				nodelink.New(writeAnotherAction, writeActionKeyIsPresent),
-				nodelink.NewOnBranch(writeActionKeyIsPresent, errorAction, false),
-				nodelink.New(errorAction, readAction),
+			givenLinks: []nodeLink{
+				newNodeLink(writeAnotherAction, writeActionKeyIsPresent),
+				newNodeLinkOnBranch(writeActionKeyIsPresent, errorAction, false),
+				newNodeLink(errorAction, readAction),
 			},
 			expectedStatus: false,
 			expectedContextData: map[string]interface{}{
@@ -333,10 +332,10 @@ func Test_Computation_Compute(t *testing.T) {
 				readAction,
 				deleteAnotherAction,
 			},
-			givenLinks: []nodelink.NodeLink{
-				nodelink.New(writeAction, errorDecision),
-				nodelink.NewOnBranch(errorDecision, readAction, true),
-				nodelink.NewOnBranch(errorDecision, deleteAnotherAction, false),
+			givenLinks: []nodeLink{
+				newNodeLink(writeAction, errorDecision),
+				newNodeLinkOnBranch(errorDecision, readAction, true),
+				newNodeLinkOnBranch(errorDecision, deleteAnotherAction, false),
 			},
 			expectedStatus: false,
 			expectedContextData: map[string]interface{}{
@@ -355,10 +354,10 @@ func Test_Computation_Compute(t *testing.T) {
 				errorAction,
 				deleteAnotherAction,
 			},
-			givenLinks: []nodelink.NodeLink{
-				nodelink.New(writeAction, deleteAnotherAction),
-				nodelink.New(writeAction, errorAction),
-				nodelink.New(writeAction, readAction),
+			givenLinks: []nodeLink{
+				newNodeLink(writeAction, deleteAnotherAction),
+				newNodeLink(writeAction, errorAction),
+				newNodeLink(writeAction, readAction),
 			},
 			expectedStatus: false,
 			expectedContextData: map[string]interface{}{
@@ -381,10 +380,10 @@ func Test_Computation_Compute(t *testing.T) {
 			givenNodesJoinModes: map[node.Node]JoinMode{
 				readAction: JoinAnd,
 			},
-			givenLinks: []nodelink.NodeLink{
-				nodelink.New(writeAction, readAction),
-				nodelink.New(writeAnotherAction, readAction),
-				nodelink.New(readAction, deleteAnotherAction),
+			givenLinks: []nodeLink{
+				newNodeLink(writeAction, readAction),
+				newNodeLink(writeAnotherAction, readAction),
+				newNodeLink(readAction, deleteAnotherAction),
 			},
 			expectedStatus: true,
 			expectedContextData: map[string]interface{}{
@@ -410,11 +409,11 @@ func Test_Computation_Compute(t *testing.T) {
 			givenNodesJoinModes: map[node.Node]JoinMode{
 				readAction: JoinAnd,
 			},
-			givenLinks: []nodelink.NodeLink{
-				nodelink.New(writeAction, readAction),
-				nodelink.NewOnBranch(writeActionKeyIsPresent, readAction, false),
-				nodelink.New(writeAnotherAction, readAction),
-				nodelink.New(readAction, deleteAnotherAction),
+			givenLinks: []nodeLink{
+				newNodeLink(writeAction, readAction),
+				newNodeLinkOnBranch(writeActionKeyIsPresent, readAction, false),
+				newNodeLink(writeAnotherAction, readAction),
+				newNodeLink(readAction, deleteAnotherAction),
 			},
 			expectedStatus: true,
 			expectedContextData: map[string]interface{}{
@@ -440,10 +439,10 @@ func Test_Computation_Compute(t *testing.T) {
 			givenNodesJoinModes: map[node.Node]JoinMode{
 				readAction: JoinOr,
 			},
-			givenLinks: []nodelink.NodeLink{
-				nodelink.New(writeAction, readAction),
-				nodelink.NewOnBranch(writeAnotherActionKeyIsPresent, readAction, true),
-				nodelink.New(readAction, deleteAnotherAction),
+			givenLinks: []nodeLink{
+				newNodeLink(writeAction, readAction),
+				newNodeLinkOnBranch(writeAnotherActionKeyIsPresent, readAction, true),
+				newNodeLink(readAction, deleteAnotherAction),
 			},
 			expectedStatus: true,
 			expectedContextData: map[string]interface{}{
@@ -468,10 +467,10 @@ func Test_Computation_Compute(t *testing.T) {
 			givenNodesJoinModes: map[node.Node]JoinMode{
 				readAction: JoinOr,
 			},
-			givenLinks: []nodelink.NodeLink{
-				nodelink.NewOnBranch(writeActionKeyIsPresent, readAction, true),
-				nodelink.NewOnBranch(writeAnotherActionKeyIsPresent, readAction, true),
-				nodelink.New(readAction, deleteAnotherAction),
+			givenLinks: []nodeLink{
+				newNodeLinkOnBranch(writeActionKeyIsPresent, readAction, true),
+				newNodeLinkOnBranch(writeAnotherActionKeyIsPresent, readAction, true),
+				newNodeLink(readAction, deleteAnotherAction),
 			},
 			expectedStatus:      true,
 			expectedContextData: map[string]interface{}{},
@@ -493,10 +492,10 @@ func Test_Computation_Compute(t *testing.T) {
 			givenNodesJoinModes: map[node.Node]JoinMode{
 				readAction: JoinOr,
 			},
-			givenLinks: []nodelink.NodeLink{
-				nodelink.New(writeAction, readAction),
-				nodelink.New(errorAction, readAction),
-				nodelink.New(readAction, deleteAnotherAction),
+			givenLinks: []nodeLink{
+				newNodeLink(writeAction, readAction),
+				newNodeLink(errorAction, readAction),
+				newNodeLink(readAction, deleteAnotherAction),
 			},
 			expectedStatus: false,
 			expectedContextData: map[string]interface{}{
