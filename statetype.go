@@ -1,7 +1,4 @@
-/*
-Package statetype expose possible computation state type as enum.
-*/
-package statetype
+package hoff
 
 // StateType is the type of the computation state of a Node during a Computation
 type StateType string

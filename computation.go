@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/rlespinasse/hoff/internal/utils"
-	"github.com/rlespinasse/hoff/statetype"
 
 	"github.com/google/go-cmp/cmp"
 )
@@ -74,7 +73,7 @@ func (cp *Computation) computeNode(node Node) error {
 	case computeIt:
 		state := node.Compute(cp.Context)
 		cp.Report[node] = state
-		if state.Value == statetype.AbortState {
+		if state.Value == AbortState {
 			return state.Error
 		}
 	}
@@ -147,7 +146,7 @@ func (cp *Computation) ansectorsComputationStatisticsOnBranch(node Node, branch 
 		report, found := cp.Report[linkedNode]
 		if found {
 			computedNodes++
-			if report.Value == statetype.ContinueState && report.Branch == branch {
+			if report.Value == ContinueState && report.Branch == branch {
 				nodesWithContinueState++
 			}
 		}
