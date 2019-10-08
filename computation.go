@@ -3,8 +3,6 @@ package hoff
 import (
 	"errors"
 
-	"github.com/rlespinasse/hoff/internal/utils"
-
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -125,12 +123,12 @@ func (cp *Computation) calculateComputeOrder(node Node) computeOrder {
 func (cp *Computation) ansectorsComputationStatistics(node Node) (int, int, int) {
 	ancestorsCount, ancestorsComputed, ancestorsWithContinueState := cp.ansectorsComputationStatisticsOnBranch(node, nil)
 
-	ancestorsCountOnBranchTrue, ancestorsComputedOnBranchTrue, ancestorsWithContinueStateOnBranchTrue := cp.ansectorsComputationStatisticsOnBranch(node, utils.BoolPointer(true))
+	ancestorsCountOnBranchTrue, ancestorsComputedOnBranchTrue, ancestorsWithContinueStateOnBranchTrue := cp.ansectorsComputationStatisticsOnBranch(node, boolPointer(true))
 	ancestorsCount += ancestorsCountOnBranchTrue
 	ancestorsComputed += ancestorsComputedOnBranchTrue
 	ancestorsWithContinueState += ancestorsWithContinueStateOnBranchTrue
 
-	ancestorsCountOnBranchFalse, ancestorsComputedOnBranchFalse, ancestorsWithContinueStateOnBranchFalse := cp.ansectorsComputationStatisticsOnBranch(node, utils.BoolPointer(false))
+	ancestorsCountOnBranchFalse, ancestorsComputedOnBranchFalse, ancestorsWithContinueStateOnBranchFalse := cp.ansectorsComputationStatisticsOnBranch(node, boolPointer(false))
 	ancestorsCount += ancestorsCountOnBranchFalse
 	ancestorsComputed += ancestorsComputedOnBranchFalse
 	ancestorsWithContinueState += ancestorsWithContinueStateOnBranchFalse
@@ -165,7 +163,7 @@ const (
 
 func nodeBranches(node Node) []*bool {
 	if node.DecideCapability() {
-		return []*bool{utils.BoolPointer(true), utils.BoolPointer(false)}
+		return []*bool{boolPointer(true), boolPointer(false)}
 	}
 	return []*bool{nil}
 }

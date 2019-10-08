@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rlespinasse/hoff/internal/utils"
 )
 
 var (
@@ -34,7 +33,7 @@ func newNodeLinkOnBranch(from, to Node, branch bool) nodeLink {
 	return nodeLink{
 		From:   from,
 		To:     to,
-		Branch: utils.BoolPointer(branch),
+		Branch: boolPointer(branch),
 	}
 }
 

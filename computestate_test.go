@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rlespinasse/hoff/internal/utils"
 )
 
 func Test_ComputeState_Call(t *testing.T) {
@@ -27,7 +26,7 @@ func Test_ComputeState_Call(t *testing.T) {
 			name:                  "Should generate a continue state on branch 'true'",
 			givenComputeStateCall: func() ComputeState { return NewContinueOnBranchComputeState(true) },
 			expectedState:         ContinueState,
-			expectedNodeBranch:    utils.BoolPointer(true),
+			expectedNodeBranch:    boolPointer(true),
 			expectedString:        "'Continue on true'",
 		},
 		{
@@ -53,7 +52,7 @@ func Test_ComputeState_Call(t *testing.T) {
 			if !cmp.Equal(computeState.Branch, testCase.expectedNodeBranch) {
 				t.Errorf("branch - got: %+v, want: %+v", computeState.Branch, testCase.expectedNodeBranch)
 			}
-			if !cmp.Equal(computeState.Error, testCase.expectedError, utils.ErrorComparator) {
+			if !cmp.Equal(computeState.Error, testCase.expectedError, errorComparator) {
 				t.Errorf("error - got: %+v, want: %+v", computeState.Error, testCase.expectedError)
 			}
 			if computeState.String() != testCase.expectedString {

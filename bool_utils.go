@@ -1,7 +1,4 @@
-/*
-Package utils expose utility functions.
-*/
-package utils
+package hoff
 
 import "github.com/google/go-cmp/cmp"
 
@@ -12,7 +9,7 @@ var (
 
 // BoolPointer give a fixed pointer to a corresponding bool value.
 // e.g. true as value will always have the same pointer
-func BoolPointer(value bool) *bool {
+func boolPointer(value bool) *bool {
 	if value {
 		return truePointer
 	}
@@ -20,8 +17,8 @@ func BoolPointer(value bool) *bool {
 }
 
 var (
-	// ErrorComparator is a google/go-cmp comparator of errors
-	ErrorComparator = cmp.Comparer(func(x, y error) bool {
+	// errorComparator is a google/go-cmp comparator of errors
+	errorComparator = cmp.Comparer(func(x, y error) bool {
 		return (x == nil && y == nil) || (x != nil && y != nil && x.Error() == y.Error())
 	})
 )

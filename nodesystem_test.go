@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rlespinasse/hoff/internal/utils"
 )
 
 var (
@@ -434,7 +433,7 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 			_, validityErrs := system.IsValid()
 			errs = append(errs, validityErrs...)
 
-			if !cmp.Equal(errs, testCase.expectedErrors, utils.ErrorComparator) {
+			if !cmp.Equal(errs, testCase.expectedErrors, errorComparator) {
 				t.Errorf("errors - got: %+v, want: %+v", errs, testCase.expectedErrors)
 			}
 			if !cmp.Equal(system, testCase.expectedNodeSystem) {
@@ -519,7 +518,7 @@ func Test_NodeSystem_Activate(t *testing.T) {
 			},
 			expectedFollowingNodesTree: map[Node]map[*bool][]Node{
 				alwaysTrueDecisionNode: {
-					utils.BoolPointer(true): {anotherActionNode},
+					boolPointer(true): {anotherActionNode},
 				},
 			},
 		},
@@ -581,7 +580,7 @@ func Test_NodeSystem_Activate(t *testing.T) {
 			if system.IsActivated() != testCase.expectedActivatation {
 				t.Errorf("activation - got: %+v, want: %+v", system.activated, testCase.expectedActivatation)
 			}
-			if !cmp.Equal(errs, testCase.expectedErrors, utils.ErrorComparator) {
+			if !cmp.Equal(errs, testCase.expectedErrors, errorComparator) {
 				t.Errorf("errors - got: %+v, want: %+v", errs, testCase.expectedErrors)
 			}
 			if testCase.expectedInitialNodes != nil && !cmp.Equal(system.InitialNodes(), testCase.expectedInitialNodes, NodeComparator) {
@@ -657,7 +656,7 @@ func Test_NodeSystem_Follow(t *testing.T) {
 				newNodeLinkOnBranch(alwaysTrueDecisionNode, someActionNode, true),
 			},
 			givenNode:              alwaysTrueDecisionNode,
-			givenBranch:            utils.BoolPointer(true),
+			givenBranch:            boolPointer(true),
 			expectedFollowingNodes: []Node{someActionNode},
 		},
 		{
@@ -694,7 +693,7 @@ func Test_NodeSystem_Follow(t *testing.T) {
 				newNodeLinkOnBranch(alwaysTrueDecisionNode, someActionNode, true),
 			},
 			givenNode:              alwaysTrueDecisionNode,
-			givenBranch:            utils.BoolPointer(false),
+			givenBranch:            boolPointer(false),
 			expectedFollowingNodes: nil,
 		},
 	}
@@ -714,7 +713,7 @@ func Test_NodeSystem_Follow(t *testing.T) {
 			system.Activate()
 			nodes, err := system.Follow(testCase.givenNode, testCase.givenBranch)
 
-			if !cmp.Equal(err, testCase.expectedError, utils.ErrorComparator) {
+			if !cmp.Equal(err, testCase.expectedError, errorComparator) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 			}
 			if !cmp.Equal(nodes, testCase.expectedFollowingNodes, NodeComparator) {
@@ -787,7 +786,7 @@ func Test_NodeSystem_Ancestors(t *testing.T) {
 				newNodeLinkOnBranch(alwaysTrueDecisionNode, someActionNode, true),
 			},
 			givenNode:             someActionNode,
-			givenBranch:           utils.BoolPointer(true),
+			givenBranch:           boolPointer(true),
 			expectedAncestorNodes: []Node{alwaysTrueDecisionNode},
 		},
 		{
@@ -812,7 +811,7 @@ func Test_NodeSystem_Ancestors(t *testing.T) {
 				newNodeLinkOnBranch(alwaysTrueDecisionNode, someActionNode, true),
 			},
 			givenNode:             someActionNode,
-			givenBranch:           utils.BoolPointer(false),
+			givenBranch:           boolPointer(false),
 			expectedAncestorNodes: nil,
 		},
 	}
@@ -824,7 +823,7 @@ func Test_NodeSystem_Ancestors(t *testing.T) {
 			system.Activate()
 			nodes, err := system.Ancestors(testCase.givenNode, testCase.givenBranch)
 
-			if !cmp.Equal(err, testCase.expectedError, utils.ErrorComparator) {
+			if !cmp.Equal(err, testCase.expectedError, errorComparator) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 			}
 			if !cmp.Equal(nodes, testCase.expectedAncestorNodes, NodeComparator) {
@@ -894,7 +893,7 @@ func Test_Github_Issue_10(t *testing.T) {
 		errors.New("can't have multiple links (2) to the same node: action4 without join mode"),
 	}
 
-	if !cmp.Equal(errs, expectedErrors, utils.ErrorComparator) {
+	if !cmp.Equal(errs, expectedErrors, errorComparator) {
 		t.Errorf("errors - got: %+v, want: %+v", errs, expectedErrors)
 	}
 }
@@ -932,7 +931,7 @@ func Test_Github_Issue_16(t *testing.T) {
 		}),
 	}
 
-	if !cmp.Equal(errs, expectedErrors, utils.ErrorComparator) {
+	if !cmp.Equal(errs, expectedErrors, errorComparator) {
 		t.Errorf("errors - got: %+v, want: %+v", errs, expectedErrors)
 	}
 }
@@ -1001,7 +1000,7 @@ func Test_multiple_cycles(t *testing.T) {
 		}),
 	}
 
-	if !cmp.Equal(errs, expectedErrors, utils.ErrorComparator) {
+	if !cmp.Equal(errs, expectedErrors, errorComparator) {
 		t.Errorf("errors - got: %+v, want: %+v", errs, expectedErrors)
 	}
 }
