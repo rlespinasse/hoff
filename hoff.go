@@ -17,7 +17,7 @@ Create a node system and activate it:
 
 Create a single computation and launch it:
 
-	cxt := node.NewContextWithoutData()
+	cxt := hoff.NewContextWithoutData()
 	cxt.Store("input_info", input_info)
 	cp := hoff.NewComputation(ns, context)
 	err := cp.Compute()

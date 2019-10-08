@@ -5,7 +5,6 @@ import (
 
 	"github.com/rlespinasse/hoff/computestate"
 	"github.com/rlespinasse/hoff/internal/utils"
-	"github.com/rlespinasse/hoff/node"
 	"github.com/rlespinasse/hoff/statetype"
 
 	"github.com/google/go-cmp/cmp"
@@ -14,13 +13,13 @@ import (
 // Computation take a NodeSystem and compute a Context against it.
 type Computation struct {
 	System  *NodeSystem
-	Context *node.Context
+	Context *Context
 	Status  bool
-	Report  map[node.Node]computestate.ComputeState
+	Report  map[Node]computestate.ComputeState
 }
 
 // NewComputation create a computation based on a valid, and activated NodeSystem and a Context.
-func NewComputation(system *NodeSystem, context *node.Context) (*Computation, error) {
+func NewComputation(system *NodeSystem, context *Context) (*Computation, error) {
 	if system == nil {
 		return nil, errors.New("must have a node system to work properly")
 	}
@@ -46,7 +45,7 @@ func (cp Computation) Equal(o Computation) bool {
 // At the end of the computation (Status at true), you can read the compute state
 // of each node in the Report.
 func (cp *Computation) Compute() error {
-	cp.Report = make(map[node.Node]computestate.ComputeState)
+	cp.Report = make(map[Node]computestate.ComputeState)
 	err := cp.computeNodes(cp.System.InitialNodes())
 	if err != nil {
 		return err
@@ -55,7 +54,7 @@ func (cp *Computation) Compute() error {
 	return nil
 }
 
-func (cp *Computation) computeNodes(nodes []node.Node) error {
+func (cp *Computation) computeNodes(nodes []Node) error {
 	for _, node := range nodes {
 		err := cp.computeNode(node)
 		if err != nil {
@@ -65,7 +64,7 @@ func (cp *Computation) computeNodes(nodes []node.Node) error {
 	return nil
 }
 
-func (cp *Computation) computeNode(node node.Node) error {
+func (cp *Computation) computeNode(node Node) error {
 	order := cp.calculateComputeOrder(node)
 
 	switch order {
@@ -84,7 +83,7 @@ func (cp *Computation) computeNode(node node.Node) error {
 	return cp.computeFollowingNodes(node, nodeBranches(node)...)
 }
 
-func (cp *Computation) computeFollowingNodes(node node.Node, branches ...*bool) error {
+func (cp *Computation) computeFollowingNodes(node Node, branches ...*bool) error {
 	for _, branch := range branches {
 		nextNodes, _ := cp.System.Follow(node, branch)
 		err := cp.computeNodes(nextNodes)
@@ -95,7 +94,7 @@ func (cp *Computation) computeFollowingNodes(node node.Node, branches ...*bool) 
 	return nil
 }
 
-func (cp *Computation) calculateComputeOrder(node node.Node) computeOrder {
+func (cp *Computation) calculateComputeOrder(node Node) computeOrder {
 	if _, ok := cp.Report[node]; ok {
 		return alreadyRunOnce
 	}
@@ -125,7 +124,7 @@ func (cp *Computation) calculateComputeOrder(node node.Node) computeOrder {
 	return skipIt
 }
 
-func (cp *Computation) ansectorsComputationStatistics(node node.Node) (int, int, int) {
+func (cp *Computation) ansectorsComputationStatistics(node Node) (int, int, int) {
 	ancestorsCount, ancestorsComputed, ancestorsWithContinueState := cp.ansectorsComputationStatisticsOnBranch(node, nil)
 
 	ancestorsCountOnBranchTrue, ancestorsComputedOnBranchTrue, ancestorsWithContinueStateOnBranchTrue := cp.ansectorsComputationStatisticsOnBranch(node, utils.BoolPointer(true))
@@ -141,7 +140,7 @@ func (cp *Computation) ansectorsComputationStatistics(node node.Node) (int, int,
 	return ancestorsCount, ancestorsComputed, ancestorsWithContinueState
 }
 
-func (cp *Computation) ansectorsComputationStatisticsOnBranch(node node.Node, branch *bool) (int, int, int) {
+func (cp *Computation) ansectorsComputationStatisticsOnBranch(node Node, branch *bool) (int, int, int) {
 	linkedNodes, _ := cp.System.Ancestors(node, branch)
 	computedNodes := 0
 	nodesWithContinueState := 0
@@ -166,7 +165,7 @@ const (
 	alreadyRunOnce              = "already_run_once"
 )
 
-func nodeBranches(node node.Node) []*bool {
+func nodeBranches(node Node) []*bool {
 	if node.DecideCapability() {
 		return []*bool{utils.BoolPointer(true), utils.BoolPointer(false)}
 	}

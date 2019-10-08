@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rlespinasse/hoff/node"
 )
 
 // NodeSystem is a system to configure workflow between action nodes, or decision nodes.
@@ -13,13 +12,13 @@ import (
 // An activated Node system will be walked throw Follow and Ancestors functions
 type NodeSystem struct {
 	activated      bool
-	nodes          []node.Node
-	nodesJoinModes map[node.Node]JoinMode
+	nodes          []Node
+	nodesJoinModes map[Node]JoinMode
 	links          []nodeLink
 
-	initialNodes       []node.Node
-	followingNodesTree map[node.Node]map[*bool][]node.Node
-	ancestorsNodesTree map[node.Node]map[*bool][]node.Node
+	initialNodes       []Node
+	followingNodesTree map[Node]map[*bool][]Node
+	ancestorsNodesTree map[Node]map[*bool][]Node
 }
 
 // NewNodeSystem create an empty Node system
@@ -27,22 +26,22 @@ type NodeSystem struct {
 func NewNodeSystem() *NodeSystem {
 	return &NodeSystem{
 		activated:          false,
-		nodes:              make([]node.Node, 0),
+		nodes:              make([]Node, 0),
 		links:              make([]nodeLink, 0),
-		nodesJoinModes:     make(map[node.Node]JoinMode),
-		initialNodes:       make([]node.Node, 0),
-		followingNodesTree: make(map[node.Node]map[*bool][]node.Node),
-		ancestorsNodesTree: make(map[node.Node]map[*bool][]node.Node),
+		nodesJoinModes:     make(map[Node]JoinMode),
+		initialNodes:       make([]Node, 0),
+		followingNodesTree: make(map[Node]map[*bool][]Node),
+		ancestorsNodesTree: make(map[Node]map[*bool][]Node),
 	}
 }
 
 // Equal validate the two NodeSystem are equals.
 func (s *NodeSystem) Equal(o *NodeSystem) bool {
-	return cmp.Equal(s.activated, o.activated) && cmp.Equal(s.nodes, o.nodes, node.NodeComparator) && cmp.Equal(s.nodesJoinModes, o.nodesJoinModes) && cmp.Equal(s.links, o.links, nodeLinkComparator)
+	return cmp.Equal(s.activated, o.activated) && cmp.Equal(s.nodes, o.nodes, NodeComparator) && cmp.Equal(s.nodesJoinModes, o.nodesJoinModes) && cmp.Equal(s.links, o.links, nodeLinkComparator)
 }
 
 // AddNode add a node to the system before activation.
-func (s *NodeSystem) AddNode(n node.Node) (bool, error) {
+func (s *NodeSystem) AddNode(n Node) (bool, error) {
 	if s.activated {
 		return false, errors.New("can't add node, node system is freeze due to activation")
 	}
@@ -51,7 +50,7 @@ func (s *NodeSystem) AddNode(n node.Node) (bool, error) {
 }
 
 // ConfigureJoinModeOnNode configure the join mode of a node into the system before activation.
-func (s *NodeSystem) ConfigureJoinModeOnNode(n node.Node, m JoinMode) (bool, error) {
+func (s *NodeSystem) ConfigureJoinModeOnNode(n Node, m JoinMode) (bool, error) {
 	if s.activated {
 		return false, errors.New("can't add node join mode, node system is freeze due to activation")
 	}
@@ -60,12 +59,12 @@ func (s *NodeSystem) ConfigureJoinModeOnNode(n node.Node, m JoinMode) (bool, err
 }
 
 // AddLink add a link from a node to another node into the system before activation.
-func (s *NodeSystem) AddLink(from, to node.Node) (bool, error) {
+func (s *NodeSystem) AddLink(from, to Node) (bool, error) {
 	return s.addLink(from, to, nil)
 }
 
 // AddLinkOnBranch add a link from a node (on a specific branch) to another node into the system before activation.
-func (s *NodeSystem) AddLinkOnBranch(from, to node.Node, branch bool) (bool, error) {
+func (s *NodeSystem) AddLinkOnBranch(from, to Node, branch bool) (bool, error) {
 	return s.addLink(from, to, &branch)
 }
 
@@ -101,22 +100,22 @@ func (s *NodeSystem) Activate() error {
 		return errors.New("can't activate a unvalidated node system")
 	}
 
-	initialNodes := make([]node.Node, 0)
-	followingNodesTree := make(map[node.Node]map[*bool][]node.Node)
-	ancestorsNodesTree := make(map[node.Node]map[*bool][]node.Node)
+	initialNodes := make([]Node, 0)
+	followingNodesTree := make(map[Node]map[*bool][]Node)
+	ancestorsNodesTree := make(map[Node]map[*bool][]Node)
 
-	toNodes := make([]node.Node, 0)
+	toNodes := make([]Node, 0)
 	for _, link := range s.links {
 		followingNodesTreeOnBranch, foundNode := followingNodesTree[link.From]
 		if !foundNode {
-			followingNodesTree[link.From] = make(map[*bool][]node.Node)
+			followingNodesTree[link.From] = make(map[*bool][]Node)
 			followingNodesTreeOnBranch = followingNodesTree[link.From]
 		}
 		followingNodesTreeOnBranch[link.Branch] = append(followingNodesTreeOnBranch[link.Branch], link.To)
 
 		ancestorsNodesTreeOnBranch, foundNode := ancestorsNodesTree[link.To]
 		if !foundNode {
-			ancestorsNodesTree[link.To] = make(map[*bool][]node.Node)
+			ancestorsNodesTree[link.To] = make(map[*bool][]Node)
 			ancestorsNodesTreeOnBranch = ancestorsNodesTree[link.To]
 		}
 		ancestorsNodesTreeOnBranch[link.Branch] = append(ancestorsNodesTreeOnBranch[link.Branch], link.From)
@@ -146,7 +145,7 @@ func (s *NodeSystem) Activate() error {
 }
 
 // JoinModeOfNode get the configured join mode of a node
-func (s *NodeSystem) JoinModeOfNode(n node.Node) JoinMode {
+func (s *NodeSystem) JoinModeOfNode(n Node) JoinMode {
 	mode, foundMode := s.nodesJoinModes[n]
 	if foundMode {
 		return mode
@@ -155,7 +154,7 @@ func (s *NodeSystem) JoinModeOfNode(n node.Node) JoinMode {
 }
 
 // InitialNodes get the initial nodes
-func (s *NodeSystem) InitialNodes() []node.Node {
+func (s *NodeSystem) InitialNodes() []Node {
 	return s.initialNodes
 }
 
@@ -166,7 +165,7 @@ func (s *NodeSystem) IsActivated() bool {
 }
 
 // Follow get the set of nodes accessible from a specific node and one of its branch after activation.
-func (s *NodeSystem) Follow(n node.Node, branch *bool) ([]node.Node, error) {
+func (s *NodeSystem) Follow(n Node, branch *bool) ([]Node, error) {
 	if !s.activated {
 		return nil, errors.New("can't follow a node if system is not activated")
 	}
@@ -181,7 +180,7 @@ func (s *NodeSystem) Follow(n node.Node, branch *bool) ([]node.Node, error) {
 }
 
 // Ancestors get the set of nodes who access using one of their branch to a specific node after activation.
-func (s *NodeSystem) Ancestors(n node.Node, branch *bool) ([]node.Node, error) {
+func (s *NodeSystem) Ancestors(n Node, branch *bool) ([]Node, error) {
 	if !s.activated {
 		return nil, errors.New("can't get ancestors of a node if system is not activated")
 	}
@@ -195,7 +194,7 @@ func (s *NodeSystem) Ancestors(n node.Node, branch *bool) ([]node.Node, error) {
 	return nil, nil
 }
 
-func (s *NodeSystem) addLink(from, to node.Node, branch *bool) (bool, error) {
+func (s *NodeSystem) addLink(from, to Node, branch *bool) (bool, error) {
 	if s.activated {
 		return false, errors.New("can't add branch link, node system is freeze due to activation")
 	}
@@ -228,7 +227,7 @@ func (s *NodeSystem) addLink(from, to node.Node, branch *bool) (bool, error) {
 	return true, nil
 }
 
-func (s *NodeSystem) haveNode(n node.Node) bool {
+func (s *NodeSystem) haveNode(n Node) bool {
 	for _, node := range s.nodes {
 		if node == n {
 			return true
@@ -300,7 +299,7 @@ func checkForCyclicRedundancyInNodeLinks(s *NodeSystem) []error {
 	return errors
 }
 
-func findCycle(s *NodeSystem, topNode, currentNode node.Node, walkednodeLinks []nodeLink) [][]nodeLink {
+func findCycle(s *NodeSystem, topNode, currentNode Node, walkednodeLinks []nodeLink) [][]nodeLink {
 	if walkednodeLinks != nil && len(walkednodeLinks) > 0 {
 		if topNode == currentNode {
 			return [][]nodeLink{walkednodeLinks}
@@ -346,7 +345,7 @@ func checkForUndeclaredNodeInNodeLink(s *NodeSystem) []error {
 
 func checkForMultipleInstanceOfSameNode(s *NodeSystem) []error {
 	errors := make([]error, 0)
-	count := make(map[node.Node]int)
+	count := make(map[Node]int)
 	for i := 0; i < len(s.nodes); i++ {
 		for j := 0; j < len(s.nodes); j++ {
 			if i != j && s.nodes[i] == s.nodes[j] {
@@ -364,7 +363,7 @@ func checkForMultipleInstanceOfSameNode(s *NodeSystem) []error {
 
 func checkForMultipleLinksToNodeWithoutJoinMode(s *NodeSystem) []error {
 	errors := make([]error, 0)
-	count := make(map[node.Node]int)
+	count := make(map[Node]int)
 	for _, link := range s.links {
 		count[link.To]++
 	}

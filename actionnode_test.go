@@ -1,4 +1,4 @@
-package node
+package hoff
 
 import (
 	"errors"
@@ -10,11 +10,11 @@ import (
 )
 
 var (
-	continueNode, _ = NewAction("continueNode", func(*Context) error { return nil })
-	abortNode, _    = NewAction("abortNode", func(*Context) error { return errors.New("error") })
+	continueNode, _ = NewActionNode("continueNode", func(*Context) error { return nil })
+	abortNode, _    = NewActionNode("abortNode", func(*Context) error { return errors.New("error") })
 )
 
-func Test_NewAction(t *testing.T) {
+func Test_NewActionNode(t *testing.T) {
 	testCases := []struct {
 		name          string
 		givenFunc     func(*Context) error
@@ -32,7 +32,7 @@ func Test_NewAction(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			node, err := NewAction("ActionNode", testCase.givenFunc)
+			node, err := NewActionNode("ActionNode", testCase.givenFunc)
 
 			if !cmp.Equal(err, testCase.expectedError, utils.ErrorComparator) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)

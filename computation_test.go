@@ -9,19 +9,18 @@ import (
 	"github.com/rlespinasse/hoff/computestate"
 
 	"github.com/rlespinasse/hoff/internal/utils"
-	"github.com/rlespinasse/hoff/node"
 )
 
 func Test_NewComputation(t *testing.T) {
 	var activatedSystem = NewNodeSystem()
 	activatedSystem.Activate()
 
-	var emptyContext = node.NewContextWithoutData()
+	var emptyContext = NewContextWithoutData()
 
 	testCases := []struct {
 		name                string
 		givenSystem         *NodeSystem
-		givenContext        *node.Context
+		givenContext        *Context
 		expectedComputation *Computation
 		expectedError       error
 	}{
@@ -69,68 +68,68 @@ func Test_NewComputation(t *testing.T) {
 }
 
 func Test_Computation_Compute(t *testing.T) {
-	errorAction, _ := node.NewAction("errorAction", func(c *node.Context) error {
+	errorAction, _ := NewActionNode("errorAction", func(c *Context) error {
 		return errors.New("action error")
 	})
-	errorDecision, _ := node.NewDecision("errorDecision", func(c *node.Context) (bool, error) {
+	errorDecision, _ := NewDecisionNode("errorDecision", func(c *Context) (bool, error) {
 		return false, errors.New("decision error")
 	})
-	writeAction, _ := node.NewAction("writeAction", func(c *node.Context) error {
+	writeAction, _ := NewActionNode("writeAction", func(c *Context) error {
 		c.Store("write_action", "done")
 		return nil
 	})
-	writeAnotherAction, _ := node.NewAction("writeAnotherAction", func(c *node.Context) error {
+	writeAnotherAction, _ := NewActionNode("writeAnotherAction", func(c *Context) error {
 		c.Store("write_another_action", "done")
 		return nil
 	})
-	readAction, _ := node.NewAction("readAction", func(c *node.Context) error {
+	readAction, _ := NewActionNode("readAction", func(c *Context) error {
 		v, _ := c.Read("write_action")
 		c.Store("read_action", fmt.Sprintf("the content of write_action is %v", v))
 		return nil
 	})
-	deleteAnotherAction, _ := node.NewAction("deleteAnotherAction", func(c *node.Context) error {
+	deleteAnotherAction, _ := NewActionNode("deleteAnotherAction", func(c *Context) error {
 		c.Delete("write_another_action")
 		return nil
 	})
-	writeActionKeyIsPresent, _ := node.NewDecision("writeActionKeyIsPresent", func(c *node.Context) (bool, error) {
+	writeActionKeyIsPresent, _ := NewDecisionNode("writeActionKeyIsPresent", func(c *Context) (bool, error) {
 		return c.HaveKey("write_action"), nil
 	})
-	writeAnotherActionKeyIsPresent, _ := node.NewDecision("writeAnotherActionKeyIsPresent", func(c *node.Context) (bool, error) {
+	writeAnotherActionKeyIsPresent, _ := NewDecisionNode("writeAnotherActionKeyIsPresent", func(c *Context) (bool, error) {
 		return c.HaveKey("write_another_action"), nil
 	})
 
 	testCases := []struct {
 		name                string
-		givenNodes          []node.Node
-		givenNodesJoinModes map[node.Node]JoinMode
+		givenNodes          []Node
+		givenNodesJoinModes map[Node]JoinMode
 		givenLinks          []nodeLink
 		givenContextData    map[string]interface{}
 		expectedStatus      bool
 		expectedContextData map[string]interface{}
-		expectedReport      map[node.Node]computestate.ComputeState
+		expectedReport      map[Node]computestate.ComputeState
 	}{
 		{
 			name:                "Can compute empty validated system",
 			expectedStatus:      true,
 			expectedContextData: map[string]interface{}{},
-			expectedReport:      map[node.Node]computestate.ComputeState{},
+			expectedReport:      map[Node]computestate.ComputeState{},
 		},
 		{
 			name: "Can compute one action node system",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				writeAction,
 			},
 			expectedStatus: true,
 			expectedContextData: map[string]interface{}{
 				"write_action": "done",
 			},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeAction: computestate.Continue(),
 			},
 		},
 		{
 			name: "Can compute 2 action nodes system",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				writeAction,
 				writeAnotherAction,
 			},
@@ -139,14 +138,14 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action":         "done",
 				"write_another_action": "done",
 			},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeAction:        computestate.Continue(),
 				writeAnotherAction: computestate.Continue(),
 			},
 		},
 		{
 			name: "Can compute 2 linked action system (ordered declaration)",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				writeAction,
 				readAction,
 			},
@@ -158,14 +157,14 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 				"read_action":  "the content of write_action is done",
 			},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeAction: computestate.Continue(),
 				readAction:  computestate.Continue(),
 			},
 		},
 		{
 			name: "Can compute 2 linked action system (unordered declaration)",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				readAction,
 				writeAction,
 			},
@@ -177,14 +176,14 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 				"read_action":  "the content of write_action is done",
 			},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeAction: computestate.Continue(),
 				readAction:  computestate.Continue(),
 			},
 		},
 		{
 			name: "Can compute decision-based (branch 'true') system (ordered declaration)",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				writeAction,
 				writeActionKeyIsPresent,
 				readAction,
@@ -200,7 +199,7 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 				"read_action":  "the content of write_action is done",
 			},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeAction:             computestate.Continue(),
 				writeActionKeyIsPresent: computestate.ContinueOnBranch(true),
 				readAction:              computestate.Continue(),
@@ -209,7 +208,7 @@ func Test_Computation_Compute(t *testing.T) {
 		},
 		{
 			name: "Can compute decision-based (branch 'false') system (ordered declaration)",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				writeAnotherAction,
 				writeActionKeyIsPresent,
 				readAction,
@@ -222,7 +221,7 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			expectedStatus:      true,
 			expectedContextData: map[string]interface{}{},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeAnotherAction:      computestate.Continue(),
 				writeActionKeyIsPresent: computestate.ContinueOnBranch(false),
 				readAction:              computestate.Skip(),
@@ -231,7 +230,7 @@ func Test_Computation_Compute(t *testing.T) {
 		},
 		{
 			name: "Can compute decision-based (branch 'true') system (unordered declaration)",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				deleteAnotherAction,
 				readAction,
 				writeActionKeyIsPresent,
@@ -247,7 +246,7 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 				"read_action":  "the content of write_action is done",
 			},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeAction:             computestate.Continue(),
 				writeActionKeyIsPresent: computestate.ContinueOnBranch(true),
 				readAction:              computestate.Continue(),
@@ -256,7 +255,7 @@ func Test_Computation_Compute(t *testing.T) {
 		},
 		{
 			name: "Can compute decision-based (branch 'false') system (unordered declaration)",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				deleteAnotherAction,
 				readAction,
 				writeActionKeyIsPresent,
@@ -269,7 +268,7 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			expectedStatus:      true,
 			expectedContextData: map[string]interface{}{},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeAnotherAction:      computestate.Continue(),
 				writeActionKeyIsPresent: computestate.ContinueOnBranch(false),
 				readAction:              computestate.Skip(),
@@ -278,7 +277,7 @@ func Test_Computation_Compute(t *testing.T) {
 		},
 		{
 			name: "Can compute a node system with one erroring action node",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				writeAction,
 				writeActionKeyIsPresent,
 				errorAction,
@@ -295,7 +294,7 @@ func Test_Computation_Compute(t *testing.T) {
 			expectedContextData: map[string]interface{}{
 				"write_action": "done",
 			},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeAction:             computestate.Continue(),
 				writeActionKeyIsPresent: computestate.ContinueOnBranch(true),
 				errorAction:             computestate.Abort(errors.New("action error")),
@@ -303,7 +302,7 @@ func Test_Computation_Compute(t *testing.T) {
 		},
 		{
 			name: "Can compute another node system with one erroring action node",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				writeAnotherAction,
 				writeActionKeyIsPresent,
 				errorAction,
@@ -318,7 +317,7 @@ func Test_Computation_Compute(t *testing.T) {
 			expectedContextData: map[string]interface{}{
 				"write_another_action": "done",
 			},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeAnotherAction:      computestate.Continue(),
 				writeActionKeyIsPresent: computestate.ContinueOnBranch(false),
 				errorAction:             computestate.Abort(errors.New("action error")),
@@ -326,7 +325,7 @@ func Test_Computation_Compute(t *testing.T) {
 		},
 		{
 			name: "Can compute a node system with one erroring decision node",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				writeAction,
 				errorDecision,
 				readAction,
@@ -341,14 +340,14 @@ func Test_Computation_Compute(t *testing.T) {
 			expectedContextData: map[string]interface{}{
 				"write_action": "done",
 			},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeAction:   computestate.Continue(),
 				errorDecision: computestate.Abort(errors.New("decision error")),
 			},
 		},
 		{
 			name: "Can compute a node system with fork links",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				writeAction,
 				readAction,
 				errorAction,
@@ -363,7 +362,7 @@ func Test_Computation_Compute(t *testing.T) {
 			expectedContextData: map[string]interface{}{
 				"write_action": "done",
 			},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeAction:         computestate.Continue(),
 				deleteAnotherAction: computestate.Continue(),
 				errorAction:         computestate.Abort(errors.New("action error")),
@@ -371,13 +370,13 @@ func Test_Computation_Compute(t *testing.T) {
 		},
 		{
 			name: "Can compute a node system with join and links",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				writeAction,
 				writeAnotherAction,
 				readAction,
 				deleteAnotherAction,
 			},
-			givenNodesJoinModes: map[node.Node]JoinMode{
+			givenNodesJoinModes: map[Node]JoinMode{
 				readAction: JoinAnd,
 			},
 			givenLinks: []nodeLink{
@@ -390,7 +389,7 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 				"read_action":  "the content of write_action is done",
 			},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeAction:         computestate.Continue(),
 				writeAnotherAction:  computestate.Continue(),
 				readAction:          computestate.Continue(),
@@ -399,14 +398,14 @@ func Test_Computation_Compute(t *testing.T) {
 		},
 		{
 			name: "Can compute a node system with partial join and links",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				writeAction,
 				writeActionKeyIsPresent,
 				writeAnotherAction,
 				readAction,
 				deleteAnotherAction,
 			},
-			givenNodesJoinModes: map[node.Node]JoinMode{
+			givenNodesJoinModes: map[Node]JoinMode{
 				readAction: JoinAnd,
 			},
 			givenLinks: []nodeLink{
@@ -420,7 +419,7 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action":         "done",
 				"write_another_action": "done",
 			},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeAction:             computestate.Continue(),
 				writeActionKeyIsPresent: computestate.ContinueOnBranch(true),
 				writeAnotherAction:      computestate.Continue(),
@@ -430,13 +429,13 @@ func Test_Computation_Compute(t *testing.T) {
 		},
 		{
 			name: "Can compute a node system with join or links",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				writeAction,
 				writeAnotherActionKeyIsPresent,
 				readAction,
 				deleteAnotherAction,
 			},
-			givenNodesJoinModes: map[node.Node]JoinMode{
+			givenNodesJoinModes: map[Node]JoinMode{
 				readAction: JoinOr,
 			},
 			givenLinks: []nodeLink{
@@ -449,7 +448,7 @@ func Test_Computation_Compute(t *testing.T) {
 				"write_action": "done",
 				"read_action":  "the content of write_action is done",
 			},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeAction:                    computestate.Continue(),
 				writeAnotherActionKeyIsPresent: computestate.ContinueOnBranch(false),
 				readAction:                     computestate.Continue(),
@@ -458,13 +457,13 @@ func Test_Computation_Compute(t *testing.T) {
 		},
 		{
 			name: "Can compute a node system with partial join or links",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				writeActionKeyIsPresent,
 				writeAnotherActionKeyIsPresent,
 				readAction,
 				deleteAnotherAction,
 			},
-			givenNodesJoinModes: map[node.Node]JoinMode{
+			givenNodesJoinModes: map[Node]JoinMode{
 				readAction: JoinOr,
 			},
 			givenLinks: []nodeLink{
@@ -474,7 +473,7 @@ func Test_Computation_Compute(t *testing.T) {
 			},
 			expectedStatus:      true,
 			expectedContextData: map[string]interface{}{},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeActionKeyIsPresent:        computestate.ContinueOnBranch(false),
 				writeAnotherActionKeyIsPresent: computestate.ContinueOnBranch(false),
 				readAction:                     computestate.Skip(),
@@ -483,13 +482,13 @@ func Test_Computation_Compute(t *testing.T) {
 		},
 		{
 			name: "Can compute a node system with join or links who generate error",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				writeAction,
 				errorAction,
 				readAction,
 				deleteAnotherAction,
 			},
-			givenNodesJoinModes: map[node.Node]JoinMode{
+			givenNodesJoinModes: map[Node]JoinMode{
 				readAction: JoinOr,
 			},
 			givenLinks: []nodeLink{
@@ -501,7 +500,7 @@ func Test_Computation_Compute(t *testing.T) {
 			expectedContextData: map[string]interface{}{
 				"write_action": "done",
 			},
-			expectedReport: map[node.Node]computestate.ComputeState{
+			expectedReport: map[Node]computestate.ComputeState{
 				writeAction: computestate.Continue(),
 				errorAction: computestate.Abort(errors.New("action error")),
 			},
@@ -521,7 +520,7 @@ func Test_Computation_Compute(t *testing.T) {
 			if testCase.givenContextData == nil {
 				testCase.givenContextData = make(map[string]interface{})
 			}
-			context := node.NewContext(testCase.givenContextData)
+			context := NewContext(testCase.givenContextData)
 
 			c, err := NewComputation(system, context)
 			if err != nil {
@@ -537,7 +536,7 @@ func Test_Computation_Compute(t *testing.T) {
 			if testCase.expectedContextData == nil {
 				testCase.expectedContextData = make(map[string]interface{})
 			}
-			expectedContext := node.NewContext(testCase.expectedContextData)
+			expectedContext := NewContext(testCase.expectedContextData)
 			if !cmp.Equal(c.Context, expectedContext) {
 				t.Errorf("context data - got: %+v, want: %+v", c.Context, expectedContext)
 			}
@@ -557,31 +556,31 @@ func Test_Github_Issue_11_JoinMode_OR(t *testing.T) {
 }
 
 func testGithubIssue11JoinMode(mode JoinMode, t *testing.T) {
-	action1, _ := node.NewAction("action1", func(c *node.Context) error {
+	action1, _ := NewActionNode("action1", func(c *Context) error {
 		data, _ := c.Read("run_order")
 		newData := append(data.([]string), "action1")
 		c.Store("run_order", newData)
 		return nil
 	})
-	decision2, _ := node.NewDecision("decision2", func(c *node.Context) (bool, error) {
+	decision2, _ := NewDecisionNode("decision2", func(c *Context) (bool, error) {
 		data, _ := c.Read("run_order")
 		newData := append(data.([]string), "decision2")
 		c.Store("run_order", newData)
 		return true, nil
 	})
-	action3, _ := node.NewAction("action3", func(c *node.Context) error {
+	action3, _ := NewActionNode("action3", func(c *Context) error {
 		data, _ := c.Read("run_order")
 		newData := append(data.([]string), "action3")
 		c.Store("run_order", newData)
 		return nil
 	})
-	action4, _ := node.NewAction("action4", func(c *node.Context) error {
+	action4, _ := NewActionNode("action4", func(c *Context) error {
 		data, _ := c.Read("run_order")
 		newData := append(data.([]string), "action4")
 		c.Store("run_order", newData)
 		return nil
 	})
-	action5, _ := node.NewAction("action5", func(c *node.Context) error {
+	action5, _ := NewActionNode("action5", func(c *Context) error {
 		data, _ := c.Read("run_order")
 		newData := append(data.([]string), "action5")
 		c.Store("run_order", newData)
@@ -606,7 +605,7 @@ func testGithubIssue11JoinMode(mode JoinMode, t *testing.T) {
 	ns.ConfigureJoinModeOnNode(action5, mode)
 	ns.Activate()
 
-	cp, _ := NewComputation(ns, node.NewContext(data))
+	cp, _ := NewComputation(ns, NewContext(data))
 	cp.Compute()
 
 	resultData, _ := cp.Context.Read("run_order")

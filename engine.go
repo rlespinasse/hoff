@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/rlespinasse/hoff/computestate"
-	"github.com/rlespinasse/hoff/node"
 )
 
 // Engine expose an engine to manage multiple computations based on a node system.
@@ -42,7 +41,7 @@ func (e *Engine) Compute(data map[string]interface{}) ComputationResult {
 		}
 	}
 
-	cp, _ := NewComputation(e.system, node.NewContext(data))
+	cp, _ := NewComputation(e.system, NewContext(data))
 
 	err := cp.Compute()
 	return ComputationResult{
@@ -56,5 +55,5 @@ func (e *Engine) Compute(data map[string]interface{}) ComputationResult {
 type ComputationResult struct {
 	Error  error
 	Data   map[string]interface{}
-	Report map[node.Node]computestate.ComputeState
+	Report map[Node]computestate.ComputeState
 }

@@ -7,7 +7,6 @@ import (
 
 	"github.com/rlespinasse/hoff/computestate"
 	"github.com/rlespinasse/hoff/internal/utils"
-	"github.com/rlespinasse/hoff/node"
 
 	"github.com/google/go-cmp/cmp"
 )
@@ -64,16 +63,16 @@ func Test_Engine_ConfigureNodeSystem(t *testing.T) {
 }
 
 func Test_Engine_Compute(t *testing.T) {
-	keyIsPresent, _ := node.NewDecision("keyIsPresent", func(c *node.Context) (bool, error) {
+	keyIsPresent, _ := NewDecisionNode("keyIsPresent", func(c *Context) (bool, error) {
 		return c.HaveKey("key"), nil
 	})
-	stringAction, _ := node.NewAction("stringAction", func(c *node.Context) error {
+	stringAction, _ := NewActionNode("stringAction", func(c *Context) error {
 		keyValue, _ := c.Read("key")
 		c.Store("string", fmt.Sprintf("'%+v'", keyValue))
 		return nil
 	})
 	throwedError := errors.New("missing 'key' in context")
-	throwError, _ := node.NewAction("throwError", func(c *node.Context) error {
+	throwError, _ := NewActionNode("throwError", func(c *Context) error {
 		return throwedError
 	})
 
@@ -99,7 +98,7 @@ func Test_Engine_Compute(t *testing.T) {
 			expectedResult: ComputationResult{
 				Data:  make(map[string]interface{}),
 				Error: throwedError,
-				Report: map[node.Node]computestate.ComputeState{
+				Report: map[Node]computestate.ComputeState{
 					keyIsPresent: computestate.ContinueOnBranch(false),
 					stringAction: computestate.Skip(),
 					throwError:   computestate.Abort(throwedError),
@@ -116,7 +115,7 @@ func Test_Engine_Compute(t *testing.T) {
 					"key":    []string{"Compute", "without", "error"},
 					"string": "'[Compute without error]'",
 				},
-				Report: map[node.Node]computestate.ComputeState{
+				Report: map[Node]computestate.ComputeState{
 					keyIsPresent: computestate.ContinueOnBranch(true),
 					stringAction: computestate.Continue(),
 					throwError:   computestate.Skip(),
@@ -128,7 +127,7 @@ func Test_Engine_Compute(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			result := eng.Compute(testCase.givenData)
 
-			if !cmp.Equal(result, testCase.expectedResult, node.NodeComparator, utils.ErrorComparator) {
+			if !cmp.Equal(result, testCase.expectedResult, NodeComparator, utils.ErrorComparator) {
 				t.Errorf("got: %+v, want: %+v", result, testCase.expectedResult)
 			}
 		})
@@ -145,7 +144,7 @@ func Test_UnconfiguredEngine_Compute(t *testing.T) {
 		Error: errors.New("need a configured node system"),
 	}
 
-	if !cmp.Equal(result, expectedResult, node.NodeComparator, utils.ErrorComparator) {
+	if !cmp.Equal(result, expectedResult, NodeComparator, utils.ErrorComparator) {
 		t.Errorf("got: %+v, want: %+v", result, expectedResult)
 	}
 }

@@ -4,21 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-
-	"github.com/rlespinasse/hoff/computestate"
-	"github.com/rlespinasse/hoff/node"
 )
-
-type SomeNode struct{}
-
-func (n *SomeNode) Compute(c *node.Context) computestate.ComputeState {
-	c.Store("message", "SomeNode is passing")
-	return computestate.Continue()
-}
-
-func (n *SomeNode) DecideCapability() bool {
-	return false
-}
 
 func Test_newNodeLink(t *testing.T) {
 	givenFromNode := &SomeNode{}
