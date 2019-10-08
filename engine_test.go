@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/rlespinasse/hoff/internal/utils"
-
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -54,7 +52,7 @@ func Test_Engine_ConfigureNodeSystem(t *testing.T) {
 			if !cmp.Equal(testCase.givenEngine, testCase.expectedEngine, engineComparator) {
 				t.Errorf("engine - got: %+v, want: %+v", testCase.givenEngine, testCase.expectedEngine)
 			}
-			if !cmp.Equal(err, testCase.expectedError, utils.ErrorComparator) {
+			if !cmp.Equal(err, testCase.expectedError, errorComparator) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 			}
 		})
@@ -126,7 +124,7 @@ func Test_Engine_Compute(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			result := eng.Compute(testCase.givenData)
 
-			if !cmp.Equal(result, testCase.expectedResult, NodeComparator, utils.ErrorComparator) {
+			if !cmp.Equal(result, testCase.expectedResult, NodeComparator, errorComparator) {
 				t.Errorf("got: %+v, want: %+v", result, testCase.expectedResult)
 			}
 		})
@@ -143,7 +141,7 @@ func Test_UnconfiguredEngine_Compute(t *testing.T) {
 		Error: errors.New("need a configured node system"),
 	}
 
-	if !cmp.Equal(result, expectedResult, NodeComparator, utils.ErrorComparator) {
+	if !cmp.Equal(result, expectedResult, NodeComparator, errorComparator) {
 		t.Errorf("got: %+v, want: %+v", result, expectedResult)
 	}
 }

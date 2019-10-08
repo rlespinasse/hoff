@@ -2,8 +2,6 @@ package hoff
 
 import (
 	"fmt"
-
-	"github.com/rlespinasse/hoff/internal/utils"
 )
 
 // ComputeState hold the result of a Node computation
@@ -38,7 +36,7 @@ func NewContinueComputeState() ComputeState {
 func NewContinueOnBranchComputeState(branch bool) ComputeState {
 	return ComputeState{
 		Value:  ContinueState,
-		Branch: utils.BoolPointer(branch),
+		Branch: boolPointer(branch),
 	}
 }
 

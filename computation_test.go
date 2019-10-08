@@ -6,8 +6,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-
-	"github.com/rlespinasse/hoff/internal/utils"
 )
 
 func Test_NewComputation(t *testing.T) {
@@ -59,7 +57,7 @@ func Test_NewComputation(t *testing.T) {
 			if !cmp.Equal(c, testCase.expectedComputation) {
 				t.Errorf("computation - got: %+v, want: %+v", c, testCase.expectedComputation)
 			}
-			if !cmp.Equal(err, testCase.expectedError, utils.ErrorComparator) {
+			if !cmp.Equal(err, testCase.expectedError, errorComparator) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 			}
 		})
@@ -539,7 +537,7 @@ func Test_Computation_Compute(t *testing.T) {
 			if !cmp.Equal(c.Context, expectedContext) {
 				t.Errorf("context data - got: %+v, want: %+v", c.Context, expectedContext)
 			}
-			if !cmp.Equal(c.Report, testCase.expectedReport, utils.ErrorComparator) {
+			if !cmp.Equal(c.Report, testCase.expectedReport, errorComparator) {
 				t.Errorf("report - got: %+v, want: %+v", c.Report, testCase.expectedReport)
 			}
 		})

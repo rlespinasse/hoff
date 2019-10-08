@@ -4,8 +4,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-
-	"github.com/rlespinasse/hoff/internal/utils"
 )
 
 type SomeNode struct{}
@@ -49,7 +47,7 @@ func RunTestOnNode(t *testing.T, testCases []NodeTestCase) {
 			}
 			testState := testCase.givenNode.Compute(testContext)
 
-			if !cmp.Equal(testState, testCase.expectedComputeState, utils.ErrorComparator) {
+			if !cmp.Equal(testState, testCase.expectedComputeState, errorComparator) {
 				t.Errorf("context state - got: %+v, want: %+v", testState, testCase.expectedComputeState)
 			}
 

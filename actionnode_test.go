@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rlespinasse/hoff/internal/utils"
 )
 
 var (
@@ -33,7 +32,7 @@ func Test_NewActionNode(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			node, err := NewActionNode("ActionNode", testCase.givenFunc)
 
-			if !cmp.Equal(err, testCase.expectedError, utils.ErrorComparator) {
+			if !cmp.Equal(err, testCase.expectedError, errorComparator) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 			}
 			if testCase.givenFunc == nil && node != nil {
