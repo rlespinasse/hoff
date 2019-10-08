@@ -1,4 +1,4 @@
-package node
+package hoff
 
 import (
 	"errors"
@@ -10,12 +10,12 @@ import (
 )
 
 var (
-	passingBranchTrueNode, _  = NewDecision("passingBranchTrueNode", func(*Context) (bool, error) { return true, nil })
-	passingBranchFalseNode, _ = NewDecision("passingBranchFalseNode", func(*Context) (bool, error) { return false, nil })
-	failingNode, _            = NewDecision("failingNode", func(*Context) (bool, error) { return false, errors.New("error") })
+	passingBranchTrueNode, _  = NewDecisionNode("passingBranchTrueNode", func(*Context) (bool, error) { return true, nil })
+	passingBranchFalseNode, _ = NewDecisionNode("passingBranchFalseNode", func(*Context) (bool, error) { return false, nil })
+	failingNode, _            = NewDecisionNode("failingNode", func(*Context) (bool, error) { return false, errors.New("error") })
 )
 
-func Test_NewDecision(t *testing.T) {
+func Test_NewDecisionNode(t *testing.T) {
 	testCases := []struct {
 		name          string
 		givenFunc     func(*Context) (bool, error)
@@ -33,7 +33,7 @@ func Test_NewDecision(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			node, err := NewDecision("DecisionNode", testCase.givenFunc)
+			node, err := NewDecisionNode("DecisionNode", testCase.givenFunc)
 
 			if !cmp.Equal(err, testCase.expectedError, utils.ErrorComparator) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)

@@ -7,20 +7,19 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/rlespinasse/hoff/internal/utils"
-	"github.com/rlespinasse/hoff/node"
 )
 
 var (
-	someActionNode, _         = node.NewAction("someActionNode", func(*node.Context) error { return nil })
-	anotherActionNode, _      = node.NewAction("anotherActionNode", func(*node.Context) error { return nil })
-	alwaysTrueDecisionNode, _ = node.NewDecision("alwaysTrueDecisionNode", func(*node.Context) (bool, error) { return true, nil })
+	someActionNode, _         = NewActionNode("someActionNode", func(*Context) error { return nil })
+	anotherActionNode, _      = NewActionNode("anotherActionNode", func(*Context) error { return nil })
+	alwaysTrueDecisionNode, _ = NewDecisionNode("alwaysTrueDecisionNode", func(*Context) (bool, error) { return true, nil })
 )
 
 func Test_NodeSystem_IsValid(t *testing.T) {
 	testCases := []struct {
 		name                string
-		givenNodes          []node.Node
-		givenNodesJoinModes map[node.Node]JoinMode
+		givenNodes          []Node
+		givenNodesJoinModes map[Node]JoinMode
 		givenLinks          []nodeLink
 		expectedNodeSystem  *NodeSystem
 		expectedErrors      []error
@@ -28,36 +27,36 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 		{
 			name: "Can have no nodes",
 			expectedNodeSystem: &NodeSystem{
-				nodes:          []node.Node{},
-				nodesJoinModes: map[node.Node]JoinMode{},
+				nodes:          []Node{},
+				nodesJoinModes: map[Node]JoinMode{},
 				links:          []nodeLink{},
 			},
 		},
 		{
 			name: "Can have one action node",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				someActionNode,
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes: []node.Node{
+				nodes: []Node{
 					someActionNode,
 				},
-				nodesJoinModes: map[node.Node]JoinMode{},
+				nodesJoinModes: map[Node]JoinMode{},
 				links:          []nodeLink{},
 			},
 		},
 		{
 			name: "Can't have the same node more than one time",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				someActionNode,
 				someActionNode,
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes: []node.Node{
+				nodes: []Node{
 					someActionNode,
 					someActionNode,
 				},
-				nodesJoinModes: map[node.Node]JoinMode{},
+				nodesJoinModes: map[Node]JoinMode{},
 				links:          []nodeLink{},
 			},
 			expectedErrors: []error{
@@ -66,14 +65,14 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 		},
 		{
 			name: "Can't have decision node without link to another node",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes: []node.Node{
+				nodes: []Node{
 					alwaysTrueDecisionNode,
 				},
-				nodesJoinModes: map[node.Node]JoinMode{},
+				nodesJoinModes: map[Node]JoinMode{},
 				links:          []nodeLink{},
 			},
 			expectedErrors: []error{
@@ -82,7 +81,7 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 		},
 		{
 			name: "Can have a link between decision node and action node",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
 			},
@@ -90,11 +89,11 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 				newNodeLinkOnBranch(alwaysTrueDecisionNode, someActionNode, true),
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes: []node.Node{
+				nodes: []Node{
 					alwaysTrueDecisionNode,
 					someActionNode,
 				},
-				nodesJoinModes: map[node.Node]JoinMode{},
+				nodesJoinModes: map[Node]JoinMode{},
 				links: []nodeLink{
 					newNodeLinkOnBranch(alwaysTrueDecisionNode, someActionNode, true),
 				},
@@ -102,7 +101,7 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 		},
 		{
 			name: "Can have 2 action nodes link together",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				someActionNode,
 				anotherActionNode,
 			},
@@ -110,11 +109,11 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 				newNodeLink(someActionNode, anotherActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes: []node.Node{
+				nodes: []Node{
 					someActionNode,
 					anotherActionNode,
 				},
-				nodesJoinModes: map[node.Node]JoinMode{},
+				nodesJoinModes: map[Node]JoinMode{},
 				links: []nodeLink{
 					newNodeLink(someActionNode, anotherActionNode),
 				},
@@ -126,8 +125,8 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 				{To: someActionNode},
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes:          []node.Node{},
-				nodesJoinModes: map[node.Node]JoinMode{},
+				nodes:          []Node{},
+				nodesJoinModes: map[Node]JoinMode{},
 				links:          []nodeLink{},
 			},
 			expectedErrors: []error{
@@ -140,8 +139,8 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 				{From: someActionNode},
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes:          []node.Node{},
-				nodesJoinModes: map[node.Node]JoinMode{},
+				nodes:          []Node{},
+				nodesJoinModes: map[Node]JoinMode{},
 				links:          []nodeLink{},
 			},
 			expectedErrors: []error{
@@ -154,8 +153,8 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 				newNodeLink(someActionNode, someActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes:          []node.Node{},
-				nodesJoinModes: map[node.Node]JoinMode{},
+				nodes:          []Node{},
+				nodesJoinModes: map[Node]JoinMode{},
 				links:          []nodeLink{},
 			},
 			expectedErrors: []error{
@@ -164,7 +163,7 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 		},
 		{
 			name: "Can have fork links with the same 'from'",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
 				anotherActionNode,
@@ -174,12 +173,12 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 				newNodeLinkOnBranch(alwaysTrueDecisionNode, anotherActionNode, true),
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes: []node.Node{
+				nodes: []Node{
 					alwaysTrueDecisionNode,
 					someActionNode,
 					anotherActionNode,
 				},
-				nodesJoinModes: map[node.Node]JoinMode{},
+				nodesJoinModes: map[Node]JoinMode{},
 				links: []nodeLink{
 					newNodeLinkOnBranch(alwaysTrueDecisionNode, someActionNode, true),
 					newNodeLinkOnBranch(alwaysTrueDecisionNode, anotherActionNode, true),
@@ -188,12 +187,12 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 		},
 		{
 			name: "Can have join links with the same 'to'",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
 				anotherActionNode,
 			},
-			givenNodesJoinModes: map[node.Node]JoinMode{
+			givenNodesJoinModes: map[Node]JoinMode{
 				anotherActionNode: JoinAnd,
 			},
 			givenLinks: []nodeLink{
@@ -201,12 +200,12 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 				newNodeLink(someActionNode, anotherActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes: []node.Node{
+				nodes: []Node{
 					alwaysTrueDecisionNode,
 					someActionNode,
 					anotherActionNode,
 				},
-				nodesJoinModes: map[node.Node]JoinMode{
+				nodesJoinModes: map[Node]JoinMode{
 					anotherActionNode: JoinAnd,
 				},
 				links: []nodeLink{
@@ -217,12 +216,12 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 		},
 		{
 			name: "Can have merge links with the same 'to'",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
 				anotherActionNode,
 			},
-			givenNodesJoinModes: map[node.Node]JoinMode{
+			givenNodesJoinModes: map[Node]JoinMode{
 				anotherActionNode: JoinOr,
 			},
 			givenLinks: []nodeLink{
@@ -230,12 +229,12 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 				newNodeLink(someActionNode, anotherActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes: []node.Node{
+				nodes: []Node{
 					alwaysTrueDecisionNode,
 					someActionNode,
 					anotherActionNode,
 				},
-				nodesJoinModes: map[node.Node]JoinMode{
+				nodesJoinModes: map[Node]JoinMode{
 					anotherActionNode: JoinOr,
 				},
 				links: []nodeLink{
@@ -246,7 +245,7 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 		},
 		{
 			name: "Can't hava a link with branch who is not needed",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				someActionNode,
 				anotherActionNode,
 			},
@@ -254,11 +253,11 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 				newNodeLinkOnBranch(someActionNode, anotherActionNode, true),
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes: []node.Node{
+				nodes: []Node{
 					someActionNode,
 					anotherActionNode,
 				},
-				nodesJoinModes: map[node.Node]JoinMode{},
+				nodesJoinModes: map[Node]JoinMode{},
 				links:          []nodeLink{},
 			},
 			expectedErrors: []error{
@@ -267,7 +266,7 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 		},
 		{
 			name: "Can't have a link with a missing branch",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
 			},
@@ -275,11 +274,11 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 				newNodeLink(alwaysTrueDecisionNode, someActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes: []node.Node{
+				nodes: []Node{
 					alwaysTrueDecisionNode,
 					someActionNode,
 				},
-				nodesJoinModes: map[node.Node]JoinMode{},
+				nodesJoinModes: map[Node]JoinMode{},
 				links:          []nodeLink{},
 			},
 			expectedErrors: []error{
@@ -289,17 +288,17 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 		},
 		{
 			name: "Can't have a link with an undeclared node as 'to'",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				someActionNode,
 			},
 			givenLinks: []nodeLink{
 				newNodeLink(someActionNode, anotherActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes: []node.Node{
+				nodes: []Node{
 					someActionNode,
 				},
-				nodesJoinModes: map[node.Node]JoinMode{},
+				nodesJoinModes: map[Node]JoinMode{},
 				links: []nodeLink{
 					newNodeLink(someActionNode, anotherActionNode),
 				},
@@ -310,17 +309,17 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 		},
 		{
 			name: "Can't have a link with an undeclared node as 'from'",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				anotherActionNode,
 			},
 			givenLinks: []nodeLink{
 				newNodeLink(someActionNode, anotherActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes: []node.Node{
+				nodes: []Node{
 					anotherActionNode,
 				},
-				nodesJoinModes: map[node.Node]JoinMode{},
+				nodesJoinModes: map[Node]JoinMode{},
 				links: []nodeLink{
 					newNodeLink(someActionNode, anotherActionNode),
 				},
@@ -331,7 +330,7 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 		},
 		{
 			name: "Can't have cycle between 2 links",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				someActionNode,
 				anotherActionNode,
 			},
@@ -340,11 +339,11 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 				newNodeLink(anotherActionNode, someActionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes: []node.Node{
+				nodes: []Node{
 					someActionNode,
 					anotherActionNode,
 				},
-				nodesJoinModes: map[node.Node]JoinMode{},
+				nodesJoinModes: map[Node]JoinMode{},
 				links: []nodeLink{
 					newNodeLink(someActionNode, anotherActionNode),
 					newNodeLink(anotherActionNode, someActionNode),
@@ -359,7 +358,7 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 		},
 		{
 			name: "Can't have cycle between some links",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
 				anotherActionNode,
@@ -369,16 +368,16 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 				newNodeLink(someActionNode, anotherActionNode),
 				newNodeLink(anotherActionNode, someActionNode),
 			},
-			givenNodesJoinModes: map[node.Node]JoinMode{
+			givenNodesJoinModes: map[Node]JoinMode{
 				someActionNode: JoinAnd,
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes: []node.Node{
+				nodes: []Node{
 					alwaysTrueDecisionNode,
 					someActionNode,
 					anotherActionNode,
 				},
-				nodesJoinModes: map[node.Node]JoinMode{
+				nodesJoinModes: map[Node]JoinMode{
 					someActionNode: JoinAnd,
 				},
 				links: []nodeLink{
@@ -396,7 +395,7 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 		},
 		{
 			name: "Can't have cycle between some links with branch",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
 				anotherActionNode,
@@ -407,12 +406,12 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 				newNodeLink(anotherActionNode, alwaysTrueDecisionNode),
 			},
 			expectedNodeSystem: &NodeSystem{
-				nodes: []node.Node{
+				nodes: []Node{
 					alwaysTrueDecisionNode,
 					someActionNode,
 					anotherActionNode,
 				},
-				nodesJoinModes: map[node.Node]JoinMode{},
+				nodesJoinModes: map[Node]JoinMode{},
 				links: []nodeLink{
 					newNodeLinkOnBranch(alwaysTrueDecisionNode, someActionNode, true),
 					newNodeLinkOnBranch(alwaysTrueDecisionNode, anotherActionNode, false),
@@ -448,24 +447,24 @@ func Test_NodeSystem_IsValid(t *testing.T) {
 func Test_NodeSystem_Activate(t *testing.T) {
 	testCases := []struct {
 		name                               string
-		givenNodes                         []node.Node
-		givenNodesJoinModes                map[node.Node]JoinMode
+		givenNodes                         []Node
+		givenNodesJoinModes                map[Node]JoinMode
 		givenLinks                         []nodeLink
-		givenNodesAfterActivation          []node.Node
-		givenNodesJoinModesAfterActivation map[node.Node]JoinMode
+		givenNodesAfterActivation          []Node
+		givenNodesJoinModesAfterActivation map[Node]JoinMode
 		givenLinksAfterActivation          []nodeLink
 		expectedActivatation               bool
-		expectedInitialNodes               []node.Node
-		expectedFollowingNodesTree         map[node.Node]map[*bool][]node.Node
-		expectedAncestorsNodesTree         map[node.Node]map[*bool][]node.Node
+		expectedInitialNodes               []Node
+		expectedFollowingNodesTree         map[Node]map[*bool][]Node
+		expectedAncestorsNodesTree         map[Node]map[*bool][]Node
 		expectedErrors                     []error
 	}{
 		{
 			name:                       "Can activate an empty validated system",
 			expectedActivatation:       true,
-			expectedInitialNodes:       []node.Node{},
-			expectedFollowingNodesTree: map[node.Node]map[*bool][]node.Node{},
-			expectedAncestorsNodesTree: map[node.Node]map[*bool][]node.Node{},
+			expectedInitialNodes:       []Node{},
+			expectedFollowingNodesTree: map[Node]map[*bool][]Node{},
+			expectedAncestorsNodesTree: map[Node]map[*bool][]Node{},
 		},
 		{
 			name: "Can't activate an unvalidated system",
@@ -479,14 +478,14 @@ func Test_NodeSystem_Activate(t *testing.T) {
 		},
 		{
 			name:                       "Can activate an one node validated system",
-			givenNodes:                 []node.Node{someActionNode},
+			givenNodes:                 []Node{someActionNode},
 			expectedActivatation:       true,
-			expectedInitialNodes:       []node.Node{someActionNode},
-			expectedFollowingNodesTree: map[node.Node]map[*bool][]node.Node{},
+			expectedInitialNodes:       []Node{someActionNode},
+			expectedFollowingNodesTree: map[Node]map[*bool][]Node{},
 		},
 		{
 			name: "Can activate an no needed branch node link validated system",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				someActionNode,
 				anotherActionNode,
 			},
@@ -494,10 +493,10 @@ func Test_NodeSystem_Activate(t *testing.T) {
 				newNodeLink(someActionNode, anotherActionNode),
 			},
 			expectedActivatation: true,
-			expectedInitialNodes: []node.Node{
+			expectedInitialNodes: []Node{
 				someActionNode,
 			},
-			expectedFollowingNodesTree: map[node.Node]map[*bool][]node.Node{
+			expectedFollowingNodesTree: map[Node]map[*bool][]Node{
 				someActionNode: {
 					nil: {anotherActionNode},
 				},
@@ -505,7 +504,7 @@ func Test_NodeSystem_Activate(t *testing.T) {
 		},
 		{
 			name: "Can activate an orphan action node validated system",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				someActionNode,
 				anotherActionNode,
 				alwaysTrueDecisionNode,
@@ -514,11 +513,11 @@ func Test_NodeSystem_Activate(t *testing.T) {
 				newNodeLinkOnBranch(alwaysTrueDecisionNode, anotherActionNode, true),
 			},
 			expectedActivatation: true,
-			expectedInitialNodes: []node.Node{
+			expectedInitialNodes: []Node{
 				someActionNode,
 				alwaysTrueDecisionNode,
 			},
-			expectedFollowingNodesTree: map[node.Node]map[*bool][]node.Node{
+			expectedFollowingNodesTree: map[Node]map[*bool][]Node{
 				alwaysTrueDecisionNode: {
 					utils.BoolPointer(true): {anotherActionNode},
 				},
@@ -526,7 +525,7 @@ func Test_NodeSystem_Activate(t *testing.T) {
 		},
 		{
 			name: "Can't add any node after activation",
-			givenNodesAfterActivation: []node.Node{
+			givenNodesAfterActivation: []Node{
 				someActionNode,
 			},
 			expectedActivatation: true,
@@ -536,7 +535,7 @@ func Test_NodeSystem_Activate(t *testing.T) {
 		},
 		{
 			name: "Can't add any node join mode after activation",
-			givenNodesJoinModesAfterActivation: map[node.Node]JoinMode{
+			givenNodesJoinModesAfterActivation: map[Node]JoinMode{
 				someActionNode: JoinNone,
 			},
 			expectedActivatation: true,
@@ -546,7 +545,7 @@ func Test_NodeSystem_Activate(t *testing.T) {
 		},
 		{
 			name: "Can't add any branch link after activation",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				someActionNode,
 				anotherActionNode,
 			},
@@ -585,13 +584,13 @@ func Test_NodeSystem_Activate(t *testing.T) {
 			if !cmp.Equal(errs, testCase.expectedErrors, utils.ErrorComparator) {
 				t.Errorf("errors - got: %+v, want: %+v", errs, testCase.expectedErrors)
 			}
-			if testCase.expectedInitialNodes != nil && !cmp.Equal(system.InitialNodes(), testCase.expectedInitialNodes, node.NodeComparator) {
+			if testCase.expectedInitialNodes != nil && !cmp.Equal(system.InitialNodes(), testCase.expectedInitialNodes, NodeComparator) {
 				t.Errorf("initial nodes - got: %+v, want: %+v", system.InitialNodes(), testCase.expectedInitialNodes)
 			}
-			if testCase.expectedFollowingNodesTree != nil && !cmp.Equal(system.followingNodesTree, testCase.expectedFollowingNodesTree, node.NodeComparator) {
+			if testCase.expectedFollowingNodesTree != nil && !cmp.Equal(system.followingNodesTree, testCase.expectedFollowingNodesTree, NodeComparator) {
 				t.Errorf("following node tree - got: %#v, want: %#v", system.followingNodesTree, testCase.expectedFollowingNodesTree)
 			}
-			if testCase.expectedAncestorsNodesTree != nil && !cmp.Equal(system.ancestorsNodesTree, testCase.expectedAncestorsNodesTree, node.NodeComparator) {
+			if testCase.expectedAncestorsNodesTree != nil && !cmp.Equal(system.ancestorsNodesTree, testCase.expectedAncestorsNodesTree, NodeComparator) {
 				t.Errorf("ancestors node tree - got: %#v, want: %#v", system.ancestorsNodesTree, testCase.expectedAncestorsNodesTree)
 			}
 		})
@@ -610,11 +609,11 @@ func Test_NodeSystem_multiple_activatation(t *testing.T) {
 func Test_NodeSystem_Follow(t *testing.T) {
 	testCases := []struct {
 		name                   string
-		givenNodes             []node.Node
+		givenNodes             []Node
 		givenLinks             []nodeLink
-		givenNode              node.Node
+		givenNode              Node
 		givenBranch            *bool
-		expectedFollowingNodes []node.Node
+		expectedFollowingNodes []Node
 		expectedError          error
 	}{
 		{
@@ -626,7 +625,7 @@ func Test_NodeSystem_Follow(t *testing.T) {
 		},
 		{
 			name: "Can follow 'from' on link",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				someActionNode,
 				anotherActionNode,
 			},
@@ -634,11 +633,11 @@ func Test_NodeSystem_Follow(t *testing.T) {
 				newNodeLink(someActionNode, anotherActionNode),
 			},
 			givenNode:              someActionNode,
-			expectedFollowingNodes: []node.Node{anotherActionNode},
+			expectedFollowingNodes: []Node{anotherActionNode},
 		},
 		{
 			name: "Can follow 'to' on link",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				someActionNode,
 				anotherActionNode,
 			},
@@ -650,7 +649,7 @@ func Test_NodeSystem_Follow(t *testing.T) {
 		},
 		{
 			name: "Can follow 'from' on branch link",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
 			},
@@ -659,11 +658,11 @@ func Test_NodeSystem_Follow(t *testing.T) {
 			},
 			givenNode:              alwaysTrueDecisionNode,
 			givenBranch:            utils.BoolPointer(true),
-			expectedFollowingNodes: []node.Node{someActionNode},
+			expectedFollowingNodes: []Node{someActionNode},
 		},
 		{
 			name: "Can follow 'to' on branch link",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
 			},
@@ -675,7 +674,7 @@ func Test_NodeSystem_Follow(t *testing.T) {
 		},
 		{
 			name: "Can't follow 'from' on branch link but without passing the branch",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
 			},
@@ -687,7 +686,7 @@ func Test_NodeSystem_Follow(t *testing.T) {
 		},
 		{
 			name: "Can't follow 'from' on branch link but without passing the right branch",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
 			},
@@ -718,7 +717,7 @@ func Test_NodeSystem_Follow(t *testing.T) {
 			if !cmp.Equal(err, testCase.expectedError, utils.ErrorComparator) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 			}
-			if !cmp.Equal(nodes, testCase.expectedFollowingNodes, node.NodeComparator) {
+			if !cmp.Equal(nodes, testCase.expectedFollowingNodes, NodeComparator) {
 				t.Errorf("following nodes - got: %+v, want: %+v", nodes, testCase.expectedFollowingNodes)
 			}
 		})
@@ -728,11 +727,11 @@ func Test_NodeSystem_Follow(t *testing.T) {
 func Test_NodeSystem_Ancestors(t *testing.T) {
 	testCases := []struct {
 		name                  string
-		givenNodes            []node.Node
+		givenNodes            []Node
 		givenLinks            []nodeLink
-		givenNode             node.Node
+		givenNode             Node
 		givenBranch           *bool
-		expectedAncestorNodes []node.Node
+		expectedAncestorNodes []Node
 		expectedError         error
 	}{
 		{
@@ -744,7 +743,7 @@ func Test_NodeSystem_Ancestors(t *testing.T) {
 		},
 		{
 			name: "Can have ancestors of 'from' on link",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				someActionNode,
 				anotherActionNode,
 			},
@@ -756,7 +755,7 @@ func Test_NodeSystem_Ancestors(t *testing.T) {
 		},
 		{
 			name: "Can have ancestors of 'to' on link",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				someActionNode,
 				anotherActionNode,
 			},
@@ -764,11 +763,11 @@ func Test_NodeSystem_Ancestors(t *testing.T) {
 				newNodeLink(someActionNode, anotherActionNode),
 			},
 			givenNode:             anotherActionNode,
-			expectedAncestorNodes: []node.Node{someActionNode},
+			expectedAncestorNodes: []Node{someActionNode},
 		},
 		{
 			name: "Can have ancestors of 'from' on branch link",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
 			},
@@ -780,7 +779,7 @@ func Test_NodeSystem_Ancestors(t *testing.T) {
 		},
 		{
 			name: "Can have ancestors of 'to' on branch link",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
 			},
@@ -789,11 +788,11 @@ func Test_NodeSystem_Ancestors(t *testing.T) {
 			},
 			givenNode:             someActionNode,
 			givenBranch:           utils.BoolPointer(true),
-			expectedAncestorNodes: []node.Node{alwaysTrueDecisionNode},
+			expectedAncestorNodes: []Node{alwaysTrueDecisionNode},
 		},
 		{
 			name: "Can have ancestors 'from' on branch link but without passing the branch",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
 			},
@@ -805,7 +804,7 @@ func Test_NodeSystem_Ancestors(t *testing.T) {
 		},
 		{
 			name: "Can't have ancestors 'from' on branch link but without passing the right branch",
-			givenNodes: []node.Node{
+			givenNodes: []Node{
 				alwaysTrueDecisionNode,
 				someActionNode,
 			},
@@ -828,7 +827,7 @@ func Test_NodeSystem_Ancestors(t *testing.T) {
 			if !cmp.Equal(err, testCase.expectedError, utils.ErrorComparator) {
 				t.Errorf("error - got: %+v, want: %+v", err, testCase.expectedError)
 			}
-			if !cmp.Equal(nodes, testCase.expectedAncestorNodes, node.NodeComparator) {
+			if !cmp.Equal(nodes, testCase.expectedAncestorNodes, NodeComparator) {
 				t.Errorf("ancestor nodes - got: %+v, want: %+v", nodes, testCase.expectedAncestorNodes)
 			}
 		})
@@ -866,16 +865,16 @@ func Test_JoinModeOfNode_notfound(t *testing.T) {
 }
 
 func Test_Github_Issue_10(t *testing.T) {
-	action1, _ := node.NewAction("action1", func(c *node.Context) error {
+	action1, _ := NewActionNode("action1", func(c *Context) error {
 		return nil
 	})
-	decision2, _ := node.NewDecision("decision2", func(c *node.Context) (bool, error) {
+	decision2, _ := NewDecisionNode("decision2", func(c *Context) (bool, error) {
 		return true, nil
 	})
-	decision3, _ := node.NewDecision("decision3", func(c *node.Context) (bool, error) {
+	decision3, _ := NewDecisionNode("decision3", func(c *Context) (bool, error) {
 		return true, nil
 	})
-	action4, _ := node.NewAction("action4", func(c *node.Context) error {
+	action4, _ := NewActionNode("action4", func(c *Context) error {
 		return nil
 	})
 
@@ -901,16 +900,16 @@ func Test_Github_Issue_10(t *testing.T) {
 }
 
 func Test_Github_Issue_16(t *testing.T) {
-	trigger, _ := node.NewDecision("trigger", func(c *node.Context) (bool, error) {
+	trigger, _ := NewDecisionNode("trigger", func(c *Context) (bool, error) {
 		return true, nil
 	})
-	a1, _ := node.NewAction("a1", func(c *node.Context) error {
+	a1, _ := NewActionNode("a1", func(c *Context) error {
 		return nil
 	})
-	a2, _ := node.NewAction("a2", func(c *node.Context) error {
+	a2, _ := NewActionNode("a2", func(c *Context) error {
 		return nil
 	})
-	a3, _ := node.NewAction("a3", func(c *node.Context) error {
+	a3, _ := NewActionNode("a3", func(c *Context) error {
 		return nil
 	})
 
@@ -939,28 +938,28 @@ func Test_Github_Issue_16(t *testing.T) {
 }
 
 func Test_multiple_cycles(t *testing.T) {
-	trigger, _ := node.NewDecision("trigger", func(c *node.Context) (bool, error) {
+	trigger, _ := NewDecisionNode("trigger", func(c *Context) (bool, error) {
 		return true, nil
 	})
-	a1, _ := node.NewAction("a1", func(c *node.Context) error {
+	a1, _ := NewActionNode("a1", func(c *Context) error {
 		return nil
 	})
-	a2, _ := node.NewAction("a2", func(c *node.Context) error {
+	a2, _ := NewActionNode("a2", func(c *Context) error {
 		return nil
 	})
-	a3, _ := node.NewAction("a3", func(c *node.Context) error {
+	a3, _ := NewActionNode("a3", func(c *Context) error {
 		return nil
 	})
-	a4, _ := node.NewAction("a4", func(c *node.Context) error {
+	a4, _ := NewActionNode("a4", func(c *Context) error {
 		return nil
 	})
-	a5, _ := node.NewAction("a5", func(c *node.Context) error {
+	a5, _ := NewActionNode("a5", func(c *Context) error {
 		return nil
 	})
-	a6, _ := node.NewAction("a6", func(c *node.Context) error {
+	a6, _ := NewActionNode("a6", func(c *Context) error {
 		return nil
 	})
-	a7, _ := node.NewAction("a7", func(c *node.Context) error {
+	a7, _ := NewActionNode("a7", func(c *Context) error {
 		return nil
 	})
 
@@ -1007,7 +1006,7 @@ func Test_multiple_cycles(t *testing.T) {
 	}
 }
 
-func loadNodeSystem(system *NodeSystem, nodes []node.Node, nodesJoinModes map[node.Node]JoinMode, links []nodeLink) []error {
+func loadNodeSystem(system *NodeSystem, nodes []Node, nodesJoinModes map[Node]JoinMode, links []nodeLink) []error {
 	var errs []error
 	for _, node := range nodes {
 		_, err := system.AddNode(node)

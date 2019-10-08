@@ -1,4 +1,4 @@
-package node
+package hoff
 
 import (
 	"testing"
@@ -8,6 +8,28 @@ import (
 
 	"github.com/rlespinasse/hoff/internal/utils"
 )
+
+type SomeNode struct{}
+
+func (n *SomeNode) Compute(c *Context) computestate.ComputeState {
+	c.Store("message", "SomeNode is passing")
+	return computestate.Continue()
+}
+
+func (n *SomeNode) DecideCapability() bool {
+	return false
+}
+
+type AnotherNode struct{}
+
+func (n *AnotherNode) Compute(c *Context) computestate.ComputeState {
+	c.Store("message", "AnotherNode is passing")
+	return computestate.Continue()
+}
+
+func (n *AnotherNode) DecideCapability() bool {
+	return false
+}
 
 type NodeTestCase struct {
 	name                 string

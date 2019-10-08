@@ -1,4 +1,4 @@
-package node
+package hoff
 
 import (
 	"errors"
@@ -34,8 +34,8 @@ func (n *DecisionNode) DecideCapability() bool {
 	return true
 }
 
-// NewDecision create a DecisionNode based on a name and a function to take the needed decision.
-func NewDecision(name string, decisionFunc func(*Context) (bool, error)) (*DecisionNode, error) {
+// NewDecisionNode create a DecisionNode based on a name and a function to take the needed decision.
+func NewDecisionNode(name string, decisionFunc func(*Context) (bool, error)) (*DecisionNode, error) {
 	if decisionFunc == nil {
 		return nil, errors.New("can't create decision node without function")
 	}

@@ -1,4 +1,4 @@
-package node
+package hoff
 
 import (
 	"errors"
@@ -31,8 +31,8 @@ func (n *ActionNode) DecideCapability() bool {
 	return false
 }
 
-// NewAction create a ActionNode based on a name and a function to realize the needed action.
-func NewAction(name string, actionFunc func(*Context) error) (*ActionNode, error) {
+// NewActionNode create a ActionNode based on a name and a function to realize the needed action.
+func NewActionNode(name string, actionFunc func(*Context) error) (*ActionNode, error) {
 	if actionFunc == nil {
 		return nil, errors.New("can't create action node without function")
 	}

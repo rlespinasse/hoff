@@ -1,4 +1,4 @@
-package node
+package hoff
 
 import (
 	"github.com/google/go-cmp/cmp"
