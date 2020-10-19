@@ -16,8 +16,7 @@ Import the `HOFF` library in your **golang** project
 ----
 import "github.com/rlespinasse/hoff"
 ----
-
-Than read the documentation image:https://godoc.org/github.com/rlespinasse/hoff?status.svg["GoDoc", link="https://godoc.org/github.com/rlespinasse/hoff"] to have some usage examples.
+Than read the documentation image:https://pkg.go.dev/badge/github.com/rlespinasse/hoff["GoDoc", link="https://pkg.go.dev/github.com/rlespinasse/hoff"] to have some usage examples.
 
 == Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
